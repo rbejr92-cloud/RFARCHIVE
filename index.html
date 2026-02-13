@@ -5,41 +5,77 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Video Reference Archive</title>
   <style>
-    body { margin:0; padding:20px; background:#111; color:#fff; font-family: Arial, sans-serif; }
-    h1 { margin: 0 0 8px 0; font-size: 22px; }
-    .sub { opacity:.7; margin-bottom:14px; font-size: 13px; line-height:1.4; }
-    .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
-    input[type="text"] {
-      padding:10px; width:340px; max-width:100%;
-      border-radius:12px; border:1px solid #333; background:#0f0f0f; color:#fff;
-    }
-    .sectionTitle { margin: 14px 0 8px 0; opacity:.75; font-size: 12px; }
-    .chips { display:flex; flex-wrap:wrap; gap:8px; margin: 6px 0 10px 0; }
-    .chip {
-      padding:6px 10px; border-radius:999px; border:1px solid #333; background:#1a1a1a;
-      cursor:pointer; user-select:none; font-size:12px;
-    }
-    .chip.active { border-color:#ff4757; }
-    .chip .count { opacity:.65; margin-left:6px; font-size:11px; }
-    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin: 10px 0 16px 0; }
-    .btn {
-      padding:8px 10px; border-radius:12px; border:1px solid #333; background:#171717; color:#fff;
-      cursor:pointer; font-size:12px;
-    }
-    .stats { opacity:.7; font-size:12px; }
-    .metaRow { display:flex; gap:8px; flex-wrap:wrap; font-size:12px; opacity:.85; margin: 6px 0 0 0; }
-    .pill { padding:4px 8px; border-radius:999px; background:#222; border:1px solid #2d2d2d; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
-    .card { background:#1b1b1b; border:1px solid #2a2a2a; border-radius:14px; overflow:hidden; transition:.15s transform; }
-    .card:hover { transform: translateY(-2px); }
-    .thumb { width:100%; aspect-ratio:16/9; object-fit:cover; background:#0d0d0d; }
-    .content { padding:12px; }
-    .title { margin:0 0 8px 0; font-size:15px; line-height:1.3; }
-    .note { margin:8px 0 0 0; opacity:.8; font-size:12px; line-height:1.4; }
-    a { color:#ff4757; text-decoration:none; }
-    .footer { margin-top:18px; opacity:.6; font-size:12px; line-height:1.4; }
-    .divider { height:1px; background:#222; margin: 12px 0; }
-    code { background:#111; border:1px solid #222; padding:2px 6px; border-radius:8px; }
+    /* === CARD LAYOUT: thumbnail top / meta bottom (like your mock) === */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap:18px;
+}
+
+.card{
+  background:#fff;
+  color:#111;
+  border:4px solid #0b2a33;
+  border-radius:0;
+  overflow:hidden;
+  transition:none;
+}
+
+.card:hover{ transform:none; }
+
+.thumbWrap{ width:100%; background:#fff; }
+
+.thumb{
+  width:100%;
+  height:320px;          /* 상단 썸네일 크게 */
+  object-fit:cover;
+  display:block;
+  background:#f2f2f2;
+}
+
+.metaBox{
+  border-top:4px solid #0b2a33;  /* 중간 굵은 라인 */
+  padding:18px;
+}
+
+.metaDate{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:14px;
+}
+
+.metaGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px 18px;
+  align-items:start;
+}
+
+.metaLeft, .metaRight{
+  font-size:22px;
+  line-height:1.6;
+}
+
+.metaLeft .channel{
+  font-weight:800;
+}
+
+.metaRight{
+  border-left:4px solid #2b8fa3; /* 오른쪽 세로 라인 */
+  padding-left:18px;
+}
+
+.metaTagLine{
+  margin-top:14px;
+  font-size:22px;
+  font-weight:700;
+}
+
+a.cleanLink{
+  color:inherit;
+  text-decoration:none;
+  display:block;
+}
   </style>
 </head>
 <body>
@@ -348,37 +384,41 @@ function matchesFilter(item) {
 }
 
 function baseCardHTML(item, thumbUrl) {
-  const title = item[KEY.title] || "(no title)";
   const url = item[KEY.url] || "#";
-  const media = (item[KEY.media] || "").toString().trim();
-  const format = (item[KEY.format] || "").toString().trim();
-  const genre = (item[KEY.genre] || "").toString().trim();
-  const channel = (item[KEY.channel] || "").toString().trim();
-  const note = (item[KEY.note] || "").toString().trim();
-  const date = (item[KEY.date] || "").toString().trim();
-  const tags = splitTags(item[KEY.tag]);
 
-  const tagLine = tags.length ? ("#" + tags.join(" #")) : "";
+  const date = (item[KEY.date] || "").toString().trim();        // 발행일
+  const channel = (item[KEY.channel] || "").toString().trim();  // 채널명
+  const media = (item[KEY.media] || "").toString().trim();      // 매체
+  const genre = (item[KEY.genre] || "").toString().trim();      // 장르
+  const format = (item[KEY.format] || "").toString().trim();    // 포맷
+  const tags = splitTags(item[KEY.tag]);                        // TAG
+  const tagLine = tags.join(", ");
 
   return `
     <div class="card">
-      <a href="${url}" target="_blank" rel="noopener noreferrer">
-        <img class="thumb" src="${thumbUrl}" alt="thumbnail" loading="lazy"/>
-      </a>
-      <div class="content">
-        <a href="${url}" target="_blank" rel="noopener noreferrer">
-          <h3 class="title">${escapeHTML(title)}</h3>
-        </a>
-        <div class="metaRow">
-          ${date ? `<span class="pill">${escapeHTML(date)}</span>` : ""}
-          ${genre ? `<span class="pill">${escapeHTML(genre)}</span>` : ""}
-          ${media ? `<span class="pill">${escapeHTML(media)}</span>` : ""}
-          ${format ? `<span class="pill">${escapeHTML(format)}</span>` : ""}
-          ${channel ? `<span class="pill">${escapeHTML(channel)}</span>` : ""}
+      <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer">
+        <div class="thumbWrap">
+          <img class="thumb" src="${thumbUrl}" alt="thumbnail" loading="lazy"/>
         </div>
-        ${tagLine ? `<div class="note">${escapeHTML(tagLine)}</div>` : ""}
-        ${note ? `<p class="note">${escapeHTML(note)}</p>` : ""}
-      </div>
+
+        <div class="metaBox">
+          <div class="metaDate">${escapeHTML(date || "날짜")}</div>
+
+          <div class="metaGrid">
+            <div class="metaLeft">
+              <div class="channel">${escapeHTML(channel || "채널명")}</div>
+              <div>${escapeHTML(media || "매체")}</div>
+            </div>
+
+            <div class="metaRight">
+              <div>${escapeHTML(genre || "장르")}</div>
+              <div>${escapeHTML(format || "포맷")}</div>
+            </div>
+          </div>
+
+          <div class="metaTagLine">${escapeHTML(tagLine || "태그")}</div>
+        </div>
+      </a>
     </div>
   `;
 }
