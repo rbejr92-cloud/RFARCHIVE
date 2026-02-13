@@ -5,76 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Video Reference Archive</title>
   <style>
-    /* === CARD LAYOUT: thumbnail top / meta bottom (like your mock) === */
-.grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap:18px;
-}
+function baseCardHTML(item, thumbUrl) {
+  const url = item[KEY.url] || "#";
 
-.card{
-  background:#fff;
-  color:#111;
-  border:4px solid #0b2a33;
-  border-radius:0;
-  overflow:hidden;
-  transition:none;
-}
+  const date = (item[KEY.date] || "").toString().trim();        // 발행일
+  const channel = (item[KEY.channel] || "").toString().trim();  // 채널명
+  const media = (item[KEY.media] || "").toString().trim();      // 매체
+  const genre = (item[KEY.genre] || "").toString().trim();      // 장르
+  const format = (item[KEY.format] || "").toString().trim();    // 포맷
+  const tags = splitTags(item[KEY.tag]);                        // TAG
+  const tagLine = tags.join(", ");
 
-.card:hover{ transform:none; }
+  return `
+    <div class="card">
+      <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer">
+        <div class="thumbWrap">
+          <img class="thumb" src="${thumbUrl}" alt="thumbnail" loading="lazy"/>
+        </div>
 
-.thumbWrap{ width:100%; background:#fff; }
+        <div class="metaBox">
+          <div class="metaDate">${escapeHTML(date || "날짜")}</div>
 
-.thumb{
-  width:100%;
-  height:320px;          /* 상단 썸네일 크게 */
-  object-fit:cover;
-  display:block;
-  background:#f2f2f2;
-}
+          <div class="metaGrid">
+            <div class="metaLeft">
+              <div class="channel">${escapeHTML(channel || "채널명")}</div>
+              <div>${escapeHTML(media || "매체")}</div>
+            </div>
 
-.metaBox{
-  border-top:4px solid #0b2a33;  /* 중간 굵은 라인 */
-  padding:18px;
-}
+            <div class="metaRight">
+              <div>${escapeHTML(genre || "장르")}</div>
+              <div>${escapeHTML(format || "포맷")}</div>
+            </div>
+          </div>
 
-.metaDate{
-  font-size:18px;
-  font-weight:700;
-  margin-bottom:14px;
-}
-
-.metaGrid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px 18px;
-  align-items:start;
-}
-
-.metaLeft, .metaRight{
-  font-size:22px;
-  line-height:1.6;
-}
-
-.metaLeft .channel{
-  font-weight:800;
-}
-
-.metaRight{
-  border-left:4px solid #2b8fa3; /* 오른쪽 세로 라인 */
-  padding-left:18px;
-}
-
-.metaTagLine{
-  margin-top:14px;
-  font-size:22px;
-  font-weight:700;
-}
-
-a.cleanLink{
-  color:inherit;
-  text-decoration:none;
-  display:block;
+          <div class="metaTagLine">${escapeHTML(tagLine || "태그")}</div>
+        </div>
+      </a>
+    </div>
+  `;
 }
   </style>
 </head>
@@ -391,8 +359,17 @@ function baseCardHTML(item, thumbUrl) {
   const media = (item[KEY.media] || "").toString().trim();      // 매체
   const genre = (item[KEY.genre] || "").toString().trim();      // 장르
   const format = (item[KEY.format] || "").toString().trim();    // 포맷
-  const tags = splitTags(item[KEY.tag]);                        // TAG
-  const tagLine = tags.join(", ");
+  const tags = splitTags(item[KEY.tag]);
+  const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
+
+  // 오른쪽 위에 "매체"를 작은 배지로 표시(너무 크지 않게)
+  const mediaBadge = media ? `<span class="badge">${escapeHTML(media)}</span>` : "";
+
+  // 오른쪽은 장르/포맷을 pill로(가독성 좋게)
+  const rightPills = `
+    ${genre ? `<span class="pill">${escapeHTML(genre)}</span>` : ""}
+    ${format ? `<span class="pill">${escapeHTML(format)}</span>` : ""}
+  `;
 
   return `
     <div class="card">
@@ -402,21 +379,23 @@ function baseCardHTML(item, thumbUrl) {
         </div>
 
         <div class="metaBox">
-          <div class="metaDate">${escapeHTML(date || "날짜")}</div>
+          <div class="metaTopRow">
+            <div class="metaDate">${escapeHTML(date || "")}</div>
+            ${mediaBadge}
+          </div>
 
           <div class="metaGrid">
             <div class="metaLeft">
               <div class="channel">${escapeHTML(channel || "채널명")}</div>
-              <div>${escapeHTML(media || "매체")}</div>
+              <!-- 필요하면 한 줄 설명 같은 거 추가 가능 (지금은 비워둠) -->
             </div>
 
             <div class="metaRight">
-              <div>${escapeHTML(genre || "장르")}</div>
-              <div>${escapeHTML(format || "포맷")}</div>
+              ${rightPills}
             </div>
           </div>
 
-          <div class="metaTagLine">${escapeHTML(tagLine || "태그")}</div>
+          ${tagLine ? `<div class="metaTagLine">${escapeHTML(tagLine)}</div>` : ""}
         </div>
       </a>
     </div>
