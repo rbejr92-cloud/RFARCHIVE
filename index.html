@@ -39,6 +39,7 @@
     a { color:#ff4757; text-decoration:none; }
     .footer { margin-top:18px; opacity:.6; font-size:12px; line-height:1.4; }
     .divider { height:1px; background:#222; margin: 12px 0; }
+    code { background:#111; border:1px solid #222; padding:2px 6px; border-radius:8px; }
   </style>
 </head>
 <body>
@@ -47,6 +48,7 @@
   <div class="sub">
     Google Sheet → JSON(OpenSheet) 자동 연동<br/>
     필터 칩: <b>장르/매체/포맷/TAG</b> + 검색<br/>
+    정렬: <b>발행일 최신순</b> (시트 컬럼명: <code>발행일</code>, 추천 형식: <code>YYYY-MM-DD</code>)<br/>
     썸네일: <b>YouTube 자동</b> + TikTok/Instagram <b>가능하면 자동(oEmbed 시도)</b> / 실패 시 <b>thumb 컬럼</b> 추천
   </div>
 
@@ -83,10 +85,10 @@
   </div>
 
 <script>
-/** 1) 여기에 네 OpenSheet URL 넣기 */
+/** ✅ 네 OpenSheet URL (사용자 제공) */
 const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
 
-/** 2) 시트 컬럼명(키) — 네 JSON에 맞춤 */
+/** ✅ 시트 컬럼명(키) — 시트 헤더와 정확히 일치해야 함 */
 const KEY = {
   genre: "장르",
   channel: "채널명",
@@ -95,6 +97,7 @@ const KEY = {
   url: "URL",
   format: "포맷",
   tag: "TAG",
+  date: "발행일",     // ✅ 추가됨
   note: "메모",
   thumbCandidates: ["thumb", "THUMB", "썸네일"]
 };
@@ -143,6 +146,35 @@ function splitTags(s) {
     .split(",")
     .map(t => t.trim())
     .filter(Boolean);
+}
+
+/** 발행일 파싱 (YYYY-MM-DD / YYYY.MM.DD / YYYY/MM/DD 어느 정도 대응) */
+function parseDateLoose(v) {
+  const s = (v || "").toString().trim();
+  if (!s) return null;
+
+  // 숫자만 있는 경우(예: 20250315)도 어느 정도 보정 가능
+  if (/^\d{8}$/.test(s)) {
+    const y = s.slice(0,4), m = s.slice(4,6), d = s.slice(6,8);
+    return new Date(`${y}-${m}-${d}T00:00:00`);
+  }
+
+  // 구분자 통일
+  const norm = s.replaceAll(".", "-").replaceAll("/", "-");
+  const dt = new Date(norm);
+  if (!isNaN(dt.getTime())) return dt;
+
+  return null;
+}
+
+function sortByDateDesc(data) {
+  return [...data].sort((a, b) => {
+    const da = parseDateLoose(a[KEY.date]);
+    const db = parseDateLoose(b[KEY.date]);
+    const ta = da ? da.getTime() : 0;
+    const tb = db ? db.getTime() : 0;
+    return tb - ta;
+  });
 }
 
 function getYoutubeID(url) {
@@ -222,21 +254,17 @@ async function resolveThumbnail(item) {
     return finalThumb;
   }
 
-  // 5) 기타는 placeholder (원하면 thumb 컬럼 사용)
+  // 5) 기타는 placeholder
   thumbCache.set(url, THUMB_PLACEHOLDER);
   return THUMB_PLACEHOLDER;
 }
 
 /** ====== 칩(필터 버튼) 렌더 ====== */
 
-function uniqNonEmpty(arr) {
-  return [...new Set(arr.map(x => (x || "").trim()).filter(Boolean))];
-}
-
 function countBy(items, getter) {
   const m = new Map();
   items.forEach(it => {
-    const k = (getter(it) || "").trim();
+    const k = (getter(it) || "").toString().trim();
     if (!k) return;
     m.set(k, (m.get(k) || 0) + 1);
   });
@@ -256,7 +284,6 @@ function buildTagCounts(items) {
 function renderChipGroup(container, labelAll, values, activeValue, onPick) {
   container.innerHTML = "";
 
-  // All
   const allChip = document.createElement("div");
   allChip.className = "chip" + (activeValue === null ? " active" : "");
   allChip.textContent = labelAll;
@@ -273,7 +300,6 @@ function renderChipGroup(container, labelAll, values, activeValue, onPick) {
 }
 
 function rebuildAllChips() {
-  // 칩은 전체 데이터 기준(혹은 현재 필터 기준으로 만들 수도 있음)
   const genreCounts = countBy(allData, it => it[KEY.genre]);
   const mediaCounts = countBy(allData, it => it[KEY.media]);
   const formatCounts = countBy(allData, it => it[KEY.format]);
@@ -295,27 +321,21 @@ function rebuildAllChips() {
     .map(([value, count]) => ({ value, count }))
     .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
 
-  renderChipGroup(genreChipsEl, "All", genres, activeGenre, (v) => { activeGenre = v; render(); rebuildActiveStatesOnly(); });
-  renderChipGroup(mediaChipsEl, "All", medias, activeMedia, (v) => { activeMedia = v; render(); rebuildActiveStatesOnly(); });
-  renderChipGroup(formatChipsEl, "All", formats, activeFormat, (v) => { activeFormat = v; render(); rebuildActiveStatesOnly(); });
-  renderChipGroup(tagChipsEl, "All", tags, activeTag, (v) => { activeTag = v; render(); rebuildActiveStatesOnly(); });
-}
-
-function rebuildActiveStatesOnly() {
-  // active 표시만 다시 그리기 위해 전체를 다시 렌더하는 대신, 간단히 전체 칩 재구성 호출
-  // 규모가 커도 문제없지만 더 최적화하고 싶으면 선택된 칩만 토글하게 바꿀 수 있음
-  rebuildAllChips();
+  renderChipGroup(genreChipsEl, "All", genres, activeGenre, (v) => { activeGenre = v; render(); });
+  renderChipGroup(mediaChipsEl, "All", medias, activeMedia, (v) => { activeMedia = v; render(); });
+  renderChipGroup(formatChipsEl, "All", formats, activeFormat, (v) => { activeFormat = v; render(); });
+  renderChipGroup(tagChipsEl, "All", tags, activeTag, (v) => { activeTag = v; render(); });
 }
 
 /** ====== 필터 & 렌더 ====== */
 
 function matchesFilter(item) {
   const q = (searchEl.value || "").toLowerCase().trim();
-  const title = (item[KEY.title] || "").toLowerCase();
+  const title = (item[KEY.title] || "").toString().toLowerCase();
 
-  const genre = (item[KEY.genre] || "").trim();
-  const media = (item[KEY.media] || "").trim();
-  const format = (item[KEY.format] || "").trim();
+  const genre = (item[KEY.genre] || "").toString().trim();
+  const media = (item[KEY.media] || "").toString().trim();
+  const format = (item[KEY.format] || "").toString().trim();
   const tags = splitTags(item[KEY.tag]);
 
   const okSearch = q ? title.includes(q) : true;
@@ -330,11 +350,12 @@ function matchesFilter(item) {
 function baseCardHTML(item, thumbUrl) {
   const title = item[KEY.title] || "(no title)";
   const url = item[KEY.url] || "#";
-  const media = (item[KEY.media] || "").trim();
-  const format = (item[KEY.format] || "").trim();
-  const genre = (item[KEY.genre] || "").trim();
-  const channel = (item[KEY.channel] || "").trim();
-  const note = (item[KEY.note] || "").trim();
+  const media = (item[KEY.media] || "").toString().trim();
+  const format = (item[KEY.format] || "").toString().trim();
+  const genre = (item[KEY.genre] || "").toString().trim();
+  const channel = (item[KEY.channel] || "").toString().trim();
+  const note = (item[KEY.note] || "").toString().trim();
+  const date = (item[KEY.date] || "").toString().trim();
   const tags = splitTags(item[KEY.tag]);
 
   const tagLine = tags.length ? ("#" + tags.join(" #")) : "";
@@ -349,6 +370,7 @@ function baseCardHTML(item, thumbUrl) {
           <h3 class="title">${escapeHTML(title)}</h3>
         </a>
         <div class="metaRow">
+          ${date ? `<span class="pill">${escapeHTML(date)}</span>` : ""}
           ${genre ? `<span class="pill">${escapeHTML(genre)}</span>` : ""}
           ${media ? `<span class="pill">${escapeHTML(media)}</span>` : ""}
           ${format ? `<span class="pill">${escapeHTML(format)}</span>` : ""}
@@ -362,11 +384,10 @@ function baseCardHTML(item, thumbUrl) {
 }
 
 async function render() {
-  const filtered = allData.filter(matchesFilter);
-
+  const filtered = sortByDateDesc(allData.filter(matchesFilter));
   statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
 
-  // 먼저 placeholder로 렌더
+  // placeholder로 먼저 렌더
   gridEl.innerHTML = filtered.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
 
   // 썸네일 비동기 로딩 후 업데이트
@@ -404,7 +425,11 @@ async function init() {
     await render();
 
   } catch (err) {
-    gridEl.innerHTML = `<div style="opacity:.8">데이터를 불러오지 못했습니다. SHEET_URL / 공유 설정을 확인해주세요.<br/><br/>${escapeHTML(err.message)}</div>`;
+    gridEl.innerHTML = `<div style="opacity:.85; font-size:14px;">
+      데이터를 불러오지 못했습니다.<br/>
+      SHEET_URL / 공유 설정을 확인해주세요.<br/><br/>
+      <code>${escapeHTML(err.message || String(err))}</code>
+    </div>`;
   }
 }
 
