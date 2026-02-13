@@ -15,6 +15,8 @@
       --accent:#ff4757;
       --shadow: 0 14px 40px rgba(0,0,0,.35);
       --radius:16px;
+      --panel: rgba(20,20,22,.55);
+      --panel2: rgba(20,20,22,.85);
     }
 
     *{ box-sizing:border-box; }
@@ -67,6 +69,7 @@
       color:var(--text);
       cursor:pointer;
       font-size:12px;
+      white-space:nowrap;
     }
     .btn:hover{ border-color: var(--line2); }
 
@@ -74,12 +77,38 @@
       font-size:12px;
       color: var(--muted);
       margin-left:auto;
+      white-space:nowrap;
     }
 
     .divider{
       height:1px;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent);
       margin: 12px 0;
+    }
+
+    /* ===== View Toggle ===== */
+    .viewToggle{
+      display:inline-flex;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(20,20,22,.55);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .viewToggle button{
+      border:0;
+      background: transparent;
+      color: rgba(234,234,234,.78);
+      padding:9px 12px;
+      font-size:12px;
+      font-weight:850;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .viewToggle button.active{
+      background: rgba(255,71,87,.14);
+      color: rgba(234,234,234,.95);
     }
 
     /* ===== Compact Filter Tabs ===== */
@@ -101,6 +130,7 @@
       cursor:pointer;
       letter-spacing:.1px;
       line-height:1;
+      white-space:nowrap;
     }
 
     .tab:hover{ border-color: rgba(255,255,255,.18); }
@@ -136,6 +166,7 @@
       user-select:none;
       font-size:12px;
       color: rgba(234,234,234,.9);
+      white-space:nowrap;
     }
     .chip:hover{ border-color: var(--line2); }
     .chip.active{
@@ -148,7 +179,7 @@
       font-size:11px;
     }
 
-    /* ===== Cards ===== */
+    /* ===== Cards Grid ===== */
     .grid{
       display:grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -177,11 +208,10 @@
 
     .thumbWrap{
       width:100%;
-      background:#0b0b0c; /* contain 여백 배경 */
+      background:#0b0b0c;
       overflow:hidden;
     }
 
-    /* ✅ 썸네일 안 잘리게 */
     .thumb{
       width:100%;
       height:220px;
@@ -195,7 +225,6 @@
       border-top:1px solid rgba(255,255,255,.06);
     }
 
-    /* 상단: 발행일 + 매체 */
     .metaTopRow{
       display:flex;
       align-items:center;
@@ -208,6 +237,7 @@
       font-size:12px;
       color: rgba(234,234,234,.70);
       letter-spacing:.2px;
+      white-space:nowrap;
     }
 
     .badge{
@@ -224,9 +254,6 @@
       font-weight:800;
     }
     .badge svg{ opacity:.92; }
-
-    /* 본문: 시원하게 1열 */
-    .metaGrid{ display:block; }
 
     .metaLeft .channel{
       font-size:14px;
@@ -287,8 +314,204 @@
       font-weight:800;
     }
 
+    /* ===== Dashboard Layout ===== */
+    .dash{
+      display:none;
+      grid-template-columns: 320px 1fr;
+      gap:14px;
+      margin-top: 14px;
+      align-items:start;
+    }
+    .dash.active{ display:grid; }
+
+    .panel{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(20,20,22,.40);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .panelHeader{
+      padding:12px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background: rgba(20,20,22,.55);
+    }
+    .panelHeader .title{
+      font-size:12px;
+      font-weight:900;
+      color: rgba(234,234,234,.9);
+      letter-spacing:.2px;
+    }
+    .panelHeader .hint{
+      font-size:11px;
+      color: rgba(234,234,234,.55);
+      white-space:nowrap;
+    }
+
+    .leftScroll{
+      max-height: calc(100vh - 300px);
+      overflow:auto;
+      padding:10px;
+    }
+    .leftScroll::-webkit-scrollbar{ width:10px; }
+    .leftScroll::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.10); border-radius:999px; }
+
+    .genreGroup{
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      overflow:hidden;
+      margin-bottom:10px;
+      background: rgba(20,20,22,.35);
+    }
+
+    .genreHead{
+      width:100%;
+      border:0;
+      background: rgba(20,20,22,.55);
+      color: rgba(234,234,234,.92);
+      padding:10px 10px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .genreHead .meta{
+      display:flex; gap:8px; align-items:center;
+      color: rgba(234,234,234,.65);
+      font-weight:800;
+      font-size:11px;
+    }
+
+    .genreBody{
+      padding:8px;
+      display:none;
+    }
+    .genreBody.open{ display:block; }
+
+    .channelItem{
+      width:100%;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(20,20,22,.55);
+      color: rgba(234,234,234,.88);
+      padding:9px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:6px;
+      font-size:12px;
+      font-weight:850;
+    }
+    .channelItem:hover{ border-color: rgba(255,255,255,.14); }
+    .channelItem.active{
+      border-color: rgba(255,71,87,.70);
+      box-shadow: 0 0 0 3px rgba(255,71,87,.12);
+    }
+    .channelItem .count{
+      font-size:11px;
+      color: rgba(234,234,234,.55);
+      font-weight:900;
+      white-space:nowrap;
+    }
+
+    .rightWrap{ padding: 10px; }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 160px 1fr;
+      gap:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(20,20,22,.55);
+      border-radius:16px;
+      overflow:hidden;
+    }
+
+    .rowThumb{
+      width:100%;
+      height:96px;
+      background:#0b0b0c;
+      object-fit:cover;
+      display:block;
+    }
+
+    .rowMeta{
+      padding:10px 12px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+    .rowTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-width:0;
+    }
+    .rowTitle{
+      font-size:13px;
+      font-weight:900;
+      color: rgba(234,234,234,.95);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      min-width:0;
+    }
+    .rowSub{
+      font-size:12px;
+      color: rgba(234,234,234,.78);
+      line-height:1.35;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .rowTags{
+      font-size:11.5px;
+      color: rgba(234,234,234,.62);
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .rowPills{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      margin-top:2px;
+    }
+
+    .mutebox{
+      padding:18px 12px;
+      font-size:13px;
+      color: rgba(234,234,234,.72);
+      text-align:center;
+    }
+
+    @media (max-width: 980px){
+      .dash.active{ grid-template-columns: 1fr; }
+      .leftScroll{ max-height: unset; }
+      .row{ grid-template-columns: 140px 1fr; }
+    }
     @media (max-width: 760px){
       .thumb{ height:210px; }
+      .rowThumb{ height:92px; }
     }
 
     code{
@@ -305,6 +528,12 @@
 
   <div class="topbar">
     <input id="search" type="text" placeholder="제목 검색..." />
+
+    <div class="viewToggle" role="tablist" aria-label="View Mode">
+      <button id="viewAllBtn" class="active" type="button">🟦 전체</button>
+      <button id="viewDashBtn" type="button">📺 채널별</button>
+    </div>
+
     <button class="btn" id="resetBtn">필터 초기화</button>
     <div class="stats" id="stats"></div>
   </div>
@@ -329,7 +558,30 @@
 
   <div class="divider"></div>
 
+  <!-- Grid View -->
   <div class="grid" id="grid"></div>
+
+  <!-- Dashboard View -->
+  <div class="dash" id="dash">
+    <div class="panel">
+      <div class="panelHeader">
+        <div class="title">장르 → 채널</div>
+        <div class="hint" id="leftHint">채널 선택</div>
+      </div>
+      <div class="leftScroll" id="leftNav"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panelHeader">
+        <div class="title" id="rightTitle">채널 콘텐츠</div>
+        <div class="hint" id="rightHint">최신순</div>
+      </div>
+      <div class="rightWrap">
+        <div class="list" id="rightList"></div>
+        <div class="mutebox" id="rightEmpty" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ✅ OpenSheet URL (사용자 제공)
@@ -355,16 +607,28 @@
     let activeFormat = null;
     let activeTag = null;
 
+    let viewMode = "all"; // "all" | "dash"
+    let selectedChannel = null; // dashboard selection
+
     const gridEl = document.getElementById("grid");
+    const dashEl = document.getElementById("dash");
     const statsEl = document.getElementById("stats");
     const searchEl = document.getElementById("search");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const viewAllBtn = document.getElementById("viewAllBtn");
+    const viewDashBtn = document.getElementById("viewDashBtn");
 
     const genreChipsEl = document.getElementById("genreChips");
     const mediaChipsEl = document.getElementById("mediaChips");
     const formatChipsEl = document.getElementById("formatChips");
     const tagChipsEl = document.getElementById("tagChips");
 
-    const resetBtn = document.getElementById("resetBtn");
+    const leftNavEl = document.getElementById("leftNav");
+    const leftHintEl = document.getElementById("leftHint");
+    const rightTitleEl = document.getElementById("rightTitle");
+    const rightListEl = document.getElementById("rightList");
+    const rightEmptyEl = document.getElementById("rightEmpty");
 
     const THUMB_PLACEHOLDER = "https://via.placeholder.com/800x450?text=No+Thumbnail";
     const thumbCache = new Map();
@@ -595,16 +859,19 @@
       const okFormat = activeFormat ? format === activeFormat : true;
       const okTag = activeTag ? tags.includes(activeTag) : true;
 
-      return okSearch && okGenre && okMedia && okFormat && okTag;
+      // Dashboard에서 채널 선택됐으면 채널도 포함
+      const okChannel = (viewMode === "dash" && selectedChannel)
+        ? ((item[KEY.channel] || "").toString().trim() === selectedChannel)
+        : true;
+
+      return okSearch && okGenre && okMedia && okFormat && okTag && okChannel;
     }
 
     function baseCardHTML(item, thumbUrl) {
       const url = item[KEY.url] || "#";
-
       const date = (item[KEY.date] || "").toString().trim();
       const channel = (item[KEY.channel] || "").toString().trim();
       const title = (item[KEY.title] || "").toString().trim();
-
       const media = (item[KEY.media] || "").toString().trim();
       const genre = (item[KEY.genre] || "").toString().trim();
       const format = (item[KEY.format] || "").toString().trim();
@@ -629,16 +896,14 @@
                 ${mediaBadge}
               </div>
 
-              <div class="metaGrid">
-                <div class="metaLeft">
-                  <p class="channel">${escapeHTML(channel || "채널명")}</p>
-                  ${title ? `<p class="titleLine">${escapeHTML(title)}</p>` : ``}
-                  ${tagLine ? `<div class="metaTagLine">${escapeHTML(tagLine)}</div>` : ``}
+              <div class="metaLeft">
+                <p class="channel">${escapeHTML(channel || "채널명")}</p>
+                ${title ? `<p class="titleLine">${escapeHTML(title)}</p>` : ``}
+                ${tagLine ? `<div class="metaTagLine">${escapeHTML(tagLine)}</div>` : ``}
 
-                  <div class="metaPills">
-                    ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
-                    ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
-                  </div>
+                <div class="metaPills">
+                  ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
+                  ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
                 </div>
               </div>
             </div>
@@ -647,10 +912,43 @@
       `;
     }
 
-    async function render() {
-      const filtered = sortByDateDesc(allData.filter(matchesFilter));
-      statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
+    function rowHTML(item, thumbUrl){
+      const url = item[KEY.url] || "#";
+      const date = (item[KEY.date] || "").toString().trim();
+      const channel = (item[KEY.channel] || "").toString().trim();
+      const title = (item[KEY.title] || "").toString().trim();
+      const media = (item[KEY.media] || "").toString().trim();
+      const genre = (item[KEY.genre] || "").toString().trim();
+      const format = (item[KEY.format] || "").toString().trim();
+      const tags = splitTags(item[KEY.tag]);
+      const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
 
+      const mediaBadge = media
+        ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>`
+        : "";
+
+      return `
+        <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer">
+          <div class="row">
+            <img class="rowThumb" src="${thumbUrl}" alt="thumb" loading="lazy"/>
+            <div class="rowMeta">
+              <div class="rowTop">
+                <div class="rowTitle">${escapeHTML(channel || "채널명")} · ${escapeHTML(date || "")}</div>
+                ${mediaBadge}
+              </div>
+              <div class="rowSub">${escapeHTML(title || "")}</div>
+              ${tagLine ? `<div class="rowTags">${escapeHTML(tagLine)}</div>` : ``}
+              <div class="rowPills">
+                ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
+                ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
+              </div>
+            </div>
+          </div>
+        </a>
+      `;
+    }
+
+    async function renderGrid(filtered){
       gridEl.innerHTML = filtered.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
 
       const cards = Array.from(gridEl.querySelectorAll(".card"));
@@ -661,12 +959,161 @@
       }));
     }
 
+    function buildGenreChannelIndex(items){
+      // Map<genre, Map<channel, count>>
+      const genreMap = new Map();
+      for (const it of items){
+        const g = (it[KEY.genre] || "기타").toString().trim() || "기타";
+        const c = (it[KEY.channel] || "채널명 없음").toString().trim() || "채널명 없음";
+        if (!genreMap.has(g)) genreMap.set(g, new Map());
+        const cm = genreMap.get(g);
+        cm.set(c, (cm.get(c) || 0) + 1);
+      }
+      // sort genres by count desc
+      const sorted = [...genreMap.entries()].map(([g, cm]) => {
+        const total = [...cm.values()].reduce((a,b)=>a+b,0);
+        const channels = [...cm.entries()]
+          .map(([c, cnt]) => ({ c, cnt }))
+          .sort((a,b)=> b.cnt - a.cnt || a.c.localeCompare(b.c, "ko"));
+        return { g, total, channels };
+      }).sort((a,b)=> b.total - a.total || a.g.localeCompare(b.g, "ko"));
+
+      return sorted;
+    }
+
+    function renderLeftNav(){
+      leftNavEl.innerHTML = "";
+
+      // Dashboard에서 '현재 필터가 적용된 데이터 기준'으로 채널 목록 구성하면 UX가 좋아짐
+      const base = allData.filter(it => {
+        // 채널 선택만 제외하고 필터 적용(좌측 목록이 필터에 따라 변하게)
+        const q = (searchEl.value || "").toLowerCase().trim();
+        const title = (it[KEY.title] || "").toString().toLowerCase();
+
+        const genre = (it[KEY.genre] || "").toString().trim();
+        const media = (it[KEY.media] || "").toString().trim();
+        const format = (it[KEY.format] || "").toString().trim();
+        const tags = splitTags(it[KEY.tag]);
+
+        const okSearch = q ? title.includes(q) : true;
+        const okGenre = activeGenre ? genre === activeGenre : true;
+        const okMedia = activeMedia ? media === activeMedia : true;
+        const okFormat = activeFormat ? format === activeFormat : true;
+        const okTag = activeTag ? tags.includes(activeTag) : true;
+
+        return okSearch && okGenre && okMedia && okFormat && okTag;
+      });
+
+      const index = buildGenreChannelIndex(base);
+
+      if (!index.length){
+        leftNavEl.innerHTML = `<div class="mutebox">표시할 채널이 없습니다.</div>`;
+        return;
+      }
+
+      index.forEach((group, idx) => {
+        const wrap = document.createElement("div");
+        wrap.className = "genreGroup";
+
+        const head = document.createElement("button");
+        head.className = "genreHead";
+        head.type = "button";
+        head.innerHTML = `
+          <span>${escapeHTML(group.g)}</span>
+          <span class="meta"><span>${group.channels.length}ch</span><span>·</span><span>${group.total}</span></span>
+        `;
+
+        const body = document.createElement("div");
+        body.className = "genreBody" + (idx < 2 ? " open" : ""); // 상위 2개는 기본 펼침
+
+        head.onclick = () => {
+          body.classList.toggle("open");
+        };
+
+        // "전체 채널" = genre그룹 내 채널 중 아무거나? 여기서는 제공하지 않고 채널만 제공.
+        group.channels.forEach(({c, cnt}) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "channelItem" + (selectedChannel === c ? " active" : "");
+          b.innerHTML = `<span>${escapeHTML(c)}</span><span class="count">${cnt}</span>`;
+          b.onclick = () => {
+            selectedChannel = c;
+            render(); // 우측 갱신
+          };
+          body.appendChild(b);
+        });
+
+        wrap.appendChild(head);
+        wrap.appendChild(body);
+        leftNavEl.appendChild(wrap);
+      });
+
+      leftHintEl.textContent = selectedChannel ? `선택: ${selectedChannel}` : "채널 선택";
+    }
+
+    async function renderDashboard(filtered){
+      // 왼쪽 네비 먼저
+      renderLeftNav();
+
+      // 우측: selectedChannel 없으면 안내
+      if (!selectedChannel){
+        rightTitleEl.textContent = "채널 콘텐츠";
+        rightListEl.innerHTML = "";
+        rightEmptyEl.style.display = "block";
+        rightEmptyEl.textContent = "왼쪽에서 채널을 선택하면 해당 채널의 콘텐츠가 표시됩니다.";
+        return;
+      }
+
+      rightTitleEl.textContent = selectedChannel;
+
+      const list = sortByDateDesc(filtered);
+      if (!list.length){
+        rightListEl.innerHTML = "";
+        rightEmptyEl.style.display = "block";
+        rightEmptyEl.textContent = "현재 필터 조건에서 표시할 콘텐츠가 없습니다.";
+        return;
+      }
+
+      rightEmptyEl.style.display = "none";
+      rightListEl.innerHTML = list.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
+
+      // 썸네일 비동기 로딩
+      const rows = Array.from(rightListEl.querySelectorAll(".row"));
+      await Promise.all(list.map(async (item, idx) => {
+        const t = await resolveThumbnail(item);
+        const img = rows[idx]?.querySelector("img.rowThumb");
+        if (img) img.src = t;
+      }));
+    }
+
+    async function render(){
+      const filtered = allData.filter(matchesFilter);
+      const sortedForCount = sortByDateDesc(filtered);
+
+      statsEl.textContent = `표시: ${sortedForCount.length} / 전체: ${allData.length}`;
+
+      if (viewMode === "all"){
+        gridEl.style.display = "grid";
+        dashEl.classList.remove("active");
+        await renderGrid(sortByDateDesc(allData.filter(it => {
+          // Grid에서는 채널 선택을 적용하지 않게 하고 싶으면 여기서 selectedChannel 무시 가능.
+          // 지금은 viewMode가 all이면 matchesFilter가 okChannel=true라서 괜찮음.
+          return matchesFilter(it);
+        })));
+      } else {
+        gridEl.style.display = "none";
+        dashEl.classList.add("active");
+        await renderDashboard(filtered);
+      }
+    }
+
     function resetFilters() {
       activeGenre = null;
       activeMedia = null;
       activeFormat = null;
       activeTag = null;
       searchEl.value = "";
+      selectedChannel = null;
       rebuildAllChips();
       render();
     }
@@ -699,6 +1146,16 @@
 
       activate("genre");
     })();
+
+    // ===== View Toggle logic =====
+    function setView(mode){
+      viewMode = mode;
+      viewAllBtn.classList.toggle("active", mode === "all");
+      viewDashBtn.classList.toggle("active", mode === "dash");
+      render();
+    }
+    viewAllBtn.addEventListener("click", () => setView("all"));
+    viewDashBtn.addEventListener("click", () => setView("dash"));
 
     async function init() {
       try {
