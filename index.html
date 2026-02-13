@@ -8,8 +8,6 @@
   <style>
     :root{
       --bg:#0f0f10;
-      --panel:#141416;
-      --panel2:#101012;
       --text:#eaeaea;
       --muted:rgba(234,234,234,.7);
       --line:#26262a;
@@ -84,39 +82,40 @@
       margin: 12px 0;
     }
 
-    /* ===== Filter Tabs (like image #1) ===== */
+    /* ===== Compact Filter Tabs ===== */
     .filterTabs{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:10px;
-      margin: 10px 0 10px 0;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin: 8px 0 10px 0;
     }
 
     .tab{
-      padding:14px 10px;
-      border-radius:14px;
+      padding:8px 10px;
+      border-radius:12px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(20,20,22,.55);
-      color: rgba(234,234,234,.9);
-      font-size:18px;
+      color: rgba(234,234,234,.88);
+      font-size:13px;
       font-weight:800;
       cursor:pointer;
-      letter-spacing:.2px;
+      letter-spacing:.1px;
+      line-height:1;
     }
 
     .tab:hover{ border-color: rgba(255,255,255,.18); }
 
     .tab.active{
       border-color: rgba(255,71,87,.65);
-      box-shadow: 0 0 0 4px rgba(255,71,87,.12);
+      box-shadow: 0 0 0 3px rgba(255,71,87,.12);
       background: rgba(20,20,22,.75);
     }
 
     .filterPanel{
       border:1px solid rgba(255,255,255,.08);
       background: rgba(20,20,22,.35);
-      border-radius:16px;
-      padding:12px;
+      border-radius:14px;
+      padding:10px;
     }
 
     .chips{
@@ -129,7 +128,7 @@
     .chipsPanel.active{ display:flex; }
 
     .chip{
-      padding:8px 11px;
+      padding:7px 10px;
       border-radius:999px;
       border:1px solid var(--line);
       background: rgba(23,23,26,.8);
@@ -147,11 +146,6 @@
       opacity:.55;
       margin-left:6px;
       font-size:11px;
-    }
-
-    @media (max-width: 700px){
-      .filterTabs{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .tab{ font-size:16px; padding:12px 10px; }
     }
 
     /* ===== Cards ===== */
@@ -183,86 +177,37 @@
 
     .thumbWrap{
       width:100%;
-      background: #0b0b0c; /* contain일 때 여백 배경 */
+      background:#0b0b0c; /* contain 여백 배경 */
       overflow:hidden;
     }
 
-    /* ✅ 안 잘리게: contain */
+    /* ✅ 썸네일 안 잘리게 */
     .thumb{
       width:100%;
-      height:240px;            /* 세로 늘림 */
-      object-fit:contain;      /* 안 잘리게 */
+      height:220px;
+      object-fit:contain;
       display:block;
       background:#0b0b0c;
     }
 
     .metaBox{
-      padding:14px;
+      padding:12px 12px 13px;
       border-top:1px solid rgba(255,255,255,.06);
     }
 
-    /* 2번 이미지 느낌: 하단 2열 */
-    .metaGrid{
-      display:grid;
-      grid-template-columns: 1.3fr .9fr;
-      gap:12px;
-      align-items:start;
-    }
-
-    .metaLeft .channel{
-      font-size:14px;
-      font-weight:850;
-      line-height:1.25;
-      margin:0 0 8px 0;
-    }
-
-    .metaLeft .titleLine{
-      font-size:13px;
-      color: rgba(234,234,234,.86);
-      line-height:1.5;
-      margin:0 0 10px 0;
-      white-space:normal;
-    }
-
-    .metaTagLine{
-      margin-top:10px;
-      font-size:12px;
-      color: rgba(234,234,234,.72);
-      line-height:1.55;
-      white-space:normal;
-      word-break:break-word;
-    }
-
-    /* 오른쪽: 라벨-값 박스 */
-    .metaRight{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:8px;
-      justify-content:stretch;
-    }
-
-    .kv{
+    /* 상단: 발행일 + 매체 */
+    .metaTopRow{
       display:flex;
+      align-items:center;
       justify-content:space-between;
       gap:10px;
-      align-items:center;
-      padding:8px 10px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
-      border-radius:12px;
+      margin-bottom:10px;
     }
 
-    .kv .k{
+    .metaDate{
       font-size:12px;
-      color: rgba(234,234,234,.65);
-      white-space:nowrap;
-    }
-
-    .kv .v{
-      font-size:12px;
-      color: rgba(234,234,234,.92);
-      font-weight:750;
-      text-align:right;
+      color: rgba(234,234,234,.70);
+      letter-spacing:.2px;
     }
 
     .badge{
@@ -280,9 +225,70 @@
     }
     .badge svg{ opacity:.92; }
 
+    /* 본문: 시원하게 1열 */
+    .metaGrid{ display:block; }
+
+    .metaLeft .channel{
+      font-size:14px;
+      font-weight:850;
+      line-height:1.25;
+      margin:0 0 6px 0;
+    }
+
+    .metaLeft .titleLine{
+      font-size:12.5px;
+      color: rgba(234,234,234,.86);
+      line-height:1.45;
+      margin:0 0 10px 0;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .metaTagLine{
+      margin-top:0;
+      font-size:12px;
+      color: rgba(234,234,234,.70);
+      line-height:1.45;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      word-break:break-word;
+    }
+
+    .metaPills{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:10px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      padding:5px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(234,234,234,.86);
+      white-space:nowrap;
+    }
+
+    .pill .k{
+      color: rgba(234,234,234,.55);
+      font-weight:800;
+    }
+    .pill .v{
+      color: rgba(234,234,234,.92);
+      font-weight:800;
+    }
+
     @media (max-width: 760px){
-      .thumb{ height:220px; }
-      .metaGrid{ grid-template-columns: 1fr; }
+      .thumb{ height:210px; }
     }
 
     code{
@@ -391,7 +397,7 @@
       const s = (v || "").toString().trim();
       if (!s) return null;
 
-      if (/^\\d{8}$/.test(s)) {
+      if (/^\d{8}$/.test(s)) {
         const y = s.slice(0,4), m = s.slice(4,6), d = s.slice(6,8);
         return new Date(`${y}-${m}-${d}T00:00:00`);
       }
@@ -608,7 +614,7 @@
 
       const mediaBadge = media
         ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>`
-        : `<span class="badge">-</span>`;
+        : "";
 
       return `
         <div class="card">
@@ -618,18 +624,21 @@
             </div>
 
             <div class="metaBox">
+              <div class="metaTopRow">
+                <div class="metaDate">${escapeHTML(date || "")}</div>
+                ${mediaBadge}
+              </div>
+
               <div class="metaGrid">
                 <div class="metaLeft">
                   <p class="channel">${escapeHTML(channel || "채널명")}</p>
                   ${title ? `<p class="titleLine">${escapeHTML(title)}</p>` : ``}
                   ${tagLine ? `<div class="metaTagLine">${escapeHTML(tagLine)}</div>` : ``}
-                </div>
 
-                <div class="metaRight">
-                  <div class="kv"><div class="k">발행일</div><div class="v">${escapeHTML(date || "-")}</div></div>
-                  <div class="kv"><div class="k">매체</div><div class="v">${mediaBadge}</div></div>
-                  <div class="kv"><div class="k">장르</div><div class="v">${escapeHTML(genre || "-")}</div></div>
-                  <div class="kv"><div class="k">포맷</div><div class="v">${escapeHTML(format || "-")}</div></div>
+                  <div class="metaPills">
+                    ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
+                    ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
+                  </div>
                 </div>
               </div>
             </div>
