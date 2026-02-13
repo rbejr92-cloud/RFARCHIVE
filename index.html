@@ -24,26 +24,22 @@
     body{
       margin:0;
       padding:22px;
-      background: radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%),
-                  radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%),
+        radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%),
+        var(--bg);
       color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+        "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
     }
 
     h1{
-      margin:0 0 8px 0;
+      margin:0 0 12px 0;
       font-size:22px;
       letter-spacing:.2px;
       display:flex;
       align-items:center;
       gap:10px;
-    }
-    .sub{
-      margin:0 0 16px 0;
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.5;
     }
 
     .topbar{
@@ -51,7 +47,7 @@
       flex-wrap:wrap;
       gap:10px;
       align-items:center;
-      margin: 14px 0 12px 0;
+      margin: 10px 0 12px 0;
     }
 
     input[type="text"]{
@@ -89,22 +85,52 @@
       margin: 12px 0;
     }
 
-    .sectionTitle{
-      margin: 14px 0 8px 0;
-      font-size:12px;
-      color: rgba(234,234,234,.7);
-      letter-spacing:.3px;
+    /* ===== Filter Tabs (like your image #1) ===== */
+    .filterTabs{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      margin: 10px 0 10px 0;
+    }
+
+    .tab{
+      padding:14px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(20,20,22,.55);
+      color: rgba(234,234,234,.9);
+      font-size:18px;
+      font-weight:800;
+      cursor:pointer;
+      letter-spacing:.2px;
+    }
+
+    .tab:hover{ border-color: rgba(255,255,255,.18); }
+
+    .tab.active{
+      border-color: rgba(255,71,87,.65);
+      box-shadow: 0 0 0 4px rgba(255,71,87,.12);
+      background: rgba(20,20,22,.75);
+    }
+
+    .filterPanel{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(20,20,22,.35);
+      border-radius:16px;
+      padding:12px;
     }
 
     .chips{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
-      margin: 6px 0 10px 0;
     }
 
+    .chipsPanel{ display:none; }
+    .chipsPanel.active{ display:flex; }
+
     .chip{
-      padding:7px 10px;
+      padding:8px 11px;
       border-radius:999px;
       border:1px solid var(--line);
       background: rgba(23,23,26,.8);
@@ -119,9 +145,14 @@
       box-shadow: 0 0 0 3px rgba(255,71,87,.12);
     }
     .chip .count{
-      opacity:.6;
+      opacity:.55;
       margin-left:6px;
       font-size:11px;
+    }
+
+    @media (max-width: 700px){
+      .filterTabs{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tab{ font-size:16px; padding:12px 10px; }
     }
 
     /* ===== Cards ===== */
@@ -129,7 +160,7 @@
       display:grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
       gap:14px;
-      margin-top: 12px;
+      margin-top: 14px;
     }
 
     .card{
@@ -168,7 +199,7 @@
     .card:hover .thumb{ transform: scale(1.03); }
 
     .metaBox{
-      padding:12px 12px 12px 12px;
+      padding:12px;
       border-top:1px solid rgba(255,255,255,.06);
     }
 
@@ -187,6 +218,9 @@
     }
 
     .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
       font-size:11px;
       padding:4px 8px;
       border-radius:999px;
@@ -194,11 +228,20 @@
       background: rgba(255,255,255,.04);
       color: rgba(234,234,234,.85);
       white-space:nowrap;
+      font-weight:700;
+    }
+    .badge svg{ opacity:.92; }
+
+    .metaGrid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:10px;
+      align-items:start;
     }
 
     .metaLeft .channel{
       font-size:14px;
-      font-weight:700;
+      font-weight:800;
       line-height:1.25;
       margin:0 0 6px 0;
     }
@@ -207,19 +250,10 @@
       font-size:12px;
       color: rgba(234,234,234,.78);
       line-height:1.35;
-
-      /* 한 줄만 */
       white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
       margin:0;
-    }
-
-    .metaGrid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:10px;
-      align-items:start;
     }
 
     .metaRight{
@@ -236,6 +270,7 @@
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
       color: rgba(234,234,234,.86);
+      white-space:nowrap;
     }
 
     .metaTagLine{
@@ -243,19 +278,10 @@
       font-size:12px;
       color: rgba(234,234,234,.72);
       line-height:1.35;
-
-      /* 2줄 clamp */
       display:-webkit-box;
       -webkit-line-clamp:2;
       -webkit-box-orient:vertical;
       overflow:hidden;
-    }
-
-    .footer{
-      margin-top:18px;
-      color: rgba(234,234,234,.55);
-      font-size:12px;
-      line-height:1.5;
     }
 
     code{
@@ -269,10 +295,6 @@
 
 <body>
   <h1>🎬 Video Reference Archive</h1>
-  <p class="sub">
-    Google Sheet → JSON(OpenSheet) 자동 연동 · 필터: 장르/매체/포맷/TAG + 검색 · 정렬: 발행일 최신순(<code>발행일</code>)<br/>
-    썸네일: YouTube 자동 + TikTok/Instagram 가능하면 자동(oEmbed) / 실패 시 <code>thumb</code>(또는 THUMB/썸네일) 컬럼 추천
-  </p>
 
   <div class="topbar">
     <input id="search" type="text" placeholder="제목 검색..." />
@@ -282,26 +304,25 @@
 
   <div class="divider"></div>
 
-  <div class="sectionTitle">장르</div>
-  <div class="chips" id="genreChips"></div>
+  <!-- Filter Tabs -->
+  <div class="filterTabs" id="filterTabs">
+    <button class="tab active" data-tab="genre">장르</button>
+    <button class="tab" data-tab="media">매체</button>
+    <button class="tab" data-tab="format">포맷</button>
+    <button class="tab" data-tab="tag">TAG</button>
+  </div>
 
-  <div class="sectionTitle">매체</div>
-  <div class="chips" id="mediaChips"></div>
-
-  <div class="sectionTitle">포맷</div>
-  <div class="chips" id="formatChips"></div>
-
-  <div class="sectionTitle">TAG</div>
-  <div class="chips" id="tagChips"></div>
+  <!-- Filter Panels -->
+  <div class="filterPanel">
+    <div class="chips chipsPanel active" id="genreChips"></div>
+    <div class="chips chipsPanel" id="mediaChips"></div>
+    <div class="chips chipsPanel" id="formatChips"></div>
+    <div class="chips chipsPanel" id="tagChips"></div>
+  </div>
 
   <div class="divider"></div>
 
   <div class="grid" id="grid"></div>
-
-  <div class="footer">
-    ✅ TAG는 쉼표로 구분: <code>실사촬영,개발자,Gameplay</code><br/>
-    ✅ TikTok/Instagram 썸네일이 안 뜨면 시트에 <code>thumb</code>(또는 THUMB/썸네일) 컬럼 추가 후 이미지 URL 입력(가장 안정).
-  </div>
 
   <script>
     // ✅ OpenSheet URL (사용자 제공)
@@ -369,7 +390,7 @@
       const s = (v || "").toString().trim();
       if (!s) return null;
 
-      if (/^\\d{8}$/.test(s)) {
+      if (/^\d{8}$/.test(s)) {
         const y = s.slice(0,4), m = s.slice(4,6), d = s.slice(6,8);
         return new Date(`${y}-${m}-${d}T00:00:00`);
       }
@@ -416,6 +437,26 @@
       if (u.includes("instagram.com")) return "instagram";
       if (u.includes("vimeo.com")) return "vimeo";
       return "other";
+    }
+
+    function mediaIconSVG(media){
+      const m = (media || "").toLowerCase();
+      if (m.includes("youtube")) {
+        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.5 12 4.5 12 4.5s-5.7 0-7.5.6A3 3 0 0 0 2.4 7.2 31 31 0 0 0 1.8 12a31 31 0 0 0 .6 4.8 3 3 0 0 0 2.1 2.1c1.8.6 7.5.6 7.5.6s5.7 0 7.5-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.2 12a31 31 0 0 0-.6-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/>
+        </svg>`;
+      }
+      if (m.includes("tiktok")) {
+        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M16 3c.3 2.7 1.9 4.3 4 4.6V11c-1.6 0-3.1-.5-4-1.4V16c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.4 0 .7 0 1 .1V13c-.3-.1-.6-.2-1-.2-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3V3h3Z"/>
+        </svg>`;
+      }
+      if (m.includes("insta")) {
+        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6Zm6.2-2.2a1 1 0 1 1 0 2a1 1 0 0 1 0-2Z"/>
+        </svg>`;
+      }
+      return "";
     }
 
     async function tryOEmbedThumb(platform, url) {
@@ -550,7 +591,7 @@
       return okSearch && okGenre && okMedia && okFormat && okTag;
     }
 
-    // ✅ 카드: 채널명 + TITLE(한 줄) + 발행일 + 매체 배지 + 장르/포맷 pill + TAG(2줄)
+    // ✅ 카드: 채널명 + TITLE(한 줄) + 발행일 + 매체(아이콘) + 장르/포맷(라벨) + TAG(2줄)
     function baseCardHTML(item, thumbUrl) {
       const url = item[KEY.url] || "#";
 
@@ -565,11 +606,13 @@
       const tags = splitTags(item[KEY.tag]);
       const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
 
-      const mediaBadge = media ? `<span class="badge">${escapeHTML(media)}</span>` : "";
+      const mediaBadge = media
+        ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>`
+        : "";
 
       const rightPills = `
-        ${genre ? `<span class="pill">${escapeHTML(genre)}</span>` : ""}
-        ${format ? `<span class="pill">${escapeHTML(format)}</span>` : ""}
+        ${genre ? `<span class="pill">장르 · ${escapeHTML(genre)}</span>` : ""}
+        ${format ? `<span class="pill">포맷 · ${escapeHTML(format)}</span>` : ""}
       `;
 
       return `
@@ -629,6 +672,33 @@
 
     resetBtn.addEventListener("click", resetFilters);
     searchEl.addEventListener("input", () => render());
+
+    // ===== Filter Tabs logic =====
+    (function setupTabs(){
+      const tabsEl = document.getElementById("filterTabs");
+      if (!tabsEl) return;
+
+      const panels = {
+        genre: document.getElementById("genreChips"),
+        media: document.getElementById("mediaChips"),
+        format: document.getElementById("formatChips"),
+        tag: document.getElementById("tagChips"),
+      };
+
+      function activate(name){
+        tabsEl.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+        Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === name));
+      }
+
+      tabsEl.addEventListener("click", (e) => {
+        const btn = e.target.closest(".tab");
+        if (!btn) return;
+        activate(btn.dataset.tab);
+      });
+
+      // 기본은 장르
+      activate("genre");
+    })();
 
     async function init() {
       try {
