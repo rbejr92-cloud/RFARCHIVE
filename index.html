@@ -757,7 +757,6 @@
     </div>
   </div>
 
-  <!-- Modal -->
   <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modalLeft">
@@ -793,6 +792,7 @@
   <script>
     // ===== DATA SOURCES =====
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
+    // ⚠️ TODO: Code.gs 업데이트 후 변경된 새 배포 URL이 있다면 아래를 교체해 주세요!
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
 
     const KEY = {
@@ -819,6 +819,22 @@
 
     let showLikedOnly = false;
     let sortMode = "date"; // date | likes
+
+    // ===== 무한 스크롤 상태 =====
+    let renderLimit = 30; // 한 번에 보여줄 개수
+    const RENDER_CHUNK = 30; // 스크롤 시 추가할 개수
+
+    const scrollSentinel = document.createElement("div"); // 바닥 감지용 투명 박스
+    scrollSentinel.style.height = "20px";
+    scrollSentinel.style.width = "100%";
+    scrollSentinel.id = "scroll-sentinel";
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        renderLimit += RENDER_CHUNK;
+        render(false); // 페이지 리셋 없이 렌더링만 추가
+      }
+    }, { rootMargin: "300px" });
 
     // ===== DOM =====
     const gridEl = document.getElementById("grid");
@@ -900,7 +916,7 @@
     function parseDateLoose(v) {
       const s = (v || "").toString().trim();
       if (!s) return null;
-      if (/^\\d{8}$/.test(s)) {
+      if (/^\d{8}$/.test(s)) {
         const y = s.slice(0,4), m = s.slice(4,6), d = s.slice(6,8);
         return new Date(`${y}-${m}-${d}T00:00:00`);
       }
@@ -943,12 +959,20 @@
       return fnv1a(normalizeUrl(url || ""));
     }
 
+    // 디바운스 유틸 (타이핑 성능 최적화)
+    function debounce(func, delay) {
+      let timer;
+      return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => func.apply(this, args), delay);
+      };
+    }
+
     // ===== LOCAL ID / NICK =====
     function getUserId() {
       let uid = localStorage.getItem(LS_UID);
       if (!uid) {
-        if (crypto && crypto.randomUUID) uid = crypto.randomUUID();
-        else uid = String(Date.now()) + "-" + Math.random().toString(16).slice(2);
+        uid = (crypto?.randomUUID?.() || (Date.now() + "-" + Math.random().toString(16).slice(2)));
         localStorage.setItem(LS_UID, uid);
       }
       return uid;
@@ -1003,19 +1027,13 @@
     function mediaIconSVG(media){
       const m = (media || "").toLowerCase();
       if (m.includes("youtube")) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="currentColor" d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.5 12 4.5 12 4.5s-5.7 0-7.5.6A3 3 0 0 0 2.4 7.2 31 31 0 0 0 1.8 12a31 31 0 0 0 .6 4.8 3 3 0 0 0 2.1 2.1c1.8.6 7.5.6 7.5.6s5.7 0 7.5-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.2 12a31 31 0 0 0-.6-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/>
-        </svg>`;
+        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.5 12 4.5 12 4.5s-5.7 0-7.5.6A3 3 0 0 0 2.4 7.2 31 31 0 0 0 1.8 12a31 31 0 0 0 .6 4.8 3 3 0 0 0 2.1 2.1c1.8.6 7.5.6 7.5.6s5.7 0 7.5-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.2 12a31 31 0 0 0-.6-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>`;
       }
       if (m.includes("tiktok")) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="currentColor" d="M16 3c.3 2.7 1.9 4.3 4 4.6V11c-1.6 0-3.1-.5-4-1.4V16c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.4 0 .7 0 1 .1V13c-.3-.1-.6-.2-1-.2-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3V3h3Z"/>
-        </svg>`;
+        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 3c.3 2.7 1.9 4.3 4 4.6V11c-1.6 0-3.1-.5-4-1.4V16c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.4 0 .7 0 1 .1V13c-.3-.1-.6-.2-1-.2-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3V3h3Z"/></svg>`;
       }
       if (m.includes("insta")) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6Zm6.2-2.2a1 1 0 1 1 0 2a1 1 0 0 1 0-2Z"/>
-        </svg>`;
+        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6Zm6.2-2.2a1 1 0 1 1 0 2a1 1 0 0 1 0-2Z"/></svg>`;
       }
       return "";
     }
@@ -1248,10 +1266,10 @@
       const tags = [...tagCounts.entries()].map(([value, count]) => ({ value, count }))
         .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
 
-      renderChipGroup(genreChipsEl, "All", genres, activeGenre, (v) => { activeGenre = v; render(); });
-      renderChipGroup(mediaChipsEl, "All", medias, activeMedia, (v) => { activeMedia = v; render(); });
-      renderChipGroup(formatChipsEl, "All", formats, activeFormat, (v) => { activeFormat = v; render(); });
-      renderChipGroup(tagChipsEl, "All", tags, activeTag, (v) => { activeTag = v; render(); });
+      renderChipGroup(genreChipsEl, "All", genres, activeGenre, (v) => { activeGenre = v; render(true); });
+      renderChipGroup(mediaChipsEl, "All", medias, activeMedia, (v) => { activeMedia = v; render(true); });
+      renderChipGroup(formatChipsEl, "All", formats, activeFormat, (v) => { activeFormat = v; render(true); });
+      renderChipGroup(tagChipsEl, "All", tags, activeTag, (v) => { activeTag = v; render(true); });
     }
 
     function matchesFilter(item) {
@@ -1369,39 +1387,51 @@
     }
 
     async function renderGrid(filtered){
-      // 정렬: date or likes
       let list = [...filtered];
       if (sortMode === "likes") {
-        // 캐시 기반 정렬(없는 건 0)
         list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
       } else {
         list = sortByDateDesc(list);
       }
 
-      gridEl.innerHTML = list.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
+      // 무한 스크롤: renderLimit 까지만 자름
+      const sliced = list.slice(0, renderLimit);
+      gridEl.innerHTML = sliced.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
+
+      if (list.length > renderLimit) {
+        gridEl.appendChild(scrollSentinel);
+        observer.observe(scrollSentinel);
+      } else {
+        observer.disconnect();
+      }
 
       const cards = Array.from(gridEl.querySelectorAll(".card"));
-      await Promise.all(list.map(async (item, idx) => {
+      await Promise.all(sliced.map(async (item, idx) => {
         const t = await resolveThumbnail(item);
         const img = cards[idx]?.querySelector("img.thumb");
         if (img) img.src = t;
       }));
 
-      const ids = list.slice(0, 60).map(getItemId);
+      const ids = sliced.slice(0, 60).map(getItemId);
       await hydrateCountersFor(ids, 8);
 
-      // 좋아요순일 때는 카운터 불러온 후 다시 정렬해서 반영(한 번 더)
+      // 캐시 갱신 후 다시 정렬
       if (sortMode === "likes") {
         const resort = [...list].sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
         if (resort.map(getItemId).join(",") !== list.map(getItemId).join(",")) {
-          gridEl.innerHTML = resort.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
+          const resliced = resort.slice(0, renderLimit);
+          gridEl.innerHTML = resliced.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
+          if (resort.length > renderLimit) {
+            gridEl.appendChild(scrollSentinel);
+            observer.observe(scrollSentinel);
+          }
           const cards2 = Array.from(gridEl.querySelectorAll(".card"));
-          await Promise.all(resort.map(async (item, idx) => {
+          await Promise.all(resliced.map(async (item, idx) => {
             const t = await resolveThumbnail(item);
             const img = cards2[idx]?.querySelector("img.thumb");
             if (img) img.src = t;
           }));
-          const ids2 = resort.slice(0, 60).map(getItemId);
+          const ids2 = resliced.slice(0, 60).map(getItemId);
           await hydrateCountersFor(ids2, 8);
         }
       }
@@ -1427,11 +1457,9 @@
 
     function renderLeftNav(){
       leftNavEl.innerHTML = "";
-
       const base = allData.filter(it => {
         const q = (searchEl.value || "").toLowerCase().trim();
         const title = (it[KEY.title] || "").toString().toLowerCase();
-
         const genre = (it[KEY.genre] || "").toString().trim();
         const media = (it[KEY.media] || "").toString().trim();
         const format = (it[KEY.format] || "").toString().trim();
@@ -1442,8 +1470,8 @@
         const okMedia = activeMedia ? media === activeMedia : true;
         const okFormat = activeFormat ? format === activeFormat : true;
         const okTag = activeTag ? tags.includes(activeTag) : true;
-
         const okLiked = showLikedOnly ? isLiked(getItemId(it)) : true;
+
         return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
       });
 
@@ -1478,7 +1506,7 @@
           b.innerHTML = `<span>${escapeHTML(c)}</span><span class="count">${cnt}</span>`;
           b.onclick = () => {
             selectedChannel = c;
-            render();
+            render(true);
           };
           body.appendChild(b);
         });
@@ -1519,20 +1547,32 @@
       }
 
       rightEmptyEl.style.display = "none";
-      rightListEl.innerHTML = list.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
+      
+      // 무한 스크롤: renderLimit 까지만 자름
+      const sliced = list.slice(0, renderLimit);
+      rightListEl.innerHTML = sliced.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
+
+      if (list.length > renderLimit) {
+        rightListEl.appendChild(scrollSentinel);
+        observer.observe(scrollSentinel);
+      } else {
+        observer.disconnect();
+      }
 
       const rows = Array.from(rightListEl.querySelectorAll(".row"));
-      await Promise.all(list.map(async (item, idx) => {
+      await Promise.all(sliced.map(async (item, idx) => {
         const t = await resolveThumbnail(item);
         const img = rows[idx]?.querySelector("img.rowThumb");
         if (img) img.src = t;
       }));
 
-      const ids = list.slice(0, 80).map(getItemId);
+      const ids = sliced.slice(0, 80).map(getItemId);
       await hydrateCountersFor(ids, 8);
     }
 
-    async function render(){
+    async function render(resetPagination = false){
+      if (resetPagination) renderLimit = 30; // 렌더링 리셋 처리
+
       const filtered = allData.filter(matchesFilter);
       statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
 
@@ -1561,11 +1601,11 @@
       sortLikesBtn.classList.remove("active");
 
       rebuildAllChips();
-      render();
+      render(true);
     }
 
     resetBtn.addEventListener("click", resetAll);
-    searchEl.addEventListener("input", () => render());
+    searchEl.addEventListener("input", debounce(() => render(true), 300)); // 디바운싱 적용
 
     // Filter tabs logic
     (function setupTabs(){
@@ -1593,7 +1633,7 @@
       viewMode = mode;
       viewAllBtn.classList.toggle("active", mode === "all");
       viewDashBtn.classList.toggle("active", mode === "dash");
-      render();
+      render(true);
     }
     viewAllBtn.addEventListener("click", () => setView("all"));
     viewDashBtn.addEventListener("click", () => setView("dash"));
@@ -1602,14 +1642,14 @@
     likedOnlyBtn.addEventListener("click", () => {
       showLikedOnly = !showLikedOnly;
       likedOnlyBtn.classList.toggle("active", showLikedOnly);
-      render();
+      render(true);
     });
 
     // Sort by likes toggle
     sortLikesBtn.addEventListener("click", () => {
       sortMode = (sortMode === "likes") ? "date" : "likes";
       sortLikesBtn.classList.toggle("active", sortMode === "likes");
-      render();
+      render(true);
     });
 
     // Admin dashboard (simple)
@@ -1619,7 +1659,6 @@
         const data = await res.json();
         const sorted = [...data].sort((a,b)=> (b.likes||0) - (a.likes||0)).slice(0, 30);
 
-        // itemId -> item lookup
         const map = new Map(allData.map(it => [getItemId(it), it]));
         const lines = sorted.map((x,i) => {
           const it = map.get(x.itemId);
@@ -1793,8 +1832,26 @@
     });
 
     // ===== INIT =====
+    // 앱 접속 시, 가장 먼저 내 좋아요 목록을 서버에서 동기화합니다.
+    async function syncMyLikes() {
+      const uid = getUserId();
+      try {
+        const res = await fetch(API_URL + "?userId=" + encodeURIComponent(uid) + "&t=" + Date.now());
+        const data = await res.json();
+        if (data.likedItemIds) {
+          const m = {};
+          data.likedItemIds.forEach(id => m[id] = true);
+          localStorage.setItem(LS_LIKED, JSON.stringify(m)); // 서버 데이터로 덮어쓰기
+        }
+      } catch (e) {
+        console.warn("좋아요 동기화 실패. 로컬 캐시를 사용합니다.", e);
+      }
+    }
+
     async function init() {
       try {
+        await syncMyLikes();
+
         const res = await fetch(SHEET_URL);
         if (!res.ok) throw new Error("Fetch failed: " + res.status);
         const data = await res.json();
@@ -1803,7 +1860,7 @@
           .filter(x => x && (x[KEY.url] || x[KEY.title]));
 
         rebuildAllChips();
-        await render();
+        await render(true);
 
       } catch (err) {
         gridEl.innerHTML = `<div style="opacity:.85; font-size:14px; padding:12px;">
@@ -1816,8 +1873,6 @@
 
     init();
 
-    alert("userId=" + localStorage.getItem("vra:userId"));
-    
   </script>
 </body>
 </html>
