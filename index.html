@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Video Reference Archive</title>
 
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
   <style>
     :root{
       --bg:#0f0f10;
@@ -26,17 +28,30 @@
         radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%),
         var(--bg);
       color:var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
-        "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      /* 폰트 교체 */
+      font-family: "Pretendard", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
 
     h1{
       margin:0 0 12px 0;
-      font-size:22px;
+      font-size:24px;
       letter-spacing:.2px;
       display:flex;
       align-items:center;
       gap:10px;
+    }
+
+    /* 🎨 글래스모피즘 상단바 (스크롤 시 고정) */
+    .topbarWrapper {
+      position: sticky;
+      top: -22px; /* body padding 보정 */
+      margin: -22px -22px 12px -22px;
+      padding: 22px 22px 12px 22px;
+      background: rgba(15, 15, 16, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
     .topbar{
@@ -44,7 +59,6 @@
       flex-wrap:wrap;
       gap:10px;
       align-items:center;
-      margin: 10px 0 12px 0;
     }
 
     input[type="text"]{
@@ -56,6 +70,7 @@
       background: rgba(20,20,22,.7);
       color:var(--text);
       outline:none;
+      font-family: inherit;
     }
     input[type="text"]::placeholder{ color: rgba(234,234,234,.45); }
 
@@ -66,9 +81,10 @@
       background: rgba(20,20,22,.7);
       color:var(--text);
       cursor:pointer;
-      font-size:12px;
+      font-size:13px;
       white-space:nowrap;
-      font-weight:900;
+      font-weight:700;
+      font-family: inherit;
     }
     .btn:hover{ border-color: var(--line2); }
     .btn.active{
@@ -77,7 +93,7 @@
     }
 
     .stats{
-      font-size:12px;
+      font-size:13px;
       color: var(--muted);
       margin-left:auto;
       white-space:nowrap;
@@ -102,12 +118,13 @@
       background: transparent;
       color: rgba(234,234,234,.78);
       padding:9px 12px;
-      font-size:12px;
-      font-weight:850;
+      font-size:13px;
+      font-weight:700;
       cursor:pointer;
       display:flex;
       align-items:center;
       gap:6px;
+      font-family: inherit;
     }
     .viewToggle button.active{
       background: rgba(255,71,87,.14);
@@ -128,10 +145,11 @@
       background: rgba(20,20,22,.55);
       color: rgba(234,234,234,.88);
       font-size:13px;
-      font-weight:800;
+      font-weight:700;
       cursor:pointer;
       line-height:1;
       white-space:nowrap;
+      font-family: inherit;
     }
     .tab:hover{ border-color: rgba(255,255,255,.18); }
     .tab.active{
@@ -159,39 +177,56 @@
       background: rgba(23,23,26,.8);
       cursor:pointer;
       user-select:none;
-      font-size:12px;
+      font-size:13px;
       color: rgba(234,234,234,.9);
       white-space:nowrap;
+      transition: all 0.2s ease;
     }
     .chip:hover{ border-color: var(--line2); }
     .chip.active{
       border-color: rgba(255,71,87,.7);
+      background: rgba(255,71,87,.1);
       box-shadow: 0 0 0 3px rgba(255,71,87,.12);
     }
     .chip .count{
       opacity:.55;
       margin-left:6px;
-      font-size:11px;
+      font-size:12px;
     }
 
-    /* ===== Grid ===== */
+    /* ===== Grid & Skeleton ===== */
     .grid{
       display:grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap:14px;
+      gap:16px;
       margin-top: 14px;
     }
+    
+    /* 🎨 스켈레톤 UI (로딩) */
+    .skeleton-card {
+      background: rgba(20,20,22,.5);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius);
+      height: 340px;
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
     .card{
       background: rgba(20,20,22,.92);
       border:1px solid var(--line);
       border-radius: var(--radius);
       overflow:hidden;
       box-shadow: var(--shadow);
-      transition: transform .12s ease, border-color .12s ease;
+      transition: transform .2s ease, border-color .2s ease;
       position:relative;
     }
     .card:hover{
-      transform: translateY(-2px);
+      transform: translateY(-4px);
       border-color: rgba(255,255,255,.16);
     }
     a.cleanLink{
@@ -202,17 +237,24 @@
     .thumbWrap{
       width:100%;
       background:#0b0b0c;
-      overflow:hidden;
+      overflow:hidden; /* 줌인 효과를 위해 필수 */
     }
+    
+    /* 🎨 호버 시 썸네일 줌인 효과 */
     .thumb{
       width:100%;
       height:220px;
       object-fit:contain;
       display:block;
       background:#0b0b0c;
+      transition: transform 0.3s ease;
     }
+    .card:hover .thumb {
+      transform: scale(1.05);
+    }
+
     .metaBox{
-      padding:12px 12px 13px;
+      padding:14px 14px 15px;
       border-top:1px solid rgba(255,255,255,.06);
     }
     .metaTopRow{
@@ -231,24 +273,24 @@
       display:inline-flex;
       align-items:center;
       gap:6px;
-      font-size:11px;
+      font-size:12px;
       padding:4px 8px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
       color: rgba(234,234,234,.85);
       white-space:nowrap;
-      font-weight:800;
+      font-weight:600;
     }
     .badge svg{ opacity:.92; }
     .metaLeft .channel{
-      font-size:14px;
-      font-weight:850;
+      font-size:15px;
+      font-weight:700;
       line-height:1.25;
       margin:0 0 6px 0;
     }
     .metaLeft .titleLine{
-      font-size:12.5px;
+      font-size:13.5px;
       color: rgba(234,234,234,.86);
       line-height:1.45;
       margin:0 0 10px 0;
@@ -259,7 +301,7 @@
     }
     .metaTagLine{
       margin-top:0;
-      font-size:12px;
+      font-size:13px;
       color: rgba(234,234,234,.70);
       line-height:1.45;
       display:-webkit-box;
@@ -272,13 +314,13 @@
       display:flex;
       flex-wrap:wrap;
       gap:6px;
-      margin-top:10px;
+      margin-top:12px;
     }
     .pill{
       display:inline-flex;
       align-items:center;
       gap:6px;
-      font-size:11px;
+      font-size:12px;
       padding:5px 8px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,.10);
@@ -286,8 +328,8 @@
       color: rgba(234,234,234,.86);
       white-space:nowrap;
     }
-    .pill .k{ color: rgba(234,234,234,.55); font-weight:800; }
-    .pill .v{ color: rgba(234,234,234,.92); font-weight:800; }
+    .pill .k{ color: rgba(234,234,234,.55); font-weight:600; }
+    .pill .v{ color: rgba(234,234,234,.92); font-weight:600; }
 
     /* ===== Actions ===== */
     .actionsBar{
@@ -301,29 +343,28 @@
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
       color: rgba(234,234,234,.9);
-      padding:7px 10px;
+      padding:7px 12px;
       border-radius:999px;
-      font-size:12px;
-      font-weight:900;
+      font-size:13px;
+      font-weight:600;
       cursor:pointer;
       display:inline-flex;
       align-items:center;
       gap:8px;
       line-height:1;
       user-select:none;
+      font-family: inherit;
+      transition: all 0.2s ease;
     }
-    .actionBtn:hover{ border-color: rgba(255,255,255,.16); }
+    .actionBtn:hover{ border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.08); }
     .actionBtn.like.active{
       border-color: rgba(255,71,87,.65);
+      background: rgba(255,71,87,.15);
       box-shadow: 0 0 0 3px rgba(255,71,87,.10);
     }
-    .actionBtn .cnt{
-      opacity:.75;
-      font-weight:900;
-      font-size:11px;
-    }
+    .actionBtn .cnt{ opacity:.75; font-weight:700; font-size:12px; }
 
-    /* ===== Dashboard ===== */
+    /* ===== Dashboard (생략/유지) ===== */
     .dash{
       display:none;
       grid-template-columns: 320px 1fr;
@@ -332,7 +373,6 @@
       align-items:start;
     }
     .dash.active{ display:grid; }
-
     .panel{
       border:1px solid rgba(255,255,255,.08);
       background: rgba(20,20,22,.40);
@@ -349,21 +389,9 @@
       gap:10px;
       background: rgba(20,20,22,.55);
     }
-    .panelHeader .title{
-      font-size:12px;
-      font-weight:900;
-      color: rgba(234,234,234,.9);
-    }
-    .panelHeader .hint{
-      font-size:11px;
-      color: rgba(234,234,234,.55);
-      white-space:nowrap;
-    }
-    .leftScroll{
-      max-height: calc(100vh - 320px);
-      overflow:auto;
-      padding:10px;
-    }
+    .panelHeader .title{ font-size:13px; font-weight:700; color: rgba(234,234,234,.9); }
+    .panelHeader .hint{ font-size:12px; color: rgba(234,234,234,.55); white-space:nowrap; }
+    .leftScroll{ max-height: calc(100vh - 320px); overflow:auto; padding:10px; }
     .genreGroup{
       border:1px solid rgba(255,255,255,.06);
       border-radius:14px;
@@ -372,315 +400,154 @@
       background: rgba(20,20,22,.35);
     }
     .genreHead{
-      width:100%;
-      border:0;
-      background: rgba(20,20,22,.55);
-      color: rgba(234,234,234,.92);
-      padding:10px 10px;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      font-size:12px;
-      font-weight:900;
+      width:100%; border:0; background: rgba(20,20,22,.55);
+      color: rgba(234,234,234,.92); padding:10px 10px; cursor:pointer;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      font-size:13px; font-weight:700; font-family: inherit;
     }
     .genreHead .meta{
-      display:flex; gap:8px; align-items:center;
-      color: rgba(234,234,234,.65);
-      font-weight:800;
-      font-size:11px;
+      display:flex; gap:8px; align-items:center; color: rgba(234,234,234,.65); font-weight:600; font-size:12px;
     }
     .genreBody{ padding:8px; display:none; }
     .genreBody.open{ display:block; }
     .channelItem{
-      width:100%;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(20,20,22,.55);
-      color: rgba(234,234,234,.88);
-      padding:9px 10px;
-      border-radius:12px;
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:6px;
-      font-size:12px;
-      font-weight:850;
+      width:100%; border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55);
+      color: rgba(234,234,234,.88); padding:9px 10px; border-radius:12px; cursor:pointer;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      margin-bottom:6px; font-size:13px; font-weight:600; font-family: inherit;
     }
     .channelItem:hover{ border-color: rgba(255,255,255,.14); }
     .channelItem.active{
-      border-color: rgba(255,71,87,.70);
-      box-shadow: 0 0 0 3px rgba(255,71,87,.12);
+      border-color: rgba(255,71,87,.70); box-shadow: 0 0 0 3px rgba(255,71,87,.12);
     }
-    .channelItem .count{
-      font-size:11px;
-      color: rgba(234,234,234,.55);
-      font-weight:900;
-      white-space:nowrap;
-    }
+    .channelItem .count{ font-size:12px; color: rgba(234,234,234,.55); font-weight:700; white-space:nowrap; }
     .rightWrap{ padding: 10px; }
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-    }
+    .list{ display:flex; flex-direction:column; gap:10px; }
     .row{
-      display:grid;
-      grid-template-columns: 160px 1fr;
-      gap:12px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(20,20,22,.55);
-      border-radius:16px;
-      overflow:hidden;
-      position:relative;
+      display:grid; grid-template-columns: 160px 1fr; gap:12px;
+      border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55);
+      border-radius:16px; overflow:hidden; position:relative;
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
-    .rowThumb{
-      width:100%;
-      height:96px;
-      background:#0b0b0c;
-      object-fit:cover;
-      display:block;
-    }
-    .rowMeta{
-      padding:10px 12px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      min-width:0;
-    }
-    .rowTop{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      min-width:0;
-    }
-    .rowTitle{
-      font-size:13px;
-      font-weight:900;
-      color: rgba(234,234,234,.95);
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-      min-width:0;
-    }
-    .rowSub{
-      font-size:12px;
-      color: rgba(234,234,234,.78);
-      line-height:1.35;
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-    }
-    .rowTags{
-      font-size:11.5px;
-      color: rgba(234,234,234,.62);
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .rowPills{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      margin-top:2px;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .rowActions{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:flex-end;
-      margin-left:auto;
-    }
+    .row:hover { transform: translateX(4px); border-color: rgba(255,255,255,0.16); }
+    .rowThumb{ width:100%; height:96px; background:#0b0b0c; object-fit:cover; display:block; }
+    .rowMeta{ padding:10px 12px; display:flex; flex-direction:column; gap:6px; min-width:0; }
+    .rowTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; min-width:0; }
+    .rowTitle{ font-size:14px; font-weight:700; color: rgba(234,234,234,.95); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+    .rowSub{ font-size:13px; color: rgba(234,234,234,.78); line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .rowTags{ font-size:12px; color: rgba(234,234,234,.62); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rowPills{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; align-items:center; justify-content:space-between; }
+    .rowActions{ display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-left:auto; }
 
-    .mutebox{
-      padding:18px 12px;
-      font-size:13px;
-      color: rgba(234,234,234,.72);
-      text-align:center;
-    }
+    .mutebox{ padding:18px 12px; font-size:14px; color: rgba(234,234,234,.72); text-align:center; }
 
     /* ===== Modal ===== */
     .modalOverlay{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.62);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-      z-index:9999;
+      position:fixed; inset:0; background: rgba(0,0,0,.75); backdrop-filter: blur(4px);
+      display:none; align-items:center; justify-content:center; padding:18px; z-index:9999;
     }
     .modalOverlay.open{ display:flex; }
     .modal{
-      width:min(920px, 100%);
-      max-height: min(86vh, 720px);
-      overflow:hidden;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(20,20,22,.96);
-      box-shadow: 0 30px 80px rgba(0,0,0,.55);
-      display:grid;
-      grid-template-columns: 320px 1fr;
+      width:min(920px, 100%); max-height: min(86vh, 720px); overflow:hidden;
+      border-radius:20px; border:1px solid rgba(255,255,255,.10); background: rgba(20,20,22,.96);
+      box-shadow: 0 30px 80px rgba(0,0,0,.65); display:grid; grid-template-columns: 320px 1fr;
     }
     .modalLeft{
-      border-right:1px solid rgba(255,255,255,.06);
-      padding:12px;
-      background: rgba(16,16,18,.55);
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+      border-right:1px solid rgba(255,255,255,.06); padding:16px; background: rgba(16,16,18,.55);
+      display:flex; flex-direction:column; gap:12px;
     }
     .modalThumb{
-      width:100%;
-      height:180px;
-      object-fit:contain;
-      background:#0b0b0c;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.06);
+      width:100%; height:180px; object-fit:contain; background:#0b0b0c;
+      border-radius:14px; border:1px solid rgba(255,255,255,.06);
     }
-    .modalLeft .mTitle{
-      font-size:12px;
-      font-weight:900;
-      color: rgba(234,234,234,.9);
-      line-height:1.35;
-      max-height: 3.2em;
-      overflow:hidden;
-    }
-    .modalLeft .mSub{
-      font-size:12px;
-      color: rgba(234,234,234,.65);
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
+    .modalLeft .mTitle{ font-size:14px; font-weight:700; color: rgba(234,234,234,.9); line-height:1.4; max-height: 4.2em; overflow:hidden; }
+    .modalLeft .mSub{ font-size:13px; color: rgba(234,234,234,.65); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .modalLeft .mLink{
-      font-size:12px;
-      color: rgba(234,234,234,.85);
-      text-decoration:none;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      padding:8px 10px;
-      border-radius:12px;
-      display:inline-flex;
-      justify-content:center;
-      align-items:center;
-      gap:6px;
+      font-size:13px; color: rgba(234,234,234,.95); text-decoration:none; border:1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08); padding:10px 12px; border-radius:12px; display:inline-flex;
+      justify-content:center; align-items:center; gap:6px; transition: all 0.2s; font-weight: 600;
     }
-    .modalLeft .mLink:hover{ border-color: rgba(255,255,255,.16); }
+    .modalLeft .mLink:hover{ border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.12); }
 
-    .modalRight{
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-height:0;
-    }
-    .modalHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .modalHead .h{
-      font-size:13px;
-      font-weight:950;
-      color: rgba(234,234,234,.92);
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
+    .modalRight{ padding:16px; display:flex; flex-direction:column; gap:12px; min-height:0; }
+    .modalHead{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .modalHead .h{ font-size:14px; font-weight:700; color: rgba(234,234,234,.92); display:flex; gap:10px; align-items:center; }
     .xBtn{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color: rgba(234,234,234,.92);
-      border-radius:12px;
-      padding:8px 10px;
-      cursor:pointer;
-      font-weight:900;
-      font-size:12px;
+      border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04); color: rgba(234,234,234,.92);
+      border-radius:12px; padding:8px 12px; cursor:pointer; font-weight:700; font-size:13px; font-family: inherit;
     }
-    .xBtn:hover{ border-color: rgba(255,255,255,.16); }
+    .xBtn:hover{ border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.1); }
 
     .memoList{
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:14px;
-      background: rgba(255,255,255,.03);
-      padding:10px;
-      overflow:auto;
-      min-height:0;
-      flex:1;
+      border:1px solid rgba(255,255,255,.08); border-radius:14px; background: rgba(255,255,255,.02);
+      padding:12px; overflow:auto; min-height:0; flex:1;
     }
     .memoItem{
-      padding:9px 10px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.06);
-      background: rgba(20,20,22,.50);
-      margin-bottom:8px;
+      padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,.06);
+      background: rgba(20,20,22,.60); margin-bottom:10px;
     }
-    .memoTop{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:space-between;
-      margin-bottom:6px;
-    }
-    .memoNick{
-      font-size:12px;
-      font-weight:950;
-      color: rgba(234,234,234,.92);
-    }
-    .memoTs{
-      font-size:11px;
-      color: rgba(234,234,234,.55);
-      white-space:nowrap;
-    }
-    .memoText{
-      font-size:12px;
-      color: rgba(234,234,234,.82);
-      line-height:1.45;
-      white-space:pre-wrap;
-      word-break:break-word;
-    }
-    .memoComposer{
-      display:grid;
-      grid-template-columns: 170px 1fr auto;
-      gap:8px;
-      align-items:center;
-    }
+    .memoTop{ display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .memoNick{ font-size:13px; font-weight:700; color: rgba(234,234,234,.95); }
+    .memoTs{ font-size:12px; color: rgba(234,234,234,.55); white-space:nowrap; }
+    .memoText{ font-size:13px; color: rgba(234,234,234,.85); line-height:1.5; white-space:pre-wrap; word-break:break-word; }
+    .memoComposer{ display:grid; grid-template-columns: 140px 1fr auto; gap:10px; align-items:center; }
     .memoComposer input{
-      width:100%;
-      padding:10px 10px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(20,20,22,.65);
-      color: rgba(234,234,234,.92);
-      outline:none;
-      font-size:12px;
+      width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);
+      background: rgba(20,20,22,.65); color: rgba(234,234,234,.95); outline:none; font-size:13px; font-family: inherit;
     }
-    .memoComposer input::placeholder{ color: rgba(234,234,234,.45); }
+    .memoComposer input:focus { border-color: rgba(255,71,87,.5); }
     .primaryBtn{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,71,87,.55);
-      background: rgba(255,71,87,.16);
-      color: rgba(234,234,234,.95);
-      cursor:pointer;
-      font-weight:950;
-      font-size:12px;
-      white-space:nowrap;
+      padding:12px 16px; border-radius:12px; border:1px solid rgba(255,71,87,.55);
+      background: rgba(255,71,87,.20); color: rgba(234,234,234,.95); cursor:pointer; font-weight:700; font-size:13px; white-space:nowrap; font-family: inherit; transition: all 0.2s;
     }
-    .primaryBtn:hover{ border-color: rgba(255,71,87,.70); }
-    .smallNote{
-      font-size:11px;
-      color: rgba(234,234,234,.55);
+    .primaryBtn:hover{ border-color: rgba(255,71,87,.8); background: rgba(255,71,87,.3); }
+
+    /* 🎨 토스트 알림 (Toast) */
+    #toast {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 71, 87, 0.95);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 10000;
+      box-shadow: 0 10px 30px rgba(255,71,87,0.3);
+      pointer-events: none;
     }
+    #toast.show { bottom: 40px; }
+
+    /* 🎨 맨 위로 가기 플로팅 버튼 (FAB) */
+    #fab {
+      position: fixed;
+      bottom: 40px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(30, 30, 34, 0.85);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: white;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 9000;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    #fab.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    #fab:not(.visible) { transform: translateY(20px); }
+    #fab:hover { background: rgba(255,71,87,0.9); border-color: rgba(255,71,87,0.5); transform: translateY(-3px); }
 
     @media (max-width: 980px){
       .dash.active{ grid-template-columns: 1fr; }
@@ -693,48 +560,53 @@
     @media (max-width: 760px){
       .thumb{ height:210px; }
       .rowThumb{ height:92px; }
+      #fab { right: 20px; bottom: 20px; }
     }
   </style>
 </head>
 
 <body>
-  <h1>🎬 Video Reference Archive</h1>
+  <div id="toast">알림 메시지</div>
+  <div id="fab" title="맨 위로 가기">⬆️</div>
 
-  <div class="topbar">
-    <input id="search" type="text" placeholder="제목 검색..." />
+  <div class="topbarWrapper">
+    <h1>🎬 Video Reference Archive</h1>
 
-    <div class="viewToggle" role="tablist" aria-label="View Mode">
-      <button id="viewAllBtn" class="active" type="button">🟦 전체</button>
-      <button id="viewDashBtn" type="button">📺 채널별</button>
+    <div class="topbar">
+      <input id="search" type="text" placeholder="제목 검색..." />
+
+      <div class="viewToggle" role="tablist" aria-label="View Mode">
+        <button id="viewAllBtn" class="active" type="button">🟦 전체</button>
+        <button id="viewDashBtn" type="button">📺 채널별</button>
+      </div>
+
+      <button class="btn" id="likedOnlyBtn">❤️ 좋아요만</button>
+      <button class="btn" id="sortLikesBtn">🔥 좋아요순</button>
+      <button class="btn" id="adminBtn">🛠 관리자</button>
+      <button class="btn" id="resetBtn">초기화</button>
+
+      <div class="stats" id="stats">표시: 0 / 전체: 0</div>
     </div>
 
-    <button class="btn" id="likedOnlyBtn">❤️ 좋아요만</button>
-    <button class="btn" id="sortLikesBtn">🔥 좋아요순</button>
-    <button class="btn" id="adminBtn">🛠 관리자</button>
-    <button class="btn" id="resetBtn">초기화</button>
+    <div class="divider"></div>
 
-    <div class="stats" id="stats"></div>
+    <div class="filterTabs" id="filterTabs">
+      <button class="tab active" data-tab="genre">장르</button>
+      <button class="tab" data-tab="media">매체</button>
+      <button class="tab" data-tab="format">포맷</button>
+      <button class="tab" data-tab="tag">TAG (다중선택)</button>
+    </div>
+
+    <div class="filterPanel">
+      <div class="chips chipsPanel active" id="genreChips"></div>
+      <div class="chips chipsPanel" id="mediaChips"></div>
+      <div class="chips chipsPanel" id="formatChips"></div>
+      <div class="chips chipsPanel" id="tagChips"></div>
+    </div>
   </div>
 
-  <div class="divider"></div>
-
-  <div class="filterTabs" id="filterTabs">
-    <button class="tab active" data-tab="genre">장르</button>
-    <button class="tab" data-tab="media">매체</button>
-    <button class="tab" data-tab="format">포맷</button>
-    <button class="tab" data-tab="tag">TAG</button>
-  </div>
-
-  <div class="filterPanel">
-    <div class="chips chipsPanel active" id="genreChips"></div>
-    <div class="chips chipsPanel" id="mediaChips"></div>
-    <div class="chips chipsPanel" id="formatChips"></div>
-    <div class="chips chipsPanel" id="tagChips"></div>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid">
+    </div>
 
   <div class="dash" id="dash">
     <div class="panel">
@@ -763,8 +635,11 @@
         <img id="mThumb" class="modalThumb" alt="thumbnail"/>
         <div class="mTitle" id="mTitle"></div>
         <div class="mSub" id="mSub"></div>
-        <a class="mLink" id="mLink" target="_blank" rel="noopener noreferrer">🔗 원본 열기</a>
-        <div class="smallNote">좋아요/메모는 모두에게 공유됩니다.</div>
+        <div style="display:flex; gap:8px;">
+          <a class="mLink" id="mLink" target="_blank" rel="noopener noreferrer" style="flex:1;">🔗 원본 열기</a>
+          <button class="actionBtn" id="mCopyBtn" type="button" style="border-radius:12px;">📋 링크 복사</button>
+        </div>
+        <div class="smallNote" style="font-size:12px;">좋아요/메모는 모두에게 공유됩니다.</div>
       </div>
 
       <div class="modalRight">
@@ -783,8 +658,6 @@
           <input id="mMemo" type="text" placeholder="메모 (최대 200자)" maxlength="200"/>
           <button class="primaryBtn" id="mSend" type="button">등록</button>
         </div>
-
-        <div class="smallNote" id="mHint"></div>
       </div>
     </div>
   </div>
@@ -792,18 +665,11 @@
   <script>
     // ===== DATA SOURCES =====
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
-    // ⚠️ TODO: Code.gs 업데이트 후 변경된 새 배포 URL이 있다면 아래를 교체해 주세요!
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
 
     const KEY = {
-      genre: "장르",
-      channel: "채널명",
-      title: "TITLE",
-      media: "매체",
-      url: "URL",
-      format: "포맷",
-      tag: "TAG",
-      date: "발행일",
+      genre: "장르", channel: "채널명", title: "TITLE", media: "매체",
+      url: "URL", format: "포맷", tag: "TAG", date: "발행일",
       thumbCandidates: ["thumb", "THUMB", "썸네일"]
     };
 
@@ -812,7 +678,9 @@
     let activeGenre = null;
     let activeMedia = null;
     let activeFormat = null;
-    let activeTag = null;
+    
+    // 🎨 다중 태그 선택을 위해 Set 객체 사용
+    let activeTags = new Set(); 
 
     let viewMode = "all"; // all | dash
     let selectedChannel = null;
@@ -821,10 +689,9 @@
     let sortMode = "date"; // date | likes
 
     // ===== 무한 스크롤 상태 =====
-    let renderLimit = 30; // 한 번에 보여줄 개수
-    const RENDER_CHUNK = 30; // 스크롤 시 추가할 개수
-
-    const scrollSentinel = document.createElement("div"); // 바닥 감지용 투명 박스
+    let renderLimit = 30;
+    const RENDER_CHUNK = 30;
+    const scrollSentinel = document.createElement("div");
     scrollSentinel.style.height = "20px";
     scrollSentinel.style.width = "100%";
     scrollSentinel.id = "scroll-sentinel";
@@ -832,7 +699,7 @@
     const observer = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting) {
         renderLimit += RENDER_CHUNK;
-        render(false); // 페이지 리셋 없이 렌더링만 추가
+        render(false);
       }
     }, { rootMargin: "300px" });
 
@@ -861,13 +728,13 @@
     const rightListEl = document.getElementById("rightList");
     const rightEmptyEl = document.getElementById("rightEmpty");
 
-    // Modal
     const modalOverlay = document.getElementById("modalOverlay");
     const mClose = document.getElementById("mClose");
     const mThumb = document.getElementById("mThumb");
     const mTitle = document.getElementById("mTitle");
     const mSub = document.getElementById("mSub");
     const mLink = document.getElementById("mLink");
+    const mCopyBtn = document.getElementById("mCopyBtn"); // 링크 복사 버튼
     const mCounts = document.getElementById("mCounts");
     const mLikeBtn = document.getElementById("mLikeBtn");
     const mLikeCnt = document.getElementById("mLikeCnt");
@@ -875,44 +742,34 @@
     const mNick = document.getElementById("mNick");
     const mMemo = document.getElementById("mMemo");
     const mSend = document.getElementById("mSend");
-    const mHint = document.getElementById("mHint");
+
+    // FAB (맨 위로 가기)
+    const fab = document.getElementById("fab");
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 400) fab.classList.add("visible");
+      else fab.classList.remove("visible");
+    });
+    fab.addEventListener("click", () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
     const THUMB_PLACEHOLDER = "https://via.placeholder.com/800x450?text=No+Thumbnail";
     const thumbCache = new Map();
-
-    // Interactions caches
-    const interactionsCache = new Map(); // itemId -> {likes, memos}
+    const interactionsCache = new Map();
     const inFlight = new Map();
 
-    // localStorage keys
     const LS_NICK = "vra:nickname";
     const LS_UID = "vra:userId";
-    const LS_LIKED = "vra:liked"; // map { itemId:true }
+    const LS_LIKED = "vra:liked";
 
     // ===== UTIL =====
     function escapeHTML(str) {
-      return String(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+      return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
     }
-
     function normalizeTagString(s) {
-      return (s || "")
-        .replaceAll("，", ",")
-        .replaceAll(" / ", ",")
-        .replaceAll("/", ",")
-        .trim();
+      return (s || "").replaceAll("，", ",").replaceAll(" / ", ",").replaceAll("/", ",").trim();
     }
     function splitTags(s) {
-      return normalizeTagString(s)
-        .split(",")
-        .map(t => t.trim())
-        .filter(Boolean);
+      return normalizeTagString(s).split(",").map(t => t.trim()).filter(Boolean);
     }
-
     function parseDateLoose(v) {
       const s = (v || "").toString().trim();
       if (!s) return null;
@@ -920,22 +777,17 @@
         const y = s.slice(0,4), m = s.slice(4,6), d = s.slice(6,8);
         return new Date(`${y}-${m}-${d}T00:00:00`);
       }
-      const norm = s.replaceAll(".", "-").replaceAll("/", "-");
-      const dt = new Date(norm);
+      const dt = new Date(s.replaceAll(".", "-").replaceAll("/", "-"));
       if (!isNaN(dt.getTime())) return dt;
       return null;
     }
-
     function sortByDateDesc(data) {
       return [...data].sort((a, b) => {
         const da = parseDateLoose(a[KEY.date]);
         const db = parseDateLoose(b[KEY.date]);
-        const ta = da ? da.getTime() : 0;
-        const tb = db ? db.getTime() : 0;
-        return tb - ta;
+        return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
       });
     }
-
     function fnv1a(str){
       let h = 0x811c9dc5;
       for (let i=0; i<str.length; i++){
@@ -950,22 +802,26 @@
         u.hash = "";
         ["utm_source","utm_medium","utm_campaign","utm_term","utm_content"].forEach(k => u.searchParams.delete(k));
         return u.toString();
-      }catch{
-        return (url || "").trim();
-      }
+      }catch{ return (url || "").trim(); }
     }
     function getItemId(item){
-      const url = (item[KEY.url] || "").toString().trim();
-      return fnv1a(normalizeUrl(url || ""));
+      return fnv1a(normalizeUrl((item[KEY.url] || "").toString().trim() || ""));
     }
 
-    // 디바운스 유틸 (타이핑 성능 최적화)
     function debounce(func, delay) {
       let timer;
       return function(...args) {
         clearTimeout(timer);
         timer = setTimeout(() => func.apply(this, args), delay);
       };
+    }
+
+    // 🎨 토스트 알림 함수
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 3000);
     }
 
     // ===== LOCAL ID / NICK =====
@@ -977,20 +833,13 @@
       }
       return uid;
     }
-    function getNickname(){
-      return (localStorage.getItem(LS_NICK) || "").trim();
-    }
-    function setNickname(nick){
-      localStorage.setItem(LS_NICK, (nick || "").trim());
-    }
+    function getNickname(){ return (localStorage.getItem(LS_NICK) || "").trim(); }
+    function setNickname(nick){ localStorage.setItem(LS_NICK, (nick || "").trim()); }
 
     function getLikedMap(){
       try{ return JSON.parse(localStorage.getItem(LS_LIKED) || "{}"); }catch{ return {}; }
     }
-    function isLiked(itemId){
-      const m = getLikedMap();
-      return !!m[itemId];
-    }
+    function isLiked(itemId){ return !!getLikedMap()[itemId]; }
     function setLikedState(itemId, liked){
       const m = getLikedMap();
       if (liked) m[itemId] = true;
@@ -1026,54 +875,42 @@
     }
     function mediaIconSVG(media){
       const m = (media || "").toLowerCase();
-      if (m.includes("youtube")) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.5 12 4.5 12 4.5s-5.7 0-7.5.6A3 3 0 0 0 2.4 7.2 31 31 0 0 0 1.8 12a31 31 0 0 0 .6 4.8 3 3 0 0 0 2.1 2.1c1.8.6 7.5.6 7.5.6s5.7 0 7.5-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.2 12a31 31 0 0 0-.6-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>`;
-      }
-      if (m.includes("tiktok")) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16 3c.3 2.7 1.9 4.3 4 4.6V11c-1.6 0-3.1-.5-4-1.4V16c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.4 0 .7 0 1 .1V13c-.3-.1-.6-.2-1-.2-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3V3h3Z"/></svg>`;
-      }
-      if (m.includes("insta")) {
-        return `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6Zm6.2-2.2a1 1 0 1 1 0 2a1 1 0 0 1 0-2Z"/></svg>`;
-      }
+      if (m.includes("youtube")) return `<svg width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.5 12 4.5 12 4.5s-5.7 0-7.5.6A3 3 0 0 0 2.4 7.2 31 31 0 0 0 1.8 12a31 31 0 0 0 .6 4.8 3 3 0 0 0 2.1 2.1c1.8.6 7.5.6 7.5.6s5.7 0 7.5-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22.2 12a31 31 0 0 0-.6-4.8ZM10 15.5v-7l6 3.5-6 3.5Z"/></svg>`;
+      if (m.includes("tiktok")) return `<svg width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M16 3c.3 2.7 1.9 4.3 4 4.6V11c-1.6 0-3.1-.5-4-1.4V16c0 3.3-2.7 6-6 6s-6-2.7-6-6 2.7-6 6-6c.4 0 .7 0 1 .1V13c-.3-.1-.6-.2-1-.2-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3V3h3Z"/></svg>`;
+      if (m.includes("insta")) return `<svg width="14" height="14" viewBox="0 0 24 24"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3Zm-5 4a5 5 0 1 1 0 10a5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6a3 3 0 0 0 0-6Zm6.2-2.2a1 1 0 1 1 0 2a1 1 0 0 1 0-2Z"/></svg>`;
       return "";
     }
     async function tryOEmbedThumb(platform, url) {
       try {
-        let endpoint = "";
-        if (platform === "instagram") endpoint = "https://api.instagram.com/oembed/?url=" + encodeURIComponent(url);
-        else if (platform === "tiktok") endpoint = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(url);
-        else return "";
+        let endpoint = platform === "instagram" ? "https://api.instagram.com/oembed/?url=" + encodeURIComponent(url) :
+                       platform === "tiktok" ? "https://www.tiktok.com/oembed?url=" + encodeURIComponent(url) : "";
+        if(!endpoint) return "";
         const res = await fetch(endpoint, { mode: "cors" });
         if (!res.ok) return "";
         const json = await res.json();
-        return (json.thumbnail_url || json.thumbnail_url_with_play_button || "") || "";
+        return (json.thumbnail_url || json.thumbnail_url_with_play_button || "");
       } catch { return ""; }
     }
     async function resolveThumbnail(item) {
       const url = (item[KEY.url] || "").toString().trim();
       if (!url) return THUMB_PLACEHOLDER;
-
       const sheetThumb = getSheetThumb(item);
       if (sheetThumb) return sheetThumb;
-
       if (thumbCache.has(url)) return thumbCache.get(url);
 
       const platform = classifyPlatform(url);
-
       if (platform === "youtube") {
         const id = getYoutubeID(url);
         const ytThumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : THUMB_PLACEHOLDER;
         thumbCache.set(url, ytThumb);
         return ytThumb;
       }
-
       if (platform === "tiktok" || platform === "instagram") {
         const t = await tryOEmbedThumb(platform, url);
         const finalThumb = t || THUMB_PLACEHOLDER;
         thumbCache.set(url, finalThumb);
         return finalThumb;
       }
-
       thumbCache.set(url, THUMB_PLACEHOLDER);
       return THUMB_PLACEHOLDER;
     }
@@ -1082,62 +919,46 @@
     async function fetchInteractions(itemId){
       if (interactionsCache.has(itemId)) return interactionsCache.get(itemId);
       if (inFlight.has(itemId)) return inFlight.get(itemId);
-
       const p = (async () => {
         const url = API_URL + "?itemId=" + encodeURIComponent(itemId) + "&t=" + Date.now();
         const res = await fetch(url, { method:"GET", mode:"cors" });
-        if (!res.ok) throw new Error("API GET failed: " + res.status);
+        if (!res.ok) throw new Error("API GET failed");
         const data = await res.json();
-        const norm = {
-          likes: Number(data.likes || 0),
-          memos: Array.isArray(data.memos) ? data.memos : []
-        };
+        const norm = { likes: Number(data.likes || 0), memos: Array.isArray(data.memos) ? data.memos : [] };
         interactionsCache.set(itemId, norm);
         return norm;
       })();
-
       inFlight.set(itemId, p);
-      try { return await p; }
-      finally { inFlight.delete(itemId); }
+      try { return await p; } finally { inFlight.delete(itemId); }
     }
-
     async function postInteraction(payload){
       const res = await fetch(API_URL, {
-        method: "POST",
-        mode: "cors",
+        method: "POST", mode: "cors",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(payload)
       });
-      if (!res.ok) throw new Error("API POST failed: " + res.status);
-      try { return await res.json(); }
-      catch { return { status: "ok" }; }
+      if (!res.ok) throw new Error("API POST failed");
+      try { return await res.json(); } catch { return { status: "ok" }; }
     }
-
     function updateCountersInDOM(itemId){
       const data = interactionsCache.get(itemId);
       if (!data) return;
-
       document.querySelectorAll("#like-" + CSS.escape(itemId)).forEach(el => el.textContent = String(data.likes ?? 0));
       document.querySelectorAll("#memo-" + CSS.escape(itemId)).forEach(el => el.textContent = String((data.memos || []).length));
-
       if (modalOverlay.classList.contains("open") && modalOverlay.dataset.itemid === itemId){
         mLikeCnt.textContent = String(data.likes ?? 0);
         mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos || []).length}`;
         mLikeBtn.classList.toggle("active", isLiked(itemId));
       }
     }
-
     async function hydrateCountersFor(ids, limit=8){
       const q = [...new Set(ids)].filter(Boolean);
       let i = 0;
       const workers = Array.from({length: Math.min(limit, q.length)}, async () => {
         while (i < q.length){
           const id = q[i++];
-          try{
-            await fetchInteractions(id);
-          }catch{
-            interactionsCache.set(id, interactionsCache.get(id) || { likes:0, memos:[] });
-          }
+          try{ await fetchInteractions(id); }
+          catch{ interactionsCache.set(id, interactionsCache.get(id) || { likes:0, memos:[] }); }
           updateCountersInDOM(id);
         }
       });
@@ -1147,31 +968,23 @@
     async function toggleLike(itemId){
       const userId = getUserId();
       const nick = getNickname() || "익명";
-
-      // 낙관적 UI: 토글 반영
       const wasLiked = isLiked(itemId);
       setLikedState(itemId, !wasLiked);
-      document.querySelectorAll('[data-like="' + itemId + '"]').forEach(btn => {
-        btn.classList.toggle("active", !wasLiked);
-      });
+      
+      document.querySelectorAll('[data-like="' + itemId + '"]').forEach(btn => btn.classList.toggle("active", !wasLiked));
       mLikeBtn.classList.toggle("active", isLiked(itemId));
 
       try{
         await postInteraction({ itemId, action:"like", userId, nickname:nick, memo:"" });
-
-        // 서버값으로 다시 동기화
         interactionsCache.delete(itemId);
         await fetchInteractions(itemId);
         updateCountersInDOM(itemId);
-
+        showToast(wasLiked ? "💔 좋아요를 취소했습니다." : "❤️ 좋아요를 눌렀습니다!");
       }catch(e){
-        // 실패 롤백
         setLikedState(itemId, wasLiked);
-        document.querySelectorAll('[data-like="' + itemId + '"]').forEach(btn => {
-          btn.classList.toggle("active", wasLiked);
-        });
+        document.querySelectorAll('[data-like="' + itemId + '"]').forEach(btn => btn.classList.toggle("active", wasLiked));
         mLikeBtn.classList.toggle("active", isLiked(itemId));
-        alert("좋아요 처리 실패. 다시 시도해줘!");
+        showToast("오류가 발생했습니다. 다시 시도해주세요.");
       }
     }
 
@@ -1179,103 +992,83 @@
       try{
         const d = new Date(ts);
         if (isNaN(d.getTime())) return String(ts || "");
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth()+1).padStart(2,"0");
-        const dd = String(d.getDate()).padStart(2,"0");
-        const hh = String(d.getHours()).padStart(2,"0");
-        const mi = String(d.getMinutes()).padStart(2,"0");
+        const yyyy = d.getFullYear(), mm = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
+        const hh = String(d.getHours()).padStart(2,"0"), mi = String(d.getMinutes()).padStart(2,"0");
         return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
       }catch{ return String(ts||""); }
     }
 
     // ===== UI: action bars =====
     function actionBarHTML(item){
-      const itemId = getItemId(item);
-      const liked = isLiked(itemId);
+      const itemId = getItemId(item), liked = isLiked(itemId);
       return `
         <div class="actionsBar" data-itemid="${itemId}">
-          <button class="actionBtn like ${liked ? "active":""}" type="button" data-like="${itemId}">
-            👍 <span class="cnt" id="like-${itemId}">…</span>
-          </button>
-          <button class="actionBtn" type="button" data-memo="${itemId}">
-            💬 <span class="cnt" id="memo-${itemId}">…</span>
-          </button>
-        </div>
-      `;
-    }
-    function rowActionsHTML(item){
-      const itemId = getItemId(item);
-      const liked = isLiked(itemId);
-      return `
-        <div class="rowActions" data-itemid="${itemId}">
-          <button class="actionBtn like ${liked ? "active":""}" type="button" data-like="${itemId}">
-            👍 <span class="cnt" id="like-${itemId}">…</span>
-          </button>
-          <button class="actionBtn" type="button" data-memo="${itemId}">
-            💬 <span class="cnt" id="memo-${itemId}">…</span>
-          </button>
-        </div>
-      `;
+          <button class="actionBtn like ${liked ? "active":""}" type="button" data-like="${itemId}">👍 <span class="cnt" id="like-${itemId}">…</span></button>
+          <button class="actionBtn" type="button" data-memo="${itemId}">💬 <span class="cnt" id="memo-${itemId}">…</span></button>
+        </div>`;
     }
 
-    // ===== FILTERS =====
+    // ===== FILTERS (다중 태그 반영) =====
     function countBy(items, getter) {
       const m = new Map();
       items.forEach(it => {
         const k = (getter(it) || "").toString().trim();
-        if (!k) return;
-        m.set(k, (m.get(k) || 0) + 1);
+        if (k) m.set(k, (m.get(k) || 0) + 1);
       });
       return m;
     }
     function buildTagCounts(items) {
       const m = new Map();
-      items.forEach(it => {
-        splitTags(it[KEY.tag]).forEach(t => m.set(t, (m.get(t) || 0) + 1));
-      });
+      items.forEach(it => splitTags(it[KEY.tag]).forEach(t => m.set(t, (m.get(t) || 0) + 1)));
       return m;
     }
-    function renderChipGroup(container, labelAll, values, activeValue, onPick) {
+    
+    // 🎨 Chip Group 렌더링 (다중선택 여부 처리)
+    function renderChipGroup(container, labelAll, values, activeState, onPick, isMulti = false) {
       container.innerHTML = "";
       const allChip = document.createElement("div");
-      allChip.className = "chip" + (activeValue === null ? " active" : "");
+      const isAllActive = isMulti ? activeState.size === 0 : activeState === null;
+      allChip.className = "chip" + (isAllActive ? " active" : "");
       allChip.textContent = labelAll;
       allChip.onclick = () => onPick(null);
       container.appendChild(allChip);
 
       values.forEach(({ value, count }) => {
         const chip = document.createElement("div");
-        chip.className = "chip" + (activeValue === value ? " active" : "");
+        const isActive = isMulti ? activeState.has(value) : activeState === value;
+        chip.className = "chip" + (isActive ? " active" : "");
         chip.innerHTML = `${escapeHTML(value)} <span class="count">${count}</span>`;
         chip.onclick = () => onPick(value);
         container.appendChild(chip);
       });
     }
+
     function rebuildAllChips() {
       const genreCounts = countBy(allData, it => it[KEY.genre]);
       const mediaCounts = countBy(allData, it => it[KEY.media]);
       const formatCounts = countBy(allData, it => it[KEY.format]);
       const tagCounts = buildTagCounts(allData);
 
-      const genres = [...genreCounts.entries()].map(([value, count]) => ({ value, count }))
-        .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
-      const medias = [...mediaCounts.entries()].map(([value, count]) => ({ value, count }))
-        .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
-      const formats = [...formatCounts.entries()].map(([value, count]) => ({ value, count }))
-        .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
-      const tags = [...tagCounts.entries()].map(([value, count]) => ({ value, count }))
-        .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
+      const mapSort = (map) => [...map.entries()].map(([value, count]) => ({ value, count })).sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
 
-      renderChipGroup(genreChipsEl, "All", genres, activeGenre, (v) => { activeGenre = v; render(true); });
-      renderChipGroup(mediaChipsEl, "All", medias, activeMedia, (v) => { activeMedia = v; render(true); });
-      renderChipGroup(formatChipsEl, "All", formats, activeFormat, (v) => { activeFormat = v; render(true); });
-      renderChipGroup(tagChipsEl, "All", tags, activeTag, (v) => { activeTag = v; render(true); });
+      renderChipGroup(genreChipsEl, "All", mapSort(genreCounts), activeGenre, (v) => { activeGenre = v; render(true); });
+      renderChipGroup(mediaChipsEl, "All", mapSort(mediaCounts), activeMedia, (v) => { activeMedia = v; render(true); });
+      renderChipGroup(formatChipsEl, "All", mapSort(formatCounts), activeFormat, (v) => { activeFormat = v; render(true); });
+      
+      // 🎨 다중 태그 선택 처리
+      renderChipGroup(tagChipsEl, "All", mapSort(tagCounts), activeTags, (v) => {
+        if (v === null) activeTags.clear();
+        else {
+          if (activeTags.has(v)) activeTags.delete(v);
+          else activeTags.add(v);
+        }
+        render(true);
+      }, true);
     }
 
     function matchesFilter(item) {
       const q = (searchEl.value || "").toLowerCase().trim();
       const title = (item[KEY.title] || "").toString().toLowerCase();
-
       const genre = (item[KEY.genre] || "").toString().trim();
       const media = (item[KEY.media] || "").toString().trim();
       const format = (item[KEY.format] || "").toString().trim();
@@ -1285,14 +1078,12 @@
       const okGenre = activeGenre ? genre === activeGenre : true;
       const okMedia = activeMedia ? media === activeMedia : true;
       const okFormat = activeFormat ? format === activeFormat : true;
-      const okTag = activeTag ? tags.includes(activeTag) : true;
+      
+      // 🎨 태그 여러 개 선택 시 교집합(AND) 혹은 합집합(OR) - 여기선 포함 여부(OR)로 동작하게 만듦
+      const okTag = activeTags.size === 0 ? true : tags.some(t => activeTags.has(t));
 
-      const okChannel = (viewMode === "dash" && selectedChannel)
-        ? ((item[KEY.channel] || "").toString().trim() === selectedChannel)
-        : true;
-
-      const id = getItemId(item);
-      const okLiked = showLikedOnly ? isLiked(id) : true;
+      const okChannel = (viewMode === "dash" && selectedChannel) ? ((item[KEY.channel] || "").toString().trim() === selectedChannel) : true;
+      const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true;
 
       return okSearch && okGenre && okMedia && okFormat && okTag && okChannel && okLiked;
     }
@@ -1306,30 +1097,20 @@
       const media = (item[KEY.media] || "").toString().trim();
       const genre = (item[KEY.genre] || "").toString().trim();
       const format = (item[KEY.format] || "").toString().trim();
-
       const tags = splitTags(item[KEY.tag]);
       const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
-
       const mediaBadge = media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : "";
 
       return `
         <div class="card" data-itemid="${getItemId(item)}">
           <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer">
-            <div class="thumbWrap">
-              <img class="thumb" src="${thumbUrl}" alt="thumbnail" loading="lazy"/>
-            </div>
-
+            <div class="thumbWrap"><img class="thumb" src="${thumbUrl}" alt="thumbnail" loading="lazy"/></div>
             <div class="metaBox">
-              <div class="metaTopRow">
-                <div class="metaDate">${escapeHTML(date || "")}</div>
-                ${mediaBadge}
-              </div>
-
+              <div class="metaTopRow"><div class="metaDate">${escapeHTML(date || "")}</div>${mediaBadge}</div>
               <div class="metaLeft">
                 <p class="channel">${escapeHTML(channel || "채널명")}</p>
                 ${title ? `<p class="titleLine">${escapeHTML(title)}</p>` : ``}
                 ${tagLine ? `<div class="metaTagLine">${escapeHTML(tagLine)}</div>` : ``}
-
                 <div class="metaPills">
                   ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
                   ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
@@ -1337,36 +1118,20 @@
               </div>
             </div>
           </a>
-
-          <div class="metaBox" style="padding-top:0;">
-            ${actionBarHTML(item)}
-          </div>
-        </div>
-      `;
+          <div class="metaBox" style="padding-top:0;">${actionBarHTML(item)}</div>
+        </div>`;
     }
 
     function rowHTML(item, thumbUrl){
-      const url = item[KEY.url] || "#";
-      const date = (item[KEY.date] || "").toString().trim();
-      const channel = (item[KEY.channel] || "").toString().trim();
-      const title = (item[KEY.title] || "").toString().trim();
-      const media = (item[KEY.media] || "").toString().trim();
-      const genre = (item[KEY.genre] || "").toString().trim();
-      const format = (item[KEY.format] || "").toString().trim();
-      const tags = splitTags(item[KEY.tag]);
-      const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
-
-      const mediaBadge = media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : "";
+      const url = item[KEY.url] || "#", date = (item[KEY.date] || "").toString().trim(), channel = (item[KEY.channel] || "").toString().trim(), title = (item[KEY.title] || "").toString().trim(), media = (item[KEY.media] || "").toString().trim(), genre = (item[KEY.genre] || "").toString().trim(), format = (item[KEY.format] || "").toString().trim();
+      const tags = splitTags(item[KEY.tag]), tagLine = tags.length ? ("#" + tags.join("  #")) : "", mediaBadge = media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : "";
 
       return `
         <div class="row" data-itemid="${getItemId(item)}">
           <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer" style="display:contents;">
             <img class="rowThumb" src="${thumbUrl}" alt="thumb" loading="lazy"/>
             <div class="rowMeta">
-              <div class="rowTop">
-                <div class="rowTitle">${escapeHTML(channel || "채널명")} · ${escapeHTML(date || "")}</div>
-                ${mediaBadge}
-              </div>
+              <div class="rowTop"><div class="rowTitle">${escapeHTML(channel || "채널명")} · ${escapeHTML(date || "")}</div>${mediaBadge}</div>
               <div class="rowSub">${escapeHTML(title || "")}</div>
               ${tagLine ? `<div class="rowTags">${escapeHTML(tagLine)}</div>` : ``}
               <div class="rowPills">
@@ -1374,36 +1139,25 @@
                   ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
                   ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
                 </div>
-                ${rowActionsHTML(item)}
+                ${actionBarHTML(item)}
               </div>
             </div>
           </a>
-        </div>
-      `;
+        </div>`;
     }
 
-    function getLikesFromCache(itemId){
-      return interactionsCache.get(itemId)?.likes || 0;
-    }
+    function getLikesFromCache(itemId){ return interactionsCache.get(itemId)?.likes || 0; }
 
     async function renderGrid(filtered){
       let list = [...filtered];
-      if (sortMode === "likes") {
-        list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
-      } else {
-        list = sortByDateDesc(list);
-      }
+      if (sortMode === "likes") list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
+      else list = sortByDateDesc(list);
 
-      // 무한 스크롤: renderLimit 까지만 자름
       const sliced = list.slice(0, renderLimit);
       gridEl.innerHTML = sliced.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
 
-      if (list.length > renderLimit) {
-        gridEl.appendChild(scrollSentinel);
-        observer.observe(scrollSentinel);
-      } else {
-        observer.disconnect();
-      }
+      if (list.length > renderLimit) { gridEl.appendChild(scrollSentinel); observer.observe(scrollSentinel); }
+      else observer.disconnect();
 
       const cards = Array.from(gridEl.querySelectorAll(".card"));
       await Promise.all(sliced.map(async (item, idx) => {
@@ -1411,153 +1165,67 @@
         const img = cards[idx]?.querySelector("img.thumb");
         if (img) img.src = t;
       }));
-
-      const ids = sliced.slice(0, 60).map(getItemId);
-      await hydrateCountersFor(ids, 8);
-
-      // 캐시 갱신 후 다시 정렬
-      if (sortMode === "likes") {
-        const resort = [...list].sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
-        if (resort.map(getItemId).join(",") !== list.map(getItemId).join(",")) {
-          const resliced = resort.slice(0, renderLimit);
-          gridEl.innerHTML = resliced.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
-          if (resort.length > renderLimit) {
-            gridEl.appendChild(scrollSentinel);
-            observer.observe(scrollSentinel);
-          }
-          const cards2 = Array.from(gridEl.querySelectorAll(".card"));
-          await Promise.all(resliced.map(async (item, idx) => {
-            const t = await resolveThumbnail(item);
-            const img = cards2[idx]?.querySelector("img.thumb");
-            if (img) img.src = t;
-          }));
-          const ids2 = resliced.slice(0, 60).map(getItemId);
-          await hydrateCountersFor(ids2, 8);
-        }
-      }
+      await hydrateCountersFor(sliced.slice(0, 60).map(getItemId), 8);
     }
 
     function buildGenreChannelIndex(items){
       const genreMap = new Map();
       for (const it of items){
-        const g = (it[KEY.genre] || "기타").toString().trim() || "기타";
-        const c = (it[KEY.channel] || "채널명 없음").toString().trim() || "채널명 없음";
+        const g = (it[KEY.genre] || "기타").toString().trim() || "기타", c = (it[KEY.channel] || "채널명 없음").toString().trim() || "채널명 없음";
         if (!genreMap.has(g)) genreMap.set(g, new Map());
         const cm = genreMap.get(g);
         cm.set(c, (cm.get(c) || 0) + 1);
       }
-      const sorted = [...genreMap.entries()].map(([g, cm]) => {
-        const total = [...cm.values()].reduce((a,b)=>a+b,0);
-        const channels = [...cm.entries()].map(([c, cnt]) => ({ c, cnt }))
-          .sort((a,b)=> b.cnt - a.cnt || a.c.localeCompare(b.c, "ko"));
-        return { g, total, channels };
-      }).sort((a,b)=> b.total - a.total || a.g.localeCompare(b.g, "ko"));
-      return sorted;
+      return [...genreMap.entries()].map(([g, cm]) => ({
+        g, total: [...cm.values()].reduce((a,b)=>a+b,0),
+        channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt })).sort((a,b)=> b.cnt - a.cnt || a.c.localeCompare(b.c, "ko"))
+      })).sort((a,b)=> b.total - a.total || a.g.localeCompare(b.g, "ko"));
     }
 
     function renderLeftNav(){
       leftNavEl.innerHTML = "";
       const base = allData.filter(it => {
-        const q = (searchEl.value || "").toLowerCase().trim();
-        const title = (it[KEY.title] || "").toString().toLowerCase();
-        const genre = (it[KEY.genre] || "").toString().trim();
-        const media = (it[KEY.media] || "").toString().trim();
-        const format = (it[KEY.format] || "").toString().trim();
-        const tags = splitTags(it[KEY.tag]);
-
-        const okSearch = q ? title.includes(q) : true;
-        const okGenre = activeGenre ? genre === activeGenre : true;
-        const okMedia = activeMedia ? media === activeMedia : true;
-        const okFormat = activeFormat ? format === activeFormat : true;
-        const okTag = activeTag ? tags.includes(activeTag) : true;
-        const okLiked = showLikedOnly ? isLiked(getItemId(it)) : true;
-
+        const q = (searchEl.value || "").toLowerCase().trim(), title = (it[KEY.title] || "").toString().toLowerCase(), genre = (it[KEY.genre] || "").toString().trim(), media = (it[KEY.media] || "").toString().trim(), format = (it[KEY.format] || "").toString().trim(), tags = splitTags(it[KEY.tag]);
+        const okSearch = q ? title.includes(q) : true, okGenre = activeGenre ? genre === activeGenre : true, okMedia = activeMedia ? media === activeMedia : true, okFormat = activeFormat ? format === activeFormat : true, okTag = activeTags.size === 0 ? true : tags.some(t => activeTags.has(t)), okLiked = showLikedOnly ? isLiked(getItemId(it)) : true;
         return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
       });
 
       const index = buildGenreChannelIndex(base);
-
-      if (!index.length){
-        leftNavEl.innerHTML = `<div class="mutebox">표시할 채널이 없습니다.</div>`;
-        return;
-      }
+      if (!index.length){ leftNavEl.innerHTML = `<div class="mutebox">표시할 채널이 없습니다.</div>`; return; }
 
       index.forEach((group, idx) => {
-        const wrap = document.createElement("div");
-        wrap.className = "genreGroup";
-
-        const head = document.createElement("button");
-        head.className = "genreHead";
-        head.type = "button";
-        head.innerHTML = `
-          <span>${escapeHTML(group.g)}</span>
-          <span class="meta"><span>${group.channels.length}ch</span><span>·</span><span>${group.total}</span></span>
-        `;
-
-        const body = document.createElement("div");
-        body.className = "genreBody" + (idx < 2 ? " open" : "");
-
+        const wrap = document.createElement("div"); wrap.className = "genreGroup";
+        const head = document.createElement("button"); head.className = "genreHead"; head.type = "button";
+        head.innerHTML = `<span>${escapeHTML(group.g)}</span><span class="meta"><span>${group.channels.length}ch</span><span>·</span><span>${group.total}</span></span>`;
+        const body = document.createElement("div"); body.className = "genreBody" + (idx < 2 ? " open" : "");
         head.onclick = () => body.classList.toggle("open");
-
         group.channels.forEach(({c, cnt}) => {
-          const b = document.createElement("button");
-          b.type = "button";
-          b.className = "channelItem" + (selectedChannel === c ? " active" : "");
+          const b = document.createElement("button"); b.type = "button"; b.className = "channelItem" + (selectedChannel === c ? " active" : "");
           b.innerHTML = `<span>${escapeHTML(c)}</span><span class="count">${cnt}</span>`;
-          b.onclick = () => {
-            selectedChannel = c;
-            render(true);
-          };
+          b.onclick = () => { selectedChannel = c; render(true); };
           body.appendChild(b);
         });
-
-        wrap.appendChild(head);
-        wrap.appendChild(body);
-        leftNavEl.appendChild(wrap);
+        wrap.appendChild(head); wrap.appendChild(body); leftNavEl.appendChild(wrap);
       });
-
       leftHintEl.textContent = selectedChannel ? `선택: ${selectedChannel}` : "채널 선택";
     }
 
     async function renderDashboard(filtered){
       renderLeftNav();
-
-      if (!selectedChannel){
-        rightTitleEl.textContent = "채널 콘텐츠";
-        rightListEl.innerHTML = "";
-        rightEmptyEl.style.display = "block";
-        rightEmptyEl.textContent = "왼쪽에서 채널을 선택하면 해당 채널의 콘텐츠가 표시됩니다.";
-        return;
-      }
-
+      if (!selectedChannel){ rightTitleEl.textContent = "채널 콘텐츠"; rightListEl.innerHTML = ""; rightEmptyEl.style.display = "block"; rightEmptyEl.textContent = "왼쪽에서 채널을 선택하면 해당 채널의 콘텐츠가 표시됩니다."; return; }
       rightTitleEl.textContent = selectedChannel;
 
       let list = [...filtered];
-      if (sortMode === "likes") {
-        list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
-      } else {
-        list = sortByDateDesc(list);
-      }
+      if (sortMode === "likes") list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
+      else list = sortByDateDesc(list);
 
-      if (!list.length){
-        rightListEl.innerHTML = "";
-        rightEmptyEl.style.display = "block";
-        rightEmptyEl.textContent = "현재 필터 조건에서 표시할 콘텐츠가 없습니다.";
-        return;
-      }
-
+      if (!list.length){ rightListEl.innerHTML = ""; rightEmptyEl.style.display = "block"; rightEmptyEl.textContent = "현재 필터 조건에서 표시할 콘텐츠가 없습니다."; return; }
       rightEmptyEl.style.display = "none";
       
-      // 무한 스크롤: renderLimit 까지만 자름
       const sliced = list.slice(0, renderLimit);
       rightListEl.innerHTML = sliced.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
-
-      if (list.length > renderLimit) {
-        rightListEl.appendChild(scrollSentinel);
-        observer.observe(scrollSentinel);
-      } else {
-        observer.disconnect();
-      }
+      if (list.length > renderLimit) { rightListEl.appendChild(scrollSentinel); observer.observe(scrollSentinel); }
+      else observer.disconnect();
 
       const rows = Array.from(rightListEl.querySelectorAll(".row"));
       await Promise.all(sliced.map(async (item, idx) => {
@@ -1565,309 +1233,159 @@
         const img = rows[idx]?.querySelector("img.rowThumb");
         if (img) img.src = t;
       }));
-
-      const ids = sliced.slice(0, 80).map(getItemId);
-      await hydrateCountersFor(ids, 8);
+      await hydrateCountersFor(sliced.slice(0, 80).map(getItemId), 8);
     }
 
     async function render(resetPagination = false){
-      if (resetPagination) renderLimit = 30; // 렌더링 리셋 처리
-
+      if (resetPagination) renderLimit = 30;
       const filtered = allData.filter(matchesFilter);
       statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
 
-      if (viewMode === "all"){
-        gridEl.style.display = "grid";
-        dashEl.classList.remove("active");
-        await renderGrid(filtered);
-      } else {
-        gridEl.style.display = "none";
-        dashEl.classList.add("active");
-        await renderDashboard(filtered);
-      }
+      if (viewMode === "all"){ gridEl.style.display = "grid"; dashEl.classList.remove("active"); await renderGrid(filtered); }
+      else { gridEl.style.display = "none"; dashEl.classList.add("active"); await renderDashboard(filtered); }
     }
 
     function resetAll() {
-      activeGenre = null;
-      activeMedia = null;
-      activeFormat = null;
-      activeTag = null;
-      searchEl.value = "";
-      selectedChannel = null;
-
-      showLikedOnly = false;
-      sortMode = "date";
-      likedOnlyBtn.classList.remove("active");
-      sortLikesBtn.classList.remove("active");
-
-      rebuildAllChips();
-      render(true);
+      activeGenre = null; activeMedia = null; activeFormat = null; activeTags.clear();
+      searchEl.value = ""; selectedChannel = null; showLikedOnly = false; sortMode = "date";
+      likedOnlyBtn.classList.remove("active"); sortLikesBtn.classList.remove("active");
+      rebuildAllChips(); render(true);
     }
 
     resetBtn.addEventListener("click", resetAll);
-    searchEl.addEventListener("input", debounce(() => render(true), 300)); // 디바운싱 적용
+    searchEl.addEventListener("input", debounce(() => render(true), 300));
 
-    // Filter tabs logic
     (function setupTabs(){
-      const tabsEl = document.getElementById("filterTabs");
-      const panels = {
-        genre: genreChipsEl,
-        media: mediaChipsEl,
-        format: formatChipsEl,
-        tag: tagChipsEl,
-      };
+      const tabsEl = document.getElementById("filterTabs"), panels = { genre: genreChipsEl, media: mediaChipsEl, format: formatChipsEl, tag: tagChipsEl };
       function activate(name){
         tabsEl.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
         Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === name));
       }
-      tabsEl.addEventListener("click", (e) => {
-        const btn = e.target.closest(".tab");
-        if (!btn) return;
-        activate(btn.dataset.tab);
-      });
+      tabsEl.addEventListener("click", (e) => { const btn = e.target.closest(".tab"); if (btn) activate(btn.dataset.tab); });
       activate("genre");
     })();
 
-    // View Toggle
-    function setView(mode){
-      viewMode = mode;
-      viewAllBtn.classList.toggle("active", mode === "all");
-      viewDashBtn.classList.toggle("active", mode === "dash");
-      render(true);
-    }
-    viewAllBtn.addEventListener("click", () => setView("all"));
-    viewDashBtn.addEventListener("click", () => setView("dash"));
+    function setView(mode){ viewMode = mode; viewAllBtn.classList.toggle("active", mode === "all"); viewDashBtn.classList.toggle("active", mode === "dash"); render(true); }
+    viewAllBtn.addEventListener("click", () => setView("all")); viewDashBtn.addEventListener("click", () => setView("dash"));
+    likedOnlyBtn.addEventListener("click", () => { showLikedOnly = !showLikedOnly; likedOnlyBtn.classList.toggle("active", showLikedOnly); render(true); });
+    sortLikesBtn.addEventListener("click", () => { sortMode = (sortMode === "likes") ? "date" : "likes"; sortLikesBtn.classList.toggle("active", sortMode === "likes"); render(true); });
 
-    // Liked only toggle
-    likedOnlyBtn.addEventListener("click", () => {
-      showLikedOnly = !showLikedOnly;
-      likedOnlyBtn.classList.toggle("active", showLikedOnly);
-      render(true);
-    });
-
-    // Sort by likes toggle
-    sortLikesBtn.addEventListener("click", () => {
-      sortMode = (sortMode === "likes") ? "date" : "likes";
-      sortLikesBtn.classList.toggle("active", sortMode === "likes");
-      render(true);
-    });
-
-    // Admin dashboard (simple)
     adminBtn.addEventListener("click", async () => {
+      showToast("관리자 통계를 불러오는 중...");
       try{
         const res = await fetch(API_URL + "?admin=1&t=" + Date.now(), { method:"GET", mode:"cors" });
         const data = await res.json();
         const sorted = [...data].sort((a,b)=> (b.likes||0) - (a.likes||0)).slice(0, 30);
-
         const map = new Map(allData.map(it => [getItemId(it), it]));
         const lines = sorted.map((x,i) => {
-          const it = map.get(x.itemId);
-          const title = it ? ((it[KEY.title] || "").toString().trim()) : "(unknown)";
-          const channel = it ? ((it[KEY.channel] || "").toString().trim()) : "";
+          const it = map.get(x.itemId), title = it ? ((it[KEY.title] || "").toString().trim()) : "(unknown)", channel = it ? ((it[KEY.channel] || "").toString().trim()) : "";
           return `${i+1}. 👍 ${x.likes}  |  ${channel}  |  ${title}`;
         });
-
         alert("TOP 좋아요 (상위 30)\n\n" + lines.join("\n"));
-      }catch(e){
-        alert("관리자 통계 불러오기 실패");
-      }
+      }catch(e){ showToast("통계 로드 실패 🥲"); }
     });
 
-    // Delegated click for like/memo
     document.addEventListener("click", async (e) => {
       const likeBtn = e.target.closest("[data-like]");
-      if (likeBtn){
-        e.preventDefault();
-        e.stopPropagation();
-        const itemId = likeBtn.getAttribute("data-like");
-        if (!itemId) return;
-
-        await toggleLike(itemId);
-        return;
-      }
-
+      if (likeBtn){ e.preventDefault(); e.stopPropagation(); const itemId = likeBtn.getAttribute("data-like"); if (itemId) await toggleLike(itemId); return; }
       const memoBtn = e.target.closest("[data-memo]");
       if (memoBtn){
-        e.preventDefault();
-        e.stopPropagation();
-        const itemId = memoBtn.getAttribute("data-memo");
-        if (!itemId) return;
-
-        const item = allData.find(x => getItemId(x) === itemId);
-        if (!item) return;
-        openModalForItem(item);
-        return;
+        e.preventDefault(); e.stopPropagation(); const itemId = memoBtn.getAttribute("data-memo");
+        if (itemId){ const item = allData.find(x => getItemId(x) === itemId); if (item) openModalForItem(item); } return;
       }
     });
 
     // ===== MODAL =====
     let modalItem = null;
-
-    function closeModal(){
-      modalOverlay.classList.remove("open");
-      modalOverlay.setAttribute("aria-hidden", "true");
-      modalOverlay.dataset.itemid = "";
-      modalItem = null;
-    }
+    function closeModal(){ modalOverlay.classList.remove("open"); modalOverlay.setAttribute("aria-hidden", "true"); modalOverlay.dataset.itemid = ""; modalItem = null; }
     mClose.addEventListener("click", closeModal);
-    modalOverlay.addEventListener("click", (e) => {
-      if (e.target === modalOverlay) closeModal();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modalOverlay.classList.contains("open")) closeModal();
+    modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modalOverlay.classList.contains("open")) closeModal(); });
+
+    // 🎨 모달 링크 복사 버튼 이벤트
+    mCopyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(mLink.href);
+        showToast("🔗 원본 링크가 복사되었습니다!");
+      } catch (err) {
+        showToast("링크 복사에 실패했습니다.");
+      }
     });
 
     function renderMemoList(memos){
-      if (!memos || !memos.length){
-        mList.innerHTML = `<div class="mutebox">아직 메모가 없습니다. 첫 메모를 남겨보세요.</div>`;
-        return;
-      }
-      const sorted = [...memos].sort((a,b) => {
-        const ta = new Date(a.ts).getTime() || 0;
-        const tb = new Date(b.ts).getTime() || 0;
-        return tb - ta;
-      });
-      mList.innerHTML = sorted.map(m => `
+      if (!memos || !memos.length){ mList.innerHTML = `<div class="mutebox">아직 메모가 없습니다. 첫 메모를 남겨보세요.</div>`; return; }
+      mList.innerHTML = [...memos].sort((a,b) => (new Date(b.ts).getTime() || 0) - (new Date(a.ts).getTime() || 0)).map(m => `
         <div class="memoItem">
-          <div class="memoTop">
-            <div class="memoNick">${escapeHTML(m.nickname || "익명")}</div>
-            <div class="memoTs">${escapeHTML(fmtTs(m.ts))}</div>
-          </div>
+          <div class="memoTop"><div class="memoNick">${escapeHTML(m.nickname || "익명")}</div><div class="memoTs">${escapeHTML(fmtTs(m.ts))}</div></div>
           <div class="memoText">${escapeHTML(m.memo || "")}</div>
-        </div>
-      `).join("");
+        </div>`).join("");
     }
 
     async function openModalForItem(item){
-      modalItem = item;
-      const itemId = getItemId(item);
-      modalOverlay.dataset.itemid = itemId;
-
+      modalItem = item; const itemId = getItemId(item); modalOverlay.dataset.itemid = itemId;
       mTitle.textContent = (item[KEY.title] || "").toString().trim();
-      const channel = (item[KEY.channel] || "").toString().trim();
-      const date = (item[KEY.date] || "").toString().trim();
-      const genre = (item[KEY.genre] || "").toString().trim();
-      const format = (item[KEY.format] || "").toString().trim();
-      const media = (item[KEY.media] || "").toString().trim();
-      const url = (item[KEY.url] || "").toString().trim();
-
-      mSub.innerHTML = `
-        <span class="badge">${escapeHTML(channel || "채널")}</span>
-        ${media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : ``}
-        ${date ? `<span class="badge">${escapeHTML(date)}</span>` : ``}
-        ${genre ? `<span class="badge">장르: ${escapeHTML(genre)}</span>` : ``}
-        ${format ? `<span class="badge">포맷: ${escapeHTML(format)}</span>` : ``}
-      `;
-
-      mLink.href = url || "#";
-
-      mThumb.src = THUMB_PLACEHOLDER;
-      resolveThumbnail(item).then(t => { mThumb.src = t; }).catch(()=>{});
-
-      const savedNick = getNickname();
-      if (savedNick) mNick.value = savedNick;
-
+      const channel = (item[KEY.channel] || "").toString().trim(), date = (item[KEY.date] || "").toString().trim(), genre = (item[KEY.genre] || "").toString().trim(), format = (item[KEY.format] || "").toString().trim(), media = (item[KEY.media] || "").toString().trim();
+      mSub.innerHTML = `<span class="badge">${escapeHTML(channel || "채널")}</span>${media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : ``}${date ? `<span class="badge">${escapeHTML(date)}</span>` : ``}${genre ? `<span class="badge">장르: ${escapeHTML(genre)}</span>` : ``}${format ? `<span class="badge">포맷: ${escapeHTML(format)}</span>` : ``}`;
+      mLink.href = (item[KEY.url] || "").toString().trim() || "#";
+      mThumb.src = THUMB_PLACEHOLDER; resolveThumbnail(item).then(t => { mThumb.src = t; }).catch(()=>{});
+      const savedNick = getNickname(); if (savedNick) mNick.value = savedNick;
       mLikeBtn.classList.toggle("active", isLiked(itemId));
-
-      modalOverlay.classList.add("open");
-      modalOverlay.setAttribute("aria-hidden", "false");
-
-      mHint.textContent = "불러오는 중…";
+      modalOverlay.classList.add("open"); modalOverlay.setAttribute("aria-hidden", "false");
+      
       try{
         const data = await fetchInteractions(itemId);
-        mLikeCnt.textContent = String(data.likes ?? 0);
-        mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos || []).length}`;
-        renderMemoList(data.memos || []);
-        mHint.textContent = "";
-        updateCountersInDOM(itemId);
-      }catch(e){
-        mHint.textContent = "좋아요/메모를 불러오지 못했어요.";
-        renderMemoList([]);
-      }
+        mLikeCnt.textContent = String(data.likes ?? 0); mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos || []).length}`;
+        renderMemoList(data.memos || []); updateCountersInDOM(itemId);
+      }catch(e){ renderMemoList([]); }
     }
 
-    mLikeBtn.addEventListener("click", async () => {
-      if (!modalItem) return;
-      await toggleLike(getItemId(modalItem));
-    });
+    mLikeBtn.addEventListener("click", async () => { if (modalItem) await toggleLike(getItemId(modalItem)); });
 
     mSend.addEventListener("click", async () => {
       if (!modalItem) return;
-      const itemId = getItemId(modalItem);
+      const itemId = getItemId(modalItem), nick = (mNick.value || "").trim(), memo = (mMemo.value || "").trim();
+      if (!nick){ showToast("닉네임을 입력해 주세요!"); mNick.focus(); return; }
+      if (!memo){ showToast("메모 내용을 입력해 주세요!"); mMemo.focus(); return; }
+      if (memo.length > 200){ showToast("메모는 200자 이하여야 합니다."); return; }
 
-      const nick = (mNick.value || "").trim();
-      const memo = (mMemo.value || "").trim();
-
-      if (!nick){ mHint.textContent = "닉네임을 입력해줘!"; mNick.focus(); return; }
-      if (!memo){ mHint.textContent = "메모 내용을 입력해줘!"; mMemo.focus(); return; }
-      if (memo.length > 200){ mHint.textContent = "메모는 200자 이하여야 해."; return; }
-
-      setNickname(nick);
-
-      mSend.disabled = true;
-      mSend.textContent = "등록 중…";
-      mHint.textContent = "";
-
+      setNickname(nick); mSend.disabled = true; mSend.textContent = "등록 중…";
       try{
         await postInteraction({ itemId, action:"memo", memo, nickname:nick, userId: getUserId() });
-
-        interactionsCache.delete(itemId);
-        const fresh = await fetchInteractions(itemId);
-
-        mMemo.value = "";
-        mLikeCnt.textContent = String(fresh.likes ?? 0);
+        interactionsCache.delete(itemId); const fresh = await fetchInteractions(itemId);
+        mMemo.value = ""; mLikeCnt.textContent = String(fresh.likes ?? 0);
         mCounts.textContent = `👍 ${fresh.likes ?? 0} · 💬 ${(fresh.memos || []).length}`;
-        renderMemoList(fresh.memos || []);
-        updateCountersInDOM(itemId);
-
-        mHint.textContent = "등록 완료!";
-        setTimeout(()=>{ if (mHint.textContent==="등록 완료!") mHint.textContent=""; }, 900);
-
-      } catch (e){
-        mHint.textContent = "등록 실패. 다시 시도해줘!";
-      } finally {
-        mSend.disabled = false;
-        mSend.textContent = "등록";
-      }
+        renderMemoList(fresh.memos || []); updateCountersInDOM(itemId);
+        showToast("💬 메모가 등록되었습니다!");
+      } catch (e){ showToast("메모 등록에 실패했습니다."); } finally { mSend.disabled = false; mSend.textContent = "등록"; }
     });
 
     // ===== INIT =====
-    // 앱 접속 시, 가장 먼저 내 좋아요 목록을 서버에서 동기화합니다.
     async function syncMyLikes() {
-      const uid = getUserId();
       try {
-        const res = await fetch(API_URL + "?userId=" + encodeURIComponent(uid) + "&t=" + Date.now());
+        const res = await fetch(API_URL + "?userId=" + encodeURIComponent(getUserId()) + "&t=" + Date.now());
         const data = await res.json();
         if (data.likedItemIds) {
-          const m = {};
-          data.likedItemIds.forEach(id => m[id] = true);
-          localStorage.setItem(LS_LIKED, JSON.stringify(m)); // 서버 데이터로 덮어쓰기
+          const m = {}; data.likedItemIds.forEach(id => m[id] = true);
+          localStorage.setItem(LS_LIKED, JSON.stringify(m));
         }
-      } catch (e) {
-        console.warn("좋아요 동기화 실패. 로컬 캐시를 사용합니다.", e);
-      }
+      } catch (e) { console.warn("Sync failed"); }
     }
 
     async function init() {
+      // 🎨 1. 스켈레톤 로딩 먼저 보여주기
+      gridEl.innerHTML = Array(12).fill('<div class="skeleton-card"></div>').join("");
+
       try {
         await syncMyLikes();
-
         const res = await fetch(SHEET_URL);
-        if (!res.ok) throw new Error("Fetch failed: " + res.status);
+        if (!res.ok) throw new Error("Fetch failed");
         const data = await res.json();
-
-        allData = (Array.isArray(data) ? data : [])
-          .filter(x => x && (x[KEY.url] || x[KEY.title]));
+        allData = (Array.isArray(data) ? data : []).filter(x => x && (x[KEY.url] || x[KEY.title]));
 
         rebuildAllChips();
         await render(true);
-
       } catch (err) {
-        gridEl.innerHTML = `<div style="opacity:.85; font-size:14px; padding:12px;">
-          데이터를 불러오지 못했습니다.<br/>
-          SHEET_URL / 공유 설정을 확인해주세요.<br/><br/>
-          <code>${escapeHTML(err.message || String(err))}</code>
-        </div>`;
+        gridEl.innerHTML = `<div style="opacity:.85; font-size:14px; padding:12px;">데이터를 불러오지 못했습니다.</div>`;
       }
     }
 
