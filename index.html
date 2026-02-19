@@ -15,8 +15,6 @@
       --accent:#ff4757;
       --shadow: 0 14px 40px rgba(0,0,0,.35);
       --radius:16px;
-      --panel: rgba(20,20,22,.55);
-      --panel2: rgba(20,20,22,.85);
     }
 
     *{ box-sizing:border-box; }
@@ -194,6 +192,7 @@
       overflow:hidden;
       box-shadow: var(--shadow);
       transition: transform .12s ease, border-color .12s ease;
+      position:relative;
     }
     .card:hover{
       transform: translateY(-2px);
@@ -312,6 +311,40 @@
     .pill .v{
       color: rgba(234,234,234,.92);
       font-weight:800;
+    }
+
+    /* ===== Interactions (Card footer) ===== */
+    .actionsBar{
+      margin-top:10px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-start;
+    }
+    .actionBtn{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(234,234,234,.9);
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      line-height:1;
+      user-select:none;
+    }
+    .actionBtn:hover{ border-color: rgba(255,255,255,.16); }
+    .actionBtn.like.active{
+      border-color: rgba(255,71,87,.65);
+      box-shadow: 0 0 0 3px rgba(255,71,87,.10);
+    }
+    .actionBtn .cnt{
+      opacity:.75;
+      font-weight:900;
+      font-size:11px;
     }
 
     /* ===== Dashboard Layout ===== */
@@ -441,6 +474,7 @@
       background: rgba(20,20,22,.55);
       border-radius:16px;
       overflow:hidden;
+      position:relative;
     }
 
     .rowThumb{
@@ -495,6 +529,15 @@
       gap:6px;
       flex-wrap:wrap;
       margin-top:2px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .rowActions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      margin-left:auto;
     }
 
     .mutebox{
@@ -504,21 +547,198 @@
       text-align:center;
     }
 
+    /* ===== Modal ===== */
+    .modalOverlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.62);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:9999;
+    }
+    .modalOverlay.open{ display:flex; }
+
+    .modal{
+      width:min(920px, 100%);
+      max-height: min(86vh, 720px);
+      overflow:hidden;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(20,20,22,.96);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      display:grid;
+      grid-template-columns: 320px 1fr;
+    }
+    .modalLeft{
+      border-right:1px solid rgba(255,255,255,.06);
+      padding:12px;
+      background: rgba(16,16,18,.55);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .modalThumb{
+      width:100%;
+      height:180px;
+      object-fit:contain;
+      background:#0b0b0c;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .modalLeft .mTitle{
+      font-size:12px;
+      font-weight:900;
+      color: rgba(234,234,234,.9);
+      line-height:1.35;
+      max-height: 3.2em;
+      overflow:hidden;
+    }
+    .modalLeft .mSub{
+      font-size:12px;
+      color: rgba(234,234,234,.65);
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .modalLeft .mLink{
+      font-size:12px;
+      color: rgba(234,234,234,.85);
+      text-decoration:none;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      padding:8px 10px;
+      border-radius:12px;
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+      gap:6px;
+    }
+    .modalLeft .mLink:hover{ border-color: rgba(255,255,255,.16); }
+
+    .modalRight{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+    }
+    .modalHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .modalHead .h{
+      font-size:13px;
+      font-weight:950;
+      color: rgba(234,234,234,.92);
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .xBtn{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(234,234,234,.92);
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:900;
+      font-size:12px;
+    }
+    .xBtn:hover{ border-color: rgba(255,255,255,.16); }
+
+    .memoList{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      background: rgba(255,255,255,.03);
+      padding:10px;
+      overflow:auto;
+      min-height:0;
+      flex:1;
+    }
+    .memoItem{
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.06);
+      background: rgba(20,20,22,.50);
+      margin-bottom:8px;
+    }
+    .memoTop{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:6px;
+    }
+    .memoNick{
+      font-size:12px;
+      font-weight:950;
+      color: rgba(234,234,234,.92);
+    }
+    .memoTs{
+      font-size:11px;
+      color: rgba(234,234,234,.55);
+      white-space:nowrap;
+    }
+    .memoText{
+      font-size:12px;
+      color: rgba(234,234,234,.82);
+      line-height:1.45;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .memoComposer{
+      display:grid;
+      grid-template-columns: 170px 1fr auto;
+      gap:8px;
+      align-items:center;
+    }
+    .memoComposer input{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(20,20,22,.65);
+      color: rgba(234,234,234,.92);
+      outline:none;
+      font-size:12px;
+    }
+    .memoComposer input::placeholder{ color: rgba(234,234,234,.45); }
+
+    .primaryBtn{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,71,87,.55);
+      background: rgba(255,71,87,.16);
+      color: rgba(234,234,234,.95);
+      cursor:pointer;
+      font-weight:950;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .primaryBtn:hover{ border-color: rgba(255,71,87,.70); }
+
+    .smallNote{
+      font-size:11px;
+      color: rgba(234,234,234,.55);
+    }
+
     @media (max-width: 980px){
       .dash.active{ grid-template-columns: 1fr; }
       .leftScroll{ max-height: unset; }
       .row{ grid-template-columns: 140px 1fr; }
+      .modal{ grid-template-columns: 1fr; }
+      .modalLeft{ border-right:0; border-bottom:1px solid rgba(255,255,255,.06); }
+      .memoComposer{ grid-template-columns: 1fr; }
     }
     @media (max-width: 760px){
       .thumb{ height:210px; }
       .rowThumb{ height:92px; }
-    }
-
-    code{
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      padding:2px 6px;
-      border-radius:10px;
     }
   </style>
 </head>
@@ -583,9 +803,45 @@
     </div>
   </div>
 
+  <!-- Modal -->
+  <div class="modalOverlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modalLeft">
+        <img id="mThumb" class="modalThumb" alt="thumbnail"/>
+        <div class="mTitle" id="mTitle"></div>
+        <div class="mSub" id="mSub"></div>
+        <a class="mLink" id="mLink" target="_blank" rel="noopener noreferrer">🔗 원본 열기</a>
+        <div class="smallNote">좋아요/메모는 모두에게 공유됩니다.</div>
+      </div>
+
+      <div class="modalRight">
+        <div class="modalHead">
+          <div class="h">
+            <span id="mCounts">👍 0 · 💬 0</span>
+            <button class="actionBtn like" id="mLikeBtn" type="button">👍 <span class="cnt" id="mLikeCnt">0</span></button>
+          </div>
+          <button class="xBtn" id="mClose" type="button">닫기 ✕</button>
+        </div>
+
+        <div class="memoList" id="mList"></div>
+
+        <div class="memoComposer">
+          <input id="mNick" type="text" placeholder="닉네임 (필수)" maxlength="24"/>
+          <input id="mMemo" type="text" placeholder="메모 (최대 200자)" maxlength="200"/>
+          <button class="primaryBtn" id="mSend" type="button">등록</button>
+        </div>
+
+        <div class="smallNote" id="mHint"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ✅ OpenSheet URL (사용자 제공)
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
+
+    // ✅ Apps Script Web App URL (사용자 제공)
+    const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
 
     // ✅ 시트 컬럼명(헤더와 정확히 일치해야 함)
     const KEY = {
@@ -630,8 +886,32 @@
     const rightListEl = document.getElementById("rightList");
     const rightEmptyEl = document.getElementById("rightEmpty");
 
+    // Modal elements
+    const modalOverlay = document.getElementById("modalOverlay");
+    const mClose = document.getElementById("mClose");
+    const mThumb = document.getElementById("mThumb");
+    const mTitle = document.getElementById("mTitle");
+    const mSub = document.getElementById("mSub");
+    const mLink = document.getElementById("mLink");
+    const mCounts = document.getElementById("mCounts");
+    const mLikeBtn = document.getElementById("mLikeBtn");
+    const mLikeCnt = document.getElementById("mLikeCnt");
+    const mList = document.getElementById("mList");
+    const mNick = document.getElementById("mNick");
+    const mMemo = document.getElementById("mMemo");
+    const mSend = document.getElementById("mSend");
+    const mHint = document.getElementById("mHint");
+
     const THUMB_PLACEHOLDER = "https://via.placeholder.com/800x450?text=No+Thumbnail";
     const thumbCache = new Map();
+
+    // Interactions cache
+    const interactionsCache = new Map(); // itemId -> {likes:number, memos:[]}
+    const inFlight = new Map(); // itemId -> Promise
+
+    // Local preferences
+    const LS_NICK = "vra:nickname";
+    const LS_LIKED = "vra:liked"; // JSON map { itemId: true }
 
     function escapeHTML(str) {
       return String(str)
@@ -660,12 +940,10 @@
     function parseDateLoose(v) {
       const s = (v || "").toString().trim();
       if (!s) return null;
-
-      if (/^\d{8}$/.test(s)) {
+      if (/^\\d{8}$/.test(s)) {
         const y = s.slice(0,4), m = s.slice(4,6), d = s.slice(6,8);
         return new Date(`${y}-${m}-${d}T00:00:00`);
       }
-
       const norm = s.replaceAll(".", "-").replaceAll("/", "-");
       const dt = new Date(norm);
       if (!isNaN(dt.getTime())) return dt;
@@ -682,6 +960,35 @@
       });
     }
 
+    // ---------- ItemId (stable) ----------
+    function fnv1a(str){
+      let h = 0x811c9dc5;
+      for (let i=0; i<str.length; i++){
+        h ^= str.charCodeAt(i);
+        h = (h + ((h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24))) >>> 0;
+      }
+      return ("00000000" + h.toString(16)).slice(-8);
+    }
+
+    function normalizeUrl(url){
+      try{
+        const u = new URL(url);
+        u.hash = "";
+        // utm 제거
+        ["utm_source","utm_medium","utm_campaign","utm_term","utm_content"].forEach(k => u.searchParams.delete(k));
+        // instagram의 ?igsh= 등은 남겨도 되지만 정규화하려면 삭제 가능
+        return u.toString();
+      }catch{
+        return (url || "").trim();
+      }
+    }
+
+    function getItemId(item){
+      const url = (item[KEY.url] || "").toString().trim();
+      return fnv1a(normalizeUrl(url || ""));
+    }
+
+    // ---------- Platform thumb ----------
     function getYoutubeID(url) {
       try {
         const u = new URL(url);
@@ -750,7 +1057,7 @@
     }
 
     async function resolveThumbnail(item) {
-      const url = item[KEY.url] || "";
+      const url = (item[KEY.url] || "").toString().trim();
       if (!url) return THUMB_PLACEHOLDER;
 
       const sheetThumb = getSheetThumb(item);
@@ -778,6 +1085,173 @@
       return THUMB_PLACEHOLDER;
     }
 
+    // ---------- Interactions API ----------
+    function getLikedMap(){
+      try{ return JSON.parse(localStorage.getItem(LS_LIKED) || "{}"); }catch{ return {}; }
+    }
+    function setLiked(itemId){
+      const m = getLikedMap();
+      m[itemId] = true;
+      localStorage.setItem(LS_LIKED, JSON.stringify(m));
+    }
+    function isLiked(itemId){
+      const m = getLikedMap();
+      return !!m[itemId];
+    }
+
+    function getNickname(){
+      return (localStorage.getItem(LS_NICK) || "").trim();
+    }
+    function setNickname(nick){
+      localStorage.setItem(LS_NICK, (nick || "").trim());
+    }
+
+    async function fetchInteractions(itemId){
+      if (interactionsCache.has(itemId)) return interactionsCache.get(itemId);
+      if (inFlight.has(itemId)) return inFlight.get(itemId);
+
+      const p = (async () => {
+        const url = API_URL + "?itemId=" + encodeURIComponent(itemId) + "&t=" + Date.now();
+        const res = await fetch(url, { method:"GET", mode:"cors" });
+        if (!res.ok) throw new Error("API GET failed: " + res.status);
+        const data = await res.json();
+        const norm = {
+          likes: Number(data.likes || 0),
+          memos: Array.isArray(data.memos) ? data.memos : []
+        };
+        interactionsCache.set(itemId, norm);
+        return norm;
+      })();
+
+      inFlight.set(itemId, p);
+      try{
+        const out = await p;
+        return out;
+      } finally {
+        inFlight.delete(itemId);
+      }
+    }
+
+    async function postInteraction(payload){
+      // CORS preflight 피하려고 text/plain으로 전송
+      const res = await fetch(API_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("API POST failed: " + res.status);
+      try{
+        return await res.json();
+      }catch{
+        return { status: "ok" };
+      }
+    }
+
+    async function likeItem(itemId){
+      if (isLiked(itemId)) return;
+
+      // UI 즉시 반영(낙관적 업데이트)
+      const cached = interactionsCache.get(itemId) || { likes:0, memos:[] };
+      interactionsCache.set(itemId, { ...cached, likes: cached.likes + 1 });
+      setLiked(itemId);
+      updateCountersInDOM(itemId);
+
+      try{
+        await postInteraction({ itemId, action: "like", memo: "", nickname: getNickname() || "익명" });
+      } catch (e){
+        // 실패하면 롤백
+        const cur = interactionsCache.get(itemId) || { likes:1, memos:[] };
+        interactionsCache.set(itemId, { ...cur, likes: Math.max(0, (cur.likes||1)-1) });
+        // liked 롤백도 필요하지만 간단히 두자(중복 클릭 방지 목적이라)
+        updateCountersInDOM(itemId);
+        alert("좋아요 저장에 실패했어요. 다시 시도해줘!");
+      }
+    }
+
+    function fmtTs(ts){
+      try{
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return String(ts || "");
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,"0");
+        const dd = String(d.getDate()).padStart(2,"0");
+        const hh = String(d.getHours()).padStart(2,"0");
+        const mi = String(d.getMinutes()).padStart(2,"0");
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+      }catch{ return String(ts||""); }
+    }
+
+    // ---------- UI helpers ----------
+    function actionBarHTML(item){
+      const itemId = getItemId(item);
+      const liked = isLiked(itemId);
+      return `
+        <div class="actionsBar" data-itemid="${itemId}">
+          <button class="actionBtn like ${liked ? "active":""}" type="button" data-like="${itemId}">
+            👍 <span class="cnt" id="like-${itemId}">…</span>
+          </button>
+          <button class="actionBtn" type="button" data-memo="${itemId}">
+            💬 <span class="cnt" id="memo-${itemId}">…</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function rowActionsHTML(item){
+      const itemId = getItemId(item);
+      const liked = isLiked(itemId);
+      return `
+        <div class="rowActions" data-itemid="${itemId}">
+          <button class="actionBtn like ${liked ? "active":""}" type="button" data-like="${itemId}">
+            👍 <span class="cnt" id="like-${itemId}">…</span>
+          </button>
+          <button class="actionBtn" type="button" data-memo="${itemId}">
+            💬 <span class="cnt" id="memo-${itemId}">…</span>
+          </button>
+        </div>
+      `;
+    }
+
+    function updateCountersInDOM(itemId){
+      const data = interactionsCache.get(itemId);
+      if (!data) return;
+      const likeEls = document.querySelectorAll("#like-" + CSS.escape(itemId));
+      const memoEls = document.querySelectorAll("#memo-" + CSS.escape(itemId));
+      likeEls.forEach(el => el.textContent = String(data.likes ?? 0));
+      memoEls.forEach(el => el.textContent = String((data.memos || []).length));
+
+      // modal
+      if (modalOverlay.classList.contains("open") && modalOverlay.dataset.itemid === itemId){
+        mLikeCnt.textContent = String(data.likes ?? 0);
+        mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos || []).length}`;
+        mLikeBtn.classList.toggle("active", isLiked(itemId));
+      }
+    }
+
+    async function hydrateCountersFor(ids, limit=10){
+      // 간단한 동시성 제한
+      const q = [...new Set(ids)].filter(Boolean);
+      let i = 0;
+
+      const workers = Array.from({length: Math.min(limit, q.length)}, async () => {
+        while (i < q.length){
+          const id = q[i++];
+          try{
+            const data = await fetchInteractions(id);
+            updateCountersInDOM(id);
+          }catch{
+            // 표시 실패하면 0으로
+            interactionsCache.set(id, interactionsCache.get(id) || { likes:0, memos:[] });
+            updateCountersInDOM(id);
+          }
+        }
+      });
+
+      await Promise.all(workers);
+    }
+
+    // ---------- Filters ----------
     function countBy(items, getter) {
       const m = new Map();
       items.forEach(it => {
@@ -859,7 +1333,6 @@
       const okFormat = activeFormat ? format === activeFormat : true;
       const okTag = activeTag ? tags.includes(activeTag) : true;
 
-      // Dashboard에서 채널 선택됐으면 채널도 포함
       const okChannel = (viewMode === "dash" && selectedChannel)
         ? ((item[KEY.channel] || "").toString().trim() === selectedChannel)
         : true;
@@ -867,6 +1340,7 @@
       return okSearch && okGenre && okMedia && okFormat && okTag && okChannel;
     }
 
+    // ---------- Rendering ----------
     function baseCardHTML(item, thumbUrl) {
       const url = item[KEY.url] || "#";
       const date = (item[KEY.date] || "").toString().trim();
@@ -884,7 +1358,7 @@
         : "";
 
       return `
-        <div class="card">
+        <div class="card" data-itemid="${getItemId(item)}">
           <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer">
             <div class="thumbWrap">
               <img class="thumb" src="${thumbUrl}" alt="thumbnail" loading="lazy"/>
@@ -908,6 +1382,10 @@
               </div>
             </div>
           </a>
+
+          <div class="metaBox" style="padding-top:0;">
+            ${actionBarHTML(item)}
+          </div>
         </div>
       `;
     }
@@ -928,8 +1406,8 @@
         : "";
 
       return `
-        <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer">
-          <div class="row">
+        <div class="row" data-itemid="${getItemId(item)}">
+          <a class="cleanLink" href="${url}" target="_blank" rel="noopener noreferrer" style="display:contents;">
             <img class="rowThumb" src="${thumbUrl}" alt="thumb" loading="lazy"/>
             <div class="rowMeta">
               <div class="rowTop">
@@ -939,28 +1417,35 @@
               <div class="rowSub">${escapeHTML(title || "")}</div>
               ${tagLine ? `<div class="rowTags">${escapeHTML(tagLine)}</div>` : ``}
               <div class="rowPills">
-                ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
-                ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  ${genre ? `<span class="pill"><span class="k">장르</span><span class="v">${escapeHTML(genre)}</span></span>` : ``}
+                  ${format ? `<span class="pill"><span class="k">포맷</span><span class="v">${escapeHTML(format)}</span></span>` : ``}
+                </div>
+                ${rowActionsHTML(item)}
               </div>
             </div>
-          </div>
-        </a>
+          </a>
+        </div>
       `;
     }
 
     async function renderGrid(filtered){
       gridEl.innerHTML = filtered.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
 
+      // thumbs
       const cards = Array.from(gridEl.querySelectorAll(".card"));
       await Promise.all(filtered.map(async (item, idx) => {
         const t = await resolveThumbnail(item);
         const img = cards[idx]?.querySelector("img.thumb");
         if (img) img.src = t;
       }));
+
+      // hydrate counters (visible items)
+      const ids = filtered.slice(0, 36).map(getItemId);
+      hydrateCountersFor(ids, 8);
     }
 
     function buildGenreChannelIndex(items){
-      // Map<genre, Map<channel, count>>
       const genreMap = new Map();
       for (const it of items){
         const g = (it[KEY.genre] || "기타").toString().trim() || "기타";
@@ -969,7 +1454,7 @@
         const cm = genreMap.get(g);
         cm.set(c, (cm.get(c) || 0) + 1);
       }
-      // sort genres by count desc
+
       const sorted = [...genreMap.entries()].map(([g, cm]) => {
         const total = [...cm.values()].reduce((a,b)=>a+b,0);
         const channels = [...cm.entries()]
@@ -984,9 +1469,7 @@
     function renderLeftNav(){
       leftNavEl.innerHTML = "";
 
-      // Dashboard에서 '현재 필터가 적용된 데이터 기준'으로 채널 목록 구성하면 UX가 좋아짐
       const base = allData.filter(it => {
-        // 채널 선택만 제외하고 필터 적용(좌측 목록이 필터에 따라 변하게)
         const q = (searchEl.value || "").toLowerCase().trim();
         const title = (it[KEY.title] || "").toString().toLowerCase();
 
@@ -1024,13 +1507,10 @@
         `;
 
         const body = document.createElement("div");
-        body.className = "genreBody" + (idx < 2 ? " open" : ""); // 상위 2개는 기본 펼침
+        body.className = "genreBody" + (idx < 2 ? " open" : "");
 
-        head.onclick = () => {
-          body.classList.toggle("open");
-        };
+        head.onclick = () => body.classList.toggle("open");
 
-        // "전체 채널" = genre그룹 내 채널 중 아무거나? 여기서는 제공하지 않고 채널만 제공.
         group.channels.forEach(({c, cnt}) => {
           const b = document.createElement("button");
           b.type = "button";
@@ -1038,7 +1518,7 @@
           b.innerHTML = `<span>${escapeHTML(c)}</span><span class="count">${cnt}</span>`;
           b.onclick = () => {
             selectedChannel = c;
-            render(); // 우측 갱신
+            render();
           };
           body.appendChild(b);
         });
@@ -1052,10 +1532,8 @@
     }
 
     async function renderDashboard(filtered){
-      // 왼쪽 네비 먼저
       renderLeftNav();
 
-      // 우측: selectedChannel 없으면 안내
       if (!selectedChannel){
         rightTitleEl.textContent = "채널 콘텐츠";
         rightListEl.innerHTML = "";
@@ -1077,29 +1555,27 @@
       rightEmptyEl.style.display = "none";
       rightListEl.innerHTML = list.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
 
-      // 썸네일 비동기 로딩
+      // thumbs
       const rows = Array.from(rightListEl.querySelectorAll(".row"));
       await Promise.all(list.map(async (item, idx) => {
         const t = await resolveThumbnail(item);
         const img = rows[idx]?.querySelector("img.rowThumb");
         if (img) img.src = t;
       }));
+
+      // counters
+      const ids = list.slice(0, 40).map(getItemId);
+      hydrateCountersFor(ids, 8);
     }
 
     async function render(){
       const filtered = allData.filter(matchesFilter);
-      const sortedForCount = sortByDateDesc(filtered);
-
-      statsEl.textContent = `표시: ${sortedForCount.length} / 전체: ${allData.length}`;
+      statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
 
       if (viewMode === "all"){
         gridEl.style.display = "grid";
         dashEl.classList.remove("active");
-        await renderGrid(sortByDateDesc(allData.filter(it => {
-          // Grid에서는 채널 선택을 적용하지 않게 하고 싶으면 여기서 selectedChannel 무시 가능.
-          // 지금은 viewMode가 all이면 matchesFilter가 okChannel=true라서 괜찮음.
-          return matchesFilter(it);
-        })));
+        await renderGrid(sortByDateDesc(allData.filter(matchesFilter)));
       } else {
         gridEl.style.display = "none";
         dashEl.classList.add("active");
@@ -1157,6 +1633,196 @@
     viewAllBtn.addEventListener("click", () => setView("all"));
     viewDashBtn.addEventListener("click", () => setView("dash"));
 
+    // ---------- Delegated click handling for like/memo ----------
+    document.addEventListener("click", async (e) => {
+      const likeBtn = e.target.closest("[data-like]");
+      if (likeBtn){
+        e.preventDefault();
+        e.stopPropagation();
+        const itemId = likeBtn.getAttribute("data-like");
+        if (!itemId) return;
+        if (isLiked(itemId)) return; // 이미 눌렀으면 무시
+        likeBtn.classList.add("active");
+        await likeItem(itemId);
+        return;
+      }
+
+      const memoBtn = e.target.closest("[data-memo]");
+      if (memoBtn){
+        e.preventDefault();
+        e.stopPropagation();
+        const itemId = memoBtn.getAttribute("data-memo");
+        if (!itemId) return;
+
+        // itemId로 원본 item 찾기
+        const item = allData.find(x => getItemId(x) === itemId);
+        if (!item) return;
+        openModalForItem(item);
+        return;
+      }
+    });
+
+    // ---------- Modal logic ----------
+    let modalItem = null;
+
+    function closeModal(){
+      modalOverlay.classList.remove("open");
+      modalOverlay.setAttribute("aria-hidden", "true");
+      modalOverlay.dataset.itemid = "";
+      modalItem = null;
+    }
+
+    mClose.addEventListener("click", closeModal);
+    modalOverlay.addEventListener("click", (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modalOverlay.classList.contains("open")) closeModal();
+    });
+
+    function renderMemoList(memos){
+      if (!memos || !memos.length){
+        mList.innerHTML = `<div class="mutebox">아직 메모가 없습니다. 첫 메모를 남겨보세요.</div>`;
+        return;
+      }
+      // 최신순
+      const sorted = [...memos].sort((a,b) => {
+        const ta = new Date(a.ts).getTime() || 0;
+        const tb = new Date(b.ts).getTime() || 0;
+        return tb - ta;
+      });
+
+      mList.innerHTML = sorted.map(m => `
+        <div class="memoItem">
+          <div class="memoTop">
+            <div class="memoNick">${escapeHTML(m.nickname || "익명")}</div>
+            <div class="memoTs">${escapeHTML(fmtTs(m.ts))}</div>
+          </div>
+          <div class="memoText">${escapeHTML(m.memo || "")}</div>
+        </div>
+      `).join("");
+    }
+
+    async function openModalForItem(item){
+      modalItem = item;
+      const itemId = getItemId(item);
+      modalOverlay.dataset.itemid = itemId;
+
+      // left
+      mTitle.textContent = (item[KEY.title] || "").toString().trim();
+      const channel = (item[KEY.channel] || "").toString().trim();
+      const date = (item[KEY.date] || "").toString().trim();
+      const genre = (item[KEY.genre] || "").toString().trim();
+      const format = (item[KEY.format] || "").toString().trim();
+      const media = (item[KEY.media] || "").toString().trim();
+      const url = (item[KEY.url] || "").toString().trim();
+
+      mSub.innerHTML = `
+        <span class="badge">${escapeHTML(channel || "채널")}</span>
+        ${media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : ``}
+        ${date ? `<span class="badge">${escapeHTML(date)}</span>` : ``}
+        ${genre ? `<span class="badge">장르: ${escapeHTML(genre)}</span>` : ``}
+        ${format ? `<span class="badge">포맷: ${escapeHTML(format)}</span>` : ``}
+      `;
+
+      mLink.href = url || "#";
+
+      // thumb
+      mThumb.src = THUMB_PLACEHOLDER;
+      resolveThumbnail(item).then(t => { mThumb.src = t; }).catch(()=>{});
+
+      // nickname default
+      const savedNick = getNickname();
+      if (savedNick) mNick.value = savedNick;
+
+      // like state
+      mLikeBtn.classList.toggle("active", isLiked(itemId));
+
+      // show modal
+      modalOverlay.classList.add("open");
+      modalOverlay.setAttribute("aria-hidden", "false");
+
+      // load interactions
+      mHint.textContent = "불러오는 중…";
+      try{
+        const data = await fetchInteractions(itemId);
+        mLikeCnt.textContent = String(data.likes ?? 0);
+        mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos || []).length}`;
+        renderMemoList(data.memos || []);
+        mHint.textContent = "";
+        updateCountersInDOM(itemId);
+      }catch(e){
+        mHint.textContent = "좋아요/메모를 불러오지 못했어요.";
+        renderMemoList([]);
+      }
+    }
+
+    mLikeBtn.addEventListener("click", async () => {
+      if (!modalItem) return;
+      const itemId = getItemId(modalItem);
+      if (isLiked(itemId)) return;
+      mLikeBtn.classList.add("active");
+      await likeItem(itemId);
+      const data = interactionsCache.get(itemId);
+      if (data){
+        mLikeCnt.textContent = String(data.likes ?? 0);
+        mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos||[]).length}`;
+      }
+    });
+
+    mSend.addEventListener("click", async () => {
+      if (!modalItem) return;
+      const itemId = getItemId(modalItem);
+
+      const nick = (mNick.value || "").trim();
+      const memo = (mMemo.value || "").trim();
+
+      if (!nick){
+        mHint.textContent = "닉네임을 입력해줘!";
+        mNick.focus();
+        return;
+      }
+      if (!memo){
+        mHint.textContent = "메모 내용을 입력해줘!";
+        mMemo.focus();
+        return;
+      }
+      if (memo.length > 200){
+        mHint.textContent = "메모는 200자 이하여야 해.";
+        return;
+      }
+
+      setNickname(nick);
+
+      // UI lock
+      mSend.disabled = true;
+      mSend.textContent = "등록 중…";
+      mHint.textContent = "";
+
+      try{
+        await postInteraction({ itemId, action:"memo", memo, nickname:nick });
+
+        // refresh from server
+        interactionsCache.delete(itemId);
+        const fresh = await fetchInteractions(itemId);
+
+        mMemo.value = "";
+        mLikeCnt.textContent = String(fresh.likes ?? 0);
+        mCounts.textContent = `👍 ${fresh.likes ?? 0} · 💬 ${(fresh.memos || []).length}`;
+        renderMemoList(fresh.memos || []);
+        updateCountersInDOM(itemId);
+        mHint.textContent = "등록 완료!";
+        setTimeout(()=>{ if (mHint.textContent==="등록 완료!") mHint.textContent=""; }, 900);
+
+      } catch (e){
+        mHint.textContent = "등록 실패. 다시 시도해줘!";
+      } finally {
+        mSend.disabled = false;
+        mSend.textContent = "등록";
+      }
+    });
+
+    // ---------- Init ----------
     async function init() {
       try {
         const res = await fetch(SHEET_URL);
