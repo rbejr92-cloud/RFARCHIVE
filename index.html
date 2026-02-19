@@ -49,7 +49,7 @@
 
     input[type="text"]{
       padding:10px 12px;
-      width:360px;
+      width:320px;
       max-width:100%;
       border-radius:14px;
       border:1px solid var(--line);
@@ -68,8 +68,13 @@
       cursor:pointer;
       font-size:12px;
       white-space:nowrap;
+      font-weight:900;
     }
     .btn:hover{ border-color: var(--line2); }
+    .btn.active{
+      border-color: rgba(255,71,87,.65);
+      box-shadow: 0 0 0 3px rgba(255,71,87,.12);
+    }
 
     .stats{
       font-size:12px;
@@ -109,14 +114,13 @@
       color: rgba(234,234,234,.95);
     }
 
-    /* ===== Compact Filter Tabs ===== */
+    /* ===== Filter Tabs ===== */
     .filterTabs{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
       margin: 8px 0 10px 0;
     }
-
     .tab{
       padding:8px 10px;
       border-radius:12px;
@@ -126,35 +130,28 @@
       font-size:13px;
       font-weight:800;
       cursor:pointer;
-      letter-spacing:.1px;
       line-height:1;
       white-space:nowrap;
     }
-
     .tab:hover{ border-color: rgba(255,255,255,.18); }
-
     .tab.active{
       border-color: rgba(255,71,87,.65);
       box-shadow: 0 0 0 3px rgba(255,71,87,.12);
       background: rgba(20,20,22,.75);
     }
-
     .filterPanel{
       border:1px solid rgba(255,255,255,.08);
       background: rgba(20,20,22,.35);
       border-radius:14px;
       padding:10px;
     }
-
     .chips{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
     }
-
     .chipsPanel{ display:none; }
     .chipsPanel.active{ display:flex; }
-
     .chip{
       padding:7px 10px;
       border-radius:999px;
@@ -177,14 +174,13 @@
       font-size:11px;
     }
 
-    /* ===== Cards Grid ===== */
+    /* ===== Grid ===== */
     .grid{
       display:grid;
       grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
       gap:14px;
       margin-top: 14px;
     }
-
     .card{
       background: rgba(20,20,22,.92);
       border:1px solid var(--line);
@@ -198,19 +194,16 @@
       transform: translateY(-2px);
       border-color: rgba(255,255,255,.16);
     }
-
     a.cleanLink{
       color:inherit;
       text-decoration:none;
       display:block;
     }
-
     .thumbWrap{
       width:100%;
       background:#0b0b0c;
       overflow:hidden;
     }
-
     .thumb{
       width:100%;
       height:220px;
@@ -218,12 +211,10 @@
       display:block;
       background:#0b0b0c;
     }
-
     .metaBox{
       padding:12px 12px 13px;
       border-top:1px solid rgba(255,255,255,.06);
     }
-
     .metaTopRow{
       display:flex;
       align-items:center;
@@ -231,14 +222,11 @@
       gap:10px;
       margin-bottom:10px;
     }
-
     .metaDate{
       font-size:12px;
       color: rgba(234,234,234,.70);
-      letter-spacing:.2px;
       white-space:nowrap;
     }
-
     .badge{
       display:inline-flex;
       align-items:center;
@@ -253,14 +241,12 @@
       font-weight:800;
     }
     .badge svg{ opacity:.92; }
-
     .metaLeft .channel{
       font-size:14px;
       font-weight:850;
       line-height:1.25;
       margin:0 0 6px 0;
     }
-
     .metaLeft .titleLine{
       font-size:12.5px;
       color: rgba(234,234,234,.86);
@@ -271,7 +257,6 @@
       -webkit-box-orient:vertical;
       overflow:hidden;
     }
-
     .metaTagLine{
       margin-top:0;
       font-size:12px;
@@ -283,14 +268,12 @@
       overflow:hidden;
       word-break:break-word;
     }
-
     .metaPills{
       display:flex;
       flex-wrap:wrap;
       gap:6px;
       margin-top:10px;
     }
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -303,17 +286,10 @@
       color: rgba(234,234,234,.86);
       white-space:nowrap;
     }
+    .pill .k{ color: rgba(234,234,234,.55); font-weight:800; }
+    .pill .v{ color: rgba(234,234,234,.92); font-weight:800; }
 
-    .pill .k{
-      color: rgba(234,234,234,.55);
-      font-weight:800;
-    }
-    .pill .v{
-      color: rgba(234,234,234,.92);
-      font-weight:800;
-    }
-
-    /* ===== Interactions (Card footer) ===== */
+    /* ===== Actions ===== */
     .actionsBar{
       margin-top:10px;
       display:flex;
@@ -347,7 +323,7 @@
       font-size:11px;
     }
 
-    /* ===== Dashboard Layout ===== */
+    /* ===== Dashboard ===== */
     .dash{
       display:none;
       grid-template-columns: 320px 1fr;
@@ -364,7 +340,6 @@
       overflow:hidden;
       box-shadow: var(--shadow);
     }
-
     .panelHeader{
       padding:12px 12px;
       border-bottom:1px solid rgba(255,255,255,.06);
@@ -378,22 +353,17 @@
       font-size:12px;
       font-weight:900;
       color: rgba(234,234,234,.9);
-      letter-spacing:.2px;
     }
     .panelHeader .hint{
       font-size:11px;
       color: rgba(234,234,234,.55);
       white-space:nowrap;
     }
-
     .leftScroll{
-      max-height: calc(100vh - 300px);
+      max-height: calc(100vh - 320px);
       overflow:auto;
       padding:10px;
     }
-    .leftScroll::-webkit-scrollbar{ width:10px; }
-    .leftScroll::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.10); border-radius:999px; }
-
     .genreGroup{
       border:1px solid rgba(255,255,255,.06);
       border-radius:14px;
@@ -401,7 +371,6 @@
       margin-bottom:10px;
       background: rgba(20,20,22,.35);
     }
-
     .genreHead{
       width:100%;
       border:0;
@@ -416,20 +385,14 @@
       font-size:12px;
       font-weight:900;
     }
-
     .genreHead .meta{
       display:flex; gap:8px; align-items:center;
       color: rgba(234,234,234,.65);
       font-weight:800;
       font-size:11px;
     }
-
-    .genreBody{
-      padding:8px;
-      display:none;
-    }
+    .genreBody{ padding:8px; display:none; }
     .genreBody.open{ display:block; }
-
     .channelItem{
       width:100%;
       border:1px solid rgba(255,255,255,.08);
@@ -457,15 +420,12 @@
       font-weight:900;
       white-space:nowrap;
     }
-
     .rightWrap{ padding: 10px; }
-
     .list{
       display:flex;
       flex-direction:column;
       gap:10px;
     }
-
     .row{
       display:grid;
       grid-template-columns: 160px 1fr;
@@ -476,7 +436,6 @@
       overflow:hidden;
       position:relative;
     }
-
     .rowThumb{
       width:100%;
       height:96px;
@@ -484,7 +443,6 @@
       object-fit:cover;
       display:block;
     }
-
     .rowMeta{
       padding:10px 12px;
       display:flex;
@@ -559,7 +517,6 @@
       z-index:9999;
     }
     .modalOverlay.open{ display:flex; }
-
     .modal{
       width:min(920px, 100%);
       max-height: min(86vh, 720px);
@@ -691,7 +648,6 @@
       white-space:pre-wrap;
       word-break:break-word;
     }
-
     .memoComposer{
       display:grid;
       grid-template-columns: 170px 1fr auto;
@@ -709,7 +665,6 @@
       font-size:12px;
     }
     .memoComposer input::placeholder{ color: rgba(234,234,234,.45); }
-
     .primaryBtn{
       padding:10px 12px;
       border-radius:12px;
@@ -722,7 +677,6 @@
       white-space:nowrap;
     }
     .primaryBtn:hover{ border-color: rgba(255,71,87,.70); }
-
     .smallNote{
       font-size:11px;
       color: rgba(234,234,234,.55);
@@ -754,13 +708,16 @@
       <button id="viewDashBtn" type="button">📺 채널별</button>
     </div>
 
-    <button class="btn" id="resetBtn">필터 초기화</button>
+    <button class="btn" id="likedOnlyBtn">❤️ 좋아요만</button>
+    <button class="btn" id="sortLikesBtn">🔥 좋아요순</button>
+    <button class="btn" id="adminBtn">🛠 관리자</button>
+    <button class="btn" id="resetBtn">초기화</button>
+
     <div class="stats" id="stats"></div>
   </div>
 
   <div class="divider"></div>
 
-  <!-- Filter Tabs -->
   <div class="filterTabs" id="filterTabs">
     <button class="tab active" data-tab="genre">장르</button>
     <button class="tab" data-tab="media">매체</button>
@@ -768,7 +725,6 @@
     <button class="tab" data-tab="tag">TAG</button>
   </div>
 
-  <!-- Filter Panels -->
   <div class="filterPanel">
     <div class="chips chipsPanel active" id="genreChips"></div>
     <div class="chips chipsPanel" id="mediaChips"></div>
@@ -778,10 +734,8 @@
 
   <div class="divider"></div>
 
-  <!-- Grid View -->
   <div class="grid" id="grid"></div>
 
-  <!-- Dashboard View -->
   <div class="dash" id="dash">
     <div class="panel">
       <div class="panelHeader">
@@ -816,7 +770,7 @@
 
       <div class="modalRight">
         <div class="modalHead">
-          <div class="h">
+          <div class="modalHeadLeft h">
             <span id="mCounts">👍 0 · 💬 0</span>
             <button class="actionBtn like" id="mLikeBtn" type="button">👍 <span class="cnt" id="mLikeCnt">0</span></button>
           </div>
@@ -837,13 +791,10 @@
   </div>
 
   <script>
-    // ✅ OpenSheet URL (사용자 제공)
+    // ===== DATA SOURCES =====
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
-
-    // ✅ Apps Script Web App URL (사용자 제공)
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
 
-    // ✅ 시트 컬럼명(헤더와 정확히 일치해야 함)
     const KEY = {
       genre: "장르",
       channel: "채널명",
@@ -853,19 +804,23 @@
       format: "포맷",
       tag: "TAG",
       date: "발행일",
-      note: "메모",
       thumbCandidates: ["thumb", "THUMB", "썸네일"]
     };
 
+    // ===== STATE =====
     let allData = [];
     let activeGenre = null;
     let activeMedia = null;
     let activeFormat = null;
     let activeTag = null;
 
-    let viewMode = "all"; // "all" | "dash"
-    let selectedChannel = null; // dashboard selection
+    let viewMode = "all"; // all | dash
+    let selectedChannel = null;
 
+    let showLikedOnly = false;
+    let sortMode = "date"; // date | likes
+
+    // ===== DOM =====
     const gridEl = document.getElementById("grid");
     const dashEl = document.getElementById("dash");
     const statsEl = document.getElementById("stats");
@@ -874,6 +829,10 @@
 
     const viewAllBtn = document.getElementById("viewAllBtn");
     const viewDashBtn = document.getElementById("viewDashBtn");
+
+    const likedOnlyBtn = document.getElementById("likedOnlyBtn");
+    const sortLikesBtn = document.getElementById("sortLikesBtn");
+    const adminBtn = document.getElementById("adminBtn");
 
     const genreChipsEl = document.getElementById("genreChips");
     const mediaChipsEl = document.getElementById("mediaChips");
@@ -886,7 +845,7 @@
     const rightListEl = document.getElementById("rightList");
     const rightEmptyEl = document.getElementById("rightEmpty");
 
-    // Modal elements
+    // Modal
     const modalOverlay = document.getElementById("modalOverlay");
     const mClose = document.getElementById("mClose");
     const mThumb = document.getElementById("mThumb");
@@ -905,14 +864,16 @@
     const THUMB_PLACEHOLDER = "https://via.placeholder.com/800x450?text=No+Thumbnail";
     const thumbCache = new Map();
 
-    // Interactions cache
-    const interactionsCache = new Map(); // itemId -> {likes:number, memos:[]}
-    const inFlight = new Map(); // itemId -> Promise
+    // Interactions caches
+    const interactionsCache = new Map(); // itemId -> {likes, memos}
+    const inFlight = new Map();
 
-    // Local preferences
+    // localStorage keys
     const LS_NICK = "vra:nickname";
-    const LS_LIKED = "vra:liked"; // JSON map { itemId: true }
+    const LS_UID = "vra:userId";
+    const LS_LIKED = "vra:liked"; // map { itemId:true }
 
+    // ===== UTIL =====
     function escapeHTML(str) {
       return String(str)
         .replaceAll("&","&amp;")
@@ -929,7 +890,6 @@
         .replaceAll("/", ",")
         .trim();
     }
-
     function splitTags(s) {
       return normalizeTagString(s)
         .split(",")
@@ -960,7 +920,6 @@
       });
     }
 
-    // ---------- ItemId (stable) ----------
     function fnv1a(str){
       let h = 0x811c9dc5;
       for (let i=0; i<str.length; i++){
@@ -969,26 +928,53 @@
       }
       return ("00000000" + h.toString(16)).slice(-8);
     }
-
     function normalizeUrl(url){
       try{
         const u = new URL(url);
         u.hash = "";
-        // utm 제거
         ["utm_source","utm_medium","utm_campaign","utm_term","utm_content"].forEach(k => u.searchParams.delete(k));
-        // instagram의 ?igsh= 등은 남겨도 되지만 정규화하려면 삭제 가능
         return u.toString();
       }catch{
         return (url || "").trim();
       }
     }
-
     function getItemId(item){
       const url = (item[KEY.url] || "").toString().trim();
       return fnv1a(normalizeUrl(url || ""));
     }
 
-    // ---------- Platform thumb ----------
+    // ===== LOCAL ID / NICK =====
+    function getUserId() {
+      let uid = localStorage.getItem(LS_UID);
+      if (!uid) {
+        if (crypto && crypto.randomUUID) uid = crypto.randomUUID();
+        else uid = String(Date.now()) + "-" + Math.random().toString(16).slice(2);
+        localStorage.setItem(LS_UID, uid);
+      }
+      return uid;
+    }
+    function getNickname(){
+      return (localStorage.getItem(LS_NICK) || "").trim();
+    }
+    function setNickname(nick){
+      localStorage.setItem(LS_NICK, (nick || "").trim());
+    }
+
+    function getLikedMap(){
+      try{ return JSON.parse(localStorage.getItem(LS_LIKED) || "{}"); }catch{ return {}; }
+    }
+    function isLiked(itemId){
+      const m = getLikedMap();
+      return !!m[itemId];
+    }
+    function setLikedState(itemId, liked){
+      const m = getLikedMap();
+      if (liked) m[itemId] = true;
+      else delete m[itemId];
+      localStorage.setItem(LS_LIKED, JSON.stringify(m));
+    }
+
+    // ===== THUMBNAILS =====
     function getYoutubeID(url) {
       try {
         const u = new URL(url);
@@ -1000,14 +986,12 @@
         return null;
       } catch { return null; }
     }
-
     function getSheetThumb(item) {
       for (const k of KEY.thumbCandidates) {
         if (item[k] && String(item[k]).trim()) return String(item[k]).trim();
       }
       return "";
     }
-
     function classifyPlatform(url) {
       const u = (url || "").toLowerCase();
       if (u.includes("youtube.com") || u.includes("youtu.be")) return "youtube";
@@ -1016,7 +1000,6 @@
       if (u.includes("vimeo.com")) return "vimeo";
       return "other";
     }
-
     function mediaIconSVG(media){
       const m = (media || "").toLowerCase();
       if (m.includes("youtube")) {
@@ -1036,26 +1019,18 @@
       }
       return "";
     }
-
     async function tryOEmbedThumb(platform, url) {
       try {
         let endpoint = "";
-        if (platform === "instagram") {
-          endpoint = "https://api.instagram.com/oembed/?url=" + encodeURIComponent(url);
-        } else if (platform === "tiktok") {
-          endpoint = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(url);
-        } else {
-          return "";
-        }
+        if (platform === "instagram") endpoint = "https://api.instagram.com/oembed/?url=" + encodeURIComponent(url);
+        else if (platform === "tiktok") endpoint = "https://www.tiktok.com/oembed?url=" + encodeURIComponent(url);
+        else return "";
         const res = await fetch(endpoint, { mode: "cors" });
         if (!res.ok) return "";
         const json = await res.json();
         return (json.thumbnail_url || json.thumbnail_url_with_play_button || "") || "";
-      } catch {
-        return "";
-      }
+      } catch { return ""; }
     }
-
     async function resolveThumbnail(item) {
       const url = (item[KEY.url] || "").toString().trim();
       if (!url) return THUMB_PLACEHOLDER;
@@ -1085,27 +1060,7 @@
       return THUMB_PLACEHOLDER;
     }
 
-    // ---------- Interactions API ----------
-    function getLikedMap(){
-      try{ return JSON.parse(localStorage.getItem(LS_LIKED) || "{}"); }catch{ return {}; }
-    }
-    function setLiked(itemId){
-      const m = getLikedMap();
-      m[itemId] = true;
-      localStorage.setItem(LS_LIKED, JSON.stringify(m));
-    }
-    function isLiked(itemId){
-      const m = getLikedMap();
-      return !!m[itemId];
-    }
-
-    function getNickname(){
-      return (localStorage.getItem(LS_NICK) || "").trim();
-    }
-    function setNickname(nick){
-      localStorage.setItem(LS_NICK, (nick || "").trim());
-    }
-
+    // ===== INTERACTIONS API =====
     async function fetchInteractions(itemId){
       if (interactionsCache.has(itemId)) return interactionsCache.get(itemId);
       if (inFlight.has(itemId)) return inFlight.get(itemId);
@@ -1124,16 +1079,11 @@
       })();
 
       inFlight.set(itemId, p);
-      try{
-        const out = await p;
-        return out;
-      } finally {
-        inFlight.delete(itemId);
-      }
+      try { return await p; }
+      finally { inFlight.delete(itemId); }
     }
 
     async function postInteraction(payload){
-      // CORS preflight 피하려고 text/plain으로 전송
       const res = await fetch(API_URL, {
         method: "POST",
         mode: "cors",
@@ -1141,31 +1091,69 @@
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error("API POST failed: " + res.status);
-      try{
-        return await res.json();
-      }catch{
-        return { status: "ok" };
+      try { return await res.json(); }
+      catch { return { status: "ok" }; }
+    }
+
+    function updateCountersInDOM(itemId){
+      const data = interactionsCache.get(itemId);
+      if (!data) return;
+
+      document.querySelectorAll("#like-" + CSS.escape(itemId)).forEach(el => el.textContent = String(data.likes ?? 0));
+      document.querySelectorAll("#memo-" + CSS.escape(itemId)).forEach(el => el.textContent = String((data.memos || []).length));
+
+      if (modalOverlay.classList.contains("open") && modalOverlay.dataset.itemid === itemId){
+        mLikeCnt.textContent = String(data.likes ?? 0);
+        mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos || []).length}`;
+        mLikeBtn.classList.toggle("active", isLiked(itemId));
       }
     }
 
-    async function likeItem(itemId){
-      if (isLiked(itemId)) return;
+    async function hydrateCountersFor(ids, limit=8){
+      const q = [...new Set(ids)].filter(Boolean);
+      let i = 0;
+      const workers = Array.from({length: Math.min(limit, q.length)}, async () => {
+        while (i < q.length){
+          const id = q[i++];
+          try{
+            await fetchInteractions(id);
+          }catch{
+            interactionsCache.set(id, interactionsCache.get(id) || { likes:0, memos:[] });
+          }
+          updateCountersInDOM(id);
+        }
+      });
+      await Promise.all(workers);
+    }
 
-      // UI 즉시 반영(낙관적 업데이트)
-      const cached = interactionsCache.get(itemId) || { likes:0, memos:[] };
-      interactionsCache.set(itemId, { ...cached, likes: cached.likes + 1 });
-      setLiked(itemId);
-      updateCountersInDOM(itemId);
+    async function toggleLike(itemId){
+      const userId = getUserId();
+      const nick = getNickname() || "익명";
+
+      // 낙관적 UI: 토글 반영
+      const wasLiked = isLiked(itemId);
+      setLikedState(itemId, !wasLiked);
+      document.querySelectorAll('[data-like="' + itemId + '"]').forEach(btn => {
+        btn.classList.toggle("active", !wasLiked);
+      });
+      mLikeBtn.classList.toggle("active", isLiked(itemId));
 
       try{
-        await postInteraction({ itemId, action: "like", memo: "", nickname: getNickname() || "익명" });
-      } catch (e){
-        // 실패하면 롤백
-        const cur = interactionsCache.get(itemId) || { likes:1, memos:[] };
-        interactionsCache.set(itemId, { ...cur, likes: Math.max(0, (cur.likes||1)-1) });
-        // liked 롤백도 필요하지만 간단히 두자(중복 클릭 방지 목적이라)
+        await postInteraction({ itemId, action:"like", userId, nickname:nick, memo:"" });
+
+        // 서버값으로 다시 동기화
+        interactionsCache.delete(itemId);
+        await fetchInteractions(itemId);
         updateCountersInDOM(itemId);
-        alert("좋아요 저장에 실패했어요. 다시 시도해줘!");
+
+      }catch(e){
+        // 실패 롤백
+        setLikedState(itemId, wasLiked);
+        document.querySelectorAll('[data-like="' + itemId + '"]').forEach(btn => {
+          btn.classList.toggle("active", wasLiked);
+        });
+        mLikeBtn.classList.toggle("active", isLiked(itemId));
+        alert("좋아요 처리 실패. 다시 시도해줘!");
       }
     }
 
@@ -1182,7 +1170,7 @@
       }catch{ return String(ts||""); }
     }
 
-    // ---------- UI helpers ----------
+    // ===== UI: action bars =====
     function actionBarHTML(item){
       const itemId = getItemId(item);
       const liked = isLiked(itemId);
@@ -1197,7 +1185,6 @@
         </div>
       `;
     }
-
     function rowActionsHTML(item){
       const itemId = getItemId(item);
       const liked = isLiked(itemId);
@@ -1213,45 +1200,7 @@
       `;
     }
 
-    function updateCountersInDOM(itemId){
-      const data = interactionsCache.get(itemId);
-      if (!data) return;
-      const likeEls = document.querySelectorAll("#like-" + CSS.escape(itemId));
-      const memoEls = document.querySelectorAll("#memo-" + CSS.escape(itemId));
-      likeEls.forEach(el => el.textContent = String(data.likes ?? 0));
-      memoEls.forEach(el => el.textContent = String((data.memos || []).length));
-
-      // modal
-      if (modalOverlay.classList.contains("open") && modalOverlay.dataset.itemid === itemId){
-        mLikeCnt.textContent = String(data.likes ?? 0);
-        mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos || []).length}`;
-        mLikeBtn.classList.toggle("active", isLiked(itemId));
-      }
-    }
-
-    async function hydrateCountersFor(ids, limit=10){
-      // 간단한 동시성 제한
-      const q = [...new Set(ids)].filter(Boolean);
-      let i = 0;
-
-      const workers = Array.from({length: Math.min(limit, q.length)}, async () => {
-        while (i < q.length){
-          const id = q[i++];
-          try{
-            const data = await fetchInteractions(id);
-            updateCountersInDOM(id);
-          }catch{
-            // 표시 실패하면 0으로
-            interactionsCache.set(id, interactionsCache.get(id) || { likes:0, memos:[] });
-            updateCountersInDOM(id);
-          }
-        }
-      });
-
-      await Promise.all(workers);
-    }
-
-    // ---------- Filters ----------
+    // ===== FILTERS =====
     function countBy(items, getter) {
       const m = new Map();
       items.forEach(it => {
@@ -1261,20 +1210,15 @@
       });
       return m;
     }
-
     function buildTagCounts(items) {
       const m = new Map();
       items.forEach(it => {
-        splitTags(it[KEY.tag]).forEach(t => {
-          m.set(t, (m.get(t) || 0) + 1);
-        });
+        splitTags(it[KEY.tag]).forEach(t => m.set(t, (m.get(t) || 0) + 1));
       });
       return m;
     }
-
     function renderChipGroup(container, labelAll, values, activeValue, onPick) {
       container.innerHTML = "";
-
       const allChip = document.createElement("div");
       allChip.className = "chip" + (activeValue === null ? " active" : "");
       allChip.textContent = labelAll;
@@ -1289,27 +1233,19 @@
         container.appendChild(chip);
       });
     }
-
     function rebuildAllChips() {
       const genreCounts = countBy(allData, it => it[KEY.genre]);
       const mediaCounts = countBy(allData, it => it[KEY.media]);
       const formatCounts = countBy(allData, it => it[KEY.format]);
       const tagCounts = buildTagCounts(allData);
 
-      const genres = [...genreCounts.entries()]
-        .map(([value, count]) => ({ value, count }))
+      const genres = [...genreCounts.entries()].map(([value, count]) => ({ value, count }))
         .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
-
-      const medias = [...mediaCounts.entries()]
-        .map(([value, count]) => ({ value, count }))
+      const medias = [...mediaCounts.entries()].map(([value, count]) => ({ value, count }))
         .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
-
-      const formats = [...formatCounts.entries()]
-        .map(([value, count]) => ({ value, count }))
+      const formats = [...formatCounts.entries()].map(([value, count]) => ({ value, count }))
         .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
-
-      const tags = [...tagCounts.entries()]
-        .map(([value, count]) => ({ value, count }))
+      const tags = [...tagCounts.entries()].map(([value, count]) => ({ value, count }))
         .sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
 
       renderChipGroup(genreChipsEl, "All", genres, activeGenre, (v) => { activeGenre = v; render(); });
@@ -1337,10 +1273,13 @@
         ? ((item[KEY.channel] || "").toString().trim() === selectedChannel)
         : true;
 
-      return okSearch && okGenre && okMedia && okFormat && okTag && okChannel;
+      const id = getItemId(item);
+      const okLiked = showLikedOnly ? isLiked(id) : true;
+
+      return okSearch && okGenre && okMedia && okFormat && okTag && okChannel && okLiked;
     }
 
-    // ---------- Rendering ----------
+    // ===== RENDER =====
     function baseCardHTML(item, thumbUrl) {
       const url = item[KEY.url] || "#";
       const date = (item[KEY.date] || "").toString().trim();
@@ -1353,9 +1292,7 @@
       const tags = splitTags(item[KEY.tag]);
       const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
 
-      const mediaBadge = media
-        ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>`
-        : "";
+      const mediaBadge = media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : "";
 
       return `
         <div class="card" data-itemid="${getItemId(item)}">
@@ -1401,9 +1338,7 @@
       const tags = splitTags(item[KEY.tag]);
       const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
 
-      const mediaBadge = media
-        ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>`
-        : "";
+      const mediaBadge = media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : "";
 
       return `
         <div class="row" data-itemid="${getItemId(item)}">
@@ -1429,20 +1364,47 @@
       `;
     }
 
-    async function renderGrid(filtered){
-      gridEl.innerHTML = filtered.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
+    function getLikesFromCache(itemId){
+      return interactionsCache.get(itemId)?.likes || 0;
+    }
 
-      // thumbs
+    async function renderGrid(filtered){
+      // 정렬: date or likes
+      let list = [...filtered];
+      if (sortMode === "likes") {
+        // 캐시 기반 정렬(없는 건 0)
+        list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
+      } else {
+        list = sortByDateDesc(list);
+      }
+
+      gridEl.innerHTML = list.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
+
       const cards = Array.from(gridEl.querySelectorAll(".card"));
-      await Promise.all(filtered.map(async (item, idx) => {
+      await Promise.all(list.map(async (item, idx) => {
         const t = await resolveThumbnail(item);
         const img = cards[idx]?.querySelector("img.thumb");
         if (img) img.src = t;
       }));
 
-      // hydrate counters (visible items)
-      const ids = filtered.slice(0, 36).map(getItemId);
-      hydrateCountersFor(ids, 8);
+      const ids = list.slice(0, 60).map(getItemId);
+      await hydrateCountersFor(ids, 8);
+
+      // 좋아요순일 때는 카운터 불러온 후 다시 정렬해서 반영(한 번 더)
+      if (sortMode === "likes") {
+        const resort = [...list].sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
+        if (resort.map(getItemId).join(",") !== list.map(getItemId).join(",")) {
+          gridEl.innerHTML = resort.map(item => baseCardHTML(item, THUMB_PLACEHOLDER)).join("");
+          const cards2 = Array.from(gridEl.querySelectorAll(".card"));
+          await Promise.all(resort.map(async (item, idx) => {
+            const t = await resolveThumbnail(item);
+            const img = cards2[idx]?.querySelector("img.thumb");
+            if (img) img.src = t;
+          }));
+          const ids2 = resort.slice(0, 60).map(getItemId);
+          await hydrateCountersFor(ids2, 8);
+        }
+      }
     }
 
     function buildGenreChannelIndex(items){
@@ -1454,15 +1416,12 @@
         const cm = genreMap.get(g);
         cm.set(c, (cm.get(c) || 0) + 1);
       }
-
       const sorted = [...genreMap.entries()].map(([g, cm]) => {
         const total = [...cm.values()].reduce((a,b)=>a+b,0);
-        const channels = [...cm.entries()]
-          .map(([c, cnt]) => ({ c, cnt }))
+        const channels = [...cm.entries()].map(([c, cnt]) => ({ c, cnt }))
           .sort((a,b)=> b.cnt - a.cnt || a.c.localeCompare(b.c, "ko"));
         return { g, total, channels };
       }).sort((a,b)=> b.total - a.total || a.g.localeCompare(b.g, "ko"));
-
       return sorted;
     }
 
@@ -1484,7 +1443,8 @@
         const okFormat = activeFormat ? format === activeFormat : true;
         const okTag = activeTag ? tags.includes(activeTag) : true;
 
-        return okSearch && okGenre && okMedia && okFormat && okTag;
+        const okLiked = showLikedOnly ? isLiked(getItemId(it)) : true;
+        return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
       });
 
       const index = buildGenreChannelIndex(base);
@@ -1544,7 +1504,13 @@
 
       rightTitleEl.textContent = selectedChannel;
 
-      const list = sortByDateDesc(filtered);
+      let list = [...filtered];
+      if (sortMode === "likes") {
+        list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
+      } else {
+        list = sortByDateDesc(list);
+      }
+
       if (!list.length){
         rightListEl.innerHTML = "";
         rightEmptyEl.style.display = "block";
@@ -1555,7 +1521,6 @@
       rightEmptyEl.style.display = "none";
       rightListEl.innerHTML = list.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
 
-      // thumbs
       const rows = Array.from(rightListEl.querySelectorAll(".row"));
       await Promise.all(list.map(async (item, idx) => {
         const t = await resolveThumbnail(item);
@@ -1563,9 +1528,8 @@
         if (img) img.src = t;
       }));
 
-      // counters
-      const ids = list.slice(0, 40).map(getItemId);
-      hydrateCountersFor(ids, 8);
+      const ids = list.slice(0, 80).map(getItemId);
+      await hydrateCountersFor(ids, 8);
     }
 
     async function render(){
@@ -1575,7 +1539,7 @@
       if (viewMode === "all"){
         gridEl.style.display = "grid";
         dashEl.classList.remove("active");
-        await renderGrid(sortByDateDesc(allData.filter(matchesFilter)));
+        await renderGrid(filtered);
       } else {
         gridEl.style.display = "none";
         dashEl.classList.add("active");
@@ -1583,47 +1547,48 @@
       }
     }
 
-    function resetFilters() {
+    function resetAll() {
       activeGenre = null;
       activeMedia = null;
       activeFormat = null;
       activeTag = null;
       searchEl.value = "";
       selectedChannel = null;
+
+      showLikedOnly = false;
+      sortMode = "date";
+      likedOnlyBtn.classList.remove("active");
+      sortLikesBtn.classList.remove("active");
+
       rebuildAllChips();
       render();
     }
 
-    resetBtn.addEventListener("click", resetFilters);
+    resetBtn.addEventListener("click", resetAll);
     searchEl.addEventListener("input", () => render());
 
-    // ===== Filter Tabs logic =====
+    // Filter tabs logic
     (function setupTabs(){
       const tabsEl = document.getElementById("filterTabs");
-      if (!tabsEl) return;
-
       const panels = {
-        genre: document.getElementById("genreChips"),
-        media: document.getElementById("mediaChips"),
-        format: document.getElementById("formatChips"),
-        tag: document.getElementById("tagChips"),
+        genre: genreChipsEl,
+        media: mediaChipsEl,
+        format: formatChipsEl,
+        tag: tagChipsEl,
       };
-
       function activate(name){
         tabsEl.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
         Object.entries(panels).forEach(([k, el]) => el.classList.toggle("active", k === name));
       }
-
       tabsEl.addEventListener("click", (e) => {
         const btn = e.target.closest(".tab");
         if (!btn) return;
         activate(btn.dataset.tab);
       });
-
       activate("genre");
     })();
 
-    // ===== View Toggle logic =====
+    // View Toggle
     function setView(mode){
       viewMode = mode;
       viewAllBtn.classList.toggle("active", mode === "all");
@@ -1633,7 +1598,43 @@
     viewAllBtn.addEventListener("click", () => setView("all"));
     viewDashBtn.addEventListener("click", () => setView("dash"));
 
-    // ---------- Delegated click handling for like/memo ----------
+    // Liked only toggle
+    likedOnlyBtn.addEventListener("click", () => {
+      showLikedOnly = !showLikedOnly;
+      likedOnlyBtn.classList.toggle("active", showLikedOnly);
+      render();
+    });
+
+    // Sort by likes toggle
+    sortLikesBtn.addEventListener("click", () => {
+      sortMode = (sortMode === "likes") ? "date" : "likes";
+      sortLikesBtn.classList.toggle("active", sortMode === "likes");
+      render();
+    });
+
+    // Admin dashboard (simple)
+    adminBtn.addEventListener("click", async () => {
+      try{
+        const res = await fetch(API_URL + "?admin=1&t=" + Date.now(), { method:"GET", mode:"cors" });
+        const data = await res.json();
+        const sorted = [...data].sort((a,b)=> (b.likes||0) - (a.likes||0)).slice(0, 30);
+
+        // itemId -> item lookup
+        const map = new Map(allData.map(it => [getItemId(it), it]));
+        const lines = sorted.map((x,i) => {
+          const it = map.get(x.itemId);
+          const title = it ? ((it[KEY.title] || "").toString().trim()) : "(unknown)";
+          const channel = it ? ((it[KEY.channel] || "").toString().trim()) : "";
+          return `${i+1}. 👍 ${x.likes}  |  ${channel}  |  ${title}`;
+        });
+
+        alert("TOP 좋아요 (상위 30)\n\n" + lines.join("\n"));
+      }catch(e){
+        alert("관리자 통계 불러오기 실패");
+      }
+    });
+
+    // Delegated click for like/memo
     document.addEventListener("click", async (e) => {
       const likeBtn = e.target.closest("[data-like]");
       if (likeBtn){
@@ -1641,9 +1642,8 @@
         e.stopPropagation();
         const itemId = likeBtn.getAttribute("data-like");
         if (!itemId) return;
-        if (isLiked(itemId)) return; // 이미 눌렀으면 무시
-        likeBtn.classList.add("active");
-        await likeItem(itemId);
+
+        await toggleLike(itemId);
         return;
       }
 
@@ -1654,7 +1654,6 @@
         const itemId = memoBtn.getAttribute("data-memo");
         if (!itemId) return;
 
-        // itemId로 원본 item 찾기
         const item = allData.find(x => getItemId(x) === itemId);
         if (!item) return;
         openModalForItem(item);
@@ -1662,7 +1661,7 @@
       }
     });
 
-    // ---------- Modal logic ----------
+    // ===== MODAL =====
     let modalItem = null;
 
     function closeModal(){
@@ -1671,7 +1670,6 @@
       modalOverlay.dataset.itemid = "";
       modalItem = null;
     }
-
     mClose.addEventListener("click", closeModal);
     modalOverlay.addEventListener("click", (e) => {
       if (e.target === modalOverlay) closeModal();
@@ -1685,13 +1683,11 @@
         mList.innerHTML = `<div class="mutebox">아직 메모가 없습니다. 첫 메모를 남겨보세요.</div>`;
         return;
       }
-      // 최신순
       const sorted = [...memos].sort((a,b) => {
         const ta = new Date(a.ts).getTime() || 0;
         const tb = new Date(b.ts).getTime() || 0;
         return tb - ta;
       });
-
       mList.innerHTML = sorted.map(m => `
         <div class="memoItem">
           <div class="memoTop">
@@ -1708,7 +1704,6 @@
       const itemId = getItemId(item);
       modalOverlay.dataset.itemid = itemId;
 
-      // left
       mTitle.textContent = (item[KEY.title] || "").toString().trim();
       const channel = (item[KEY.channel] || "").toString().trim();
       const date = (item[KEY.date] || "").toString().trim();
@@ -1727,22 +1722,17 @@
 
       mLink.href = url || "#";
 
-      // thumb
       mThumb.src = THUMB_PLACEHOLDER;
       resolveThumbnail(item).then(t => { mThumb.src = t; }).catch(()=>{});
 
-      // nickname default
       const savedNick = getNickname();
       if (savedNick) mNick.value = savedNick;
 
-      // like state
       mLikeBtn.classList.toggle("active", isLiked(itemId));
 
-      // show modal
       modalOverlay.classList.add("open");
       modalOverlay.setAttribute("aria-hidden", "false");
 
-      // load interactions
       mHint.textContent = "불러오는 중…";
       try{
         const data = await fetchInteractions(itemId);
@@ -1759,15 +1749,7 @@
 
     mLikeBtn.addEventListener("click", async () => {
       if (!modalItem) return;
-      const itemId = getItemId(modalItem);
-      if (isLiked(itemId)) return;
-      mLikeBtn.classList.add("active");
-      await likeItem(itemId);
-      const data = interactionsCache.get(itemId);
-      if (data){
-        mLikeCnt.textContent = String(data.likes ?? 0);
-        mCounts.textContent = `👍 ${data.likes ?? 0} · 💬 ${(data.memos||[]).length}`;
-      }
+      await toggleLike(getItemId(modalItem));
     });
 
     mSend.addEventListener("click", async () => {
@@ -1777,32 +1759,19 @@
       const nick = (mNick.value || "").trim();
       const memo = (mMemo.value || "").trim();
 
-      if (!nick){
-        mHint.textContent = "닉네임을 입력해줘!";
-        mNick.focus();
-        return;
-      }
-      if (!memo){
-        mHint.textContent = "메모 내용을 입력해줘!";
-        mMemo.focus();
-        return;
-      }
-      if (memo.length > 200){
-        mHint.textContent = "메모는 200자 이하여야 해.";
-        return;
-      }
+      if (!nick){ mHint.textContent = "닉네임을 입력해줘!"; mNick.focus(); return; }
+      if (!memo){ mHint.textContent = "메모 내용을 입력해줘!"; mMemo.focus(); return; }
+      if (memo.length > 200){ mHint.textContent = "메모는 200자 이하여야 해."; return; }
 
       setNickname(nick);
 
-      // UI lock
       mSend.disabled = true;
       mSend.textContent = "등록 중…";
       mHint.textContent = "";
 
       try{
-        await postInteraction({ itemId, action:"memo", memo, nickname:nick });
+        await postInteraction({ itemId, action:"memo", memo, nickname:nick, userId: getUserId() });
 
-        // refresh from server
         interactionsCache.delete(itemId);
         const fresh = await fetchInteractions(itemId);
 
@@ -1811,6 +1780,7 @@
         mCounts.textContent = `👍 ${fresh.likes ?? 0} · 💬 ${(fresh.memos || []).length}`;
         renderMemoList(fresh.memos || []);
         updateCountersInDOM(itemId);
+
         mHint.textContent = "등록 완료!";
         setTimeout(()=>{ if (mHint.textContent==="등록 완료!") mHint.textContent=""; }, 900);
 
@@ -1822,7 +1792,7 @@
       }
     });
 
-    // ---------- Init ----------
+    // ===== INIT =====
     async function init() {
       try {
         const res = await fetch(SHEET_URL);
