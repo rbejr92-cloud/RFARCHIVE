@@ -44,7 +44,7 @@
     /* 🎨 글래스모피즘 상단바 (스크롤 시 고정) */
     .topbarWrapper {
       position: sticky;
-      top: -22px; /* body padding 보정 */
+      top: -22px;
       margin: -22px -22px 12px -22px;
       padding: 22px 22px 12px 22px;
       background: rgba(15, 15, 16, 0.75);
@@ -364,7 +364,7 @@
     }
     .actionBtn .cnt{ opacity:.75; font-weight:700; font-size:12px; }
 
-    /* ===== Dashboard (생략/유지) ===== */
+    /* ===== Dashboard ===== */
     .dash{
       display:none;
       grid-template-columns: 320px 1fr;
@@ -675,11 +675,16 @@
 
     // ===== STATE =====
     let allData = [];
+    
+    // 🔥 1. 전체 필터 목록 원본 저장용 (초기화 시 복구하기 위해)
+    let baseGenres = [];
+    let baseMedias = [];
+    let baseFormats = [];
+    let baseTags = [];
+
     let activeGenre = null;
     let activeMedia = null;
     let activeFormat = null;
-    
-    // 🎨 다중 태그 선택을 위해 Set 객체 사용
     let activeTags = new Set(); 
 
     let viewMode = "all"; // all | dash
@@ -734,7 +739,7 @@
     const mTitle = document.getElementById("mTitle");
     const mSub = document.getElementById("mSub");
     const mLink = document.getElementById("mLink");
-    const mCopyBtn = document.getElementById("mCopyBtn"); // 링크 복사 버튼
+    const mCopyBtn = document.getElementById("mCopyBtn");
     const mCounts = document.getElementById("mCounts");
     const mLikeBtn = document.getElementById("mLikeBtn");
     const mLikeCnt = document.getElementById("mLikeCnt");
@@ -743,7 +748,6 @@
     const mMemo = document.getElementById("mMemo");
     const mSend = document.getElementById("mSend");
 
-    // FAB (맨 위로 가기)
     const fab = document.getElementById("fab");
     window.addEventListener("scroll", () => {
       if (window.scrollY > 400) fab.classList.add("visible");
@@ -816,7 +820,6 @@
       };
     }
 
-    // 🎨 토스트 알림 함수
     function showToast(msg) {
       const t = document.getElementById("toast");
       t.textContent = msg;
@@ -998,7 +1001,6 @@
       }catch{ return String(ts||""); }
     }
 
-    // ===== UI: action bars =====
     function actionBarHTML(item){
       const itemId = getItemId(item), liked = isLiked(itemId);
       return `
@@ -1008,7 +1010,7 @@
         </div>`;
     }
 
-    // ===== FILTERS (다중 태그 반영) =====
+    // ===== FILTERS (다중 태그 반영 & 액티브 컬러 고정) =====
     function countBy(items, getter) {
       const m = new Map();
       items.forEach(it => {
@@ -1023,19 +1025,33 @@
       return m;
     }
     
-    // 🎨 Chip Group 렌더링 (다중선택 여부 처리)
+    // 🔥 2. 초기 로드 시 한 번만 전체 목록을 추출해서 저장해둠 (여집합 계산 기준)
+    function extractBaseFilters() {
+      baseGenres = [...new Set(allData.map(i => (i[KEY.genre]||"").trim()).filter(Boolean))].sort();
+      baseMedias = [...new Set(allData.map(i => (i[KEY.media]||"").trim()).filter(Boolean))].sort();
+      baseFormats = [...new Set(allData.map(i => (i[KEY.format]||"").trim()).filter(Boolean))].sort();
+      baseTags = [...new Set(allData.flatMap(i => splitTags(i[KEY.tag])))].sort();
+    }
+
     function renderChipGroup(container, labelAll, values, activeState, onPick, isMulti = false) {
       container.innerHTML = "";
-      const allChip = document.createElement("div");
       const isAllActive = isMulti ? activeState.size === 0 : activeState === null;
+
+      const allChip = document.createElement("div");
       allChip.className = "chip" + (isAllActive ? " active" : "");
       allChip.textContent = labelAll;
       allChip.onclick = () => onPick(null);
       container.appendChild(allChip);
 
+      values.sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
+
       values.forEach(({ value, count }) => {
-        const chip = document.createElement("div");
         const isActive = isMulti ? activeState.has(value) : activeState === value;
+
+        // 🔥 3. 태그(다중선택)일 때, 현재 렌더링될 데이터 안에 해당 태그가 아예 없다면(count=0) 화면에서 숨김 (여집합 제외)
+        if (isMulti && count === 0 && !isActive) return;
+
+        const chip = document.createElement("div");
         chip.className = "chip" + (isActive ? " active" : "");
         chip.innerHTML = `${escapeHTML(value)} <span class="count">${count}</span>`;
         chip.onclick = () => onPick(value);
@@ -1043,20 +1059,24 @@
       });
     }
 
-    function rebuildAllChips() {
+    // 🔥 4. 버튼 색상이 바뀌도록 렌더링 할 때마다 UI를 갱신해주는 함수
+    function updateChipsUI(filteredData) {
+      // 장르, 매체, 포맷은 항상 전체 옵션을 띄워줌 (단일선택)
       const genreCounts = countBy(allData, it => it[KEY.genre]);
       const mediaCounts = countBy(allData, it => it[KEY.media]);
       const formatCounts = countBy(allData, it => it[KEY.format]);
-      const tagCounts = buildTagCounts(allData);
-
-      const mapSort = (map) => [...map.entries()].map(([value, count]) => ({ value, count })).sort((a,b) => b.count - a.count || a.value.localeCompare(b.value, "ko"));
-
-      renderChipGroup(genreChipsEl, "All", mapSort(genreCounts), activeGenre, (v) => { activeGenre = v; render(true); });
-      renderChipGroup(mediaChipsEl, "All", mapSort(mediaCounts), activeMedia, (v) => { activeMedia = v; render(true); });
-      renderChipGroup(formatChipsEl, "All", mapSort(formatCounts), activeFormat, (v) => { activeFormat = v; render(true); });
       
-      // 🎨 다중 태그 선택 처리
-      renderChipGroup(tagChipsEl, "All", mapSort(tagCounts), activeTags, (v) => {
+      // 태그는 '현재 필터링된 결과'를 기준으로 카운트 계산
+      const tagCounts = buildTagCounts(filteredData);
+
+      const mapSort = (baseList, countMap) => baseList.map(v => ({ value: v, count: countMap.get(v) || 0 }));
+
+      renderChipGroup(genreChipsEl, "All", mapSort(baseGenres, genreCounts), activeGenre, (v) => { activeGenre = v; render(true); });
+      renderChipGroup(mediaChipsEl, "All", mapSort(baseMedias, mediaCounts), activeMedia, (v) => { activeMedia = v; render(true); });
+      renderChipGroup(formatChipsEl, "All", mapSort(baseFormats, formatCounts), activeFormat, (v) => { activeFormat = v; render(true); });
+      
+      // 태그는 isMulti = true
+      renderChipGroup(tagChipsEl, "All", mapSort(baseTags, tagCounts), activeTags, (v) => {
         if (v === null) activeTags.clear();
         else {
           if (activeTags.has(v)) activeTags.delete(v);
@@ -1079,8 +1099,9 @@
       const okMedia = activeMedia ? media === activeMedia : true;
       const okFormat = activeFormat ? format === activeFormat : true;
       
-      // 🎨 태그 여러 개 선택 시 교집합(AND) 혹은 합집합(OR) - 여기선 포함 여부(OR)로 동작하게 만듦
-      const okTag = activeTags.size === 0 ? true : tags.some(t => activeTags.has(t));
+      // 🔥 5. OR 로직에서 AND 로직(교집합)으로 완벽 수정
+      // 선택한 모든 태그가 해당 아이템에 포함되어 있어야만 보여줌
+      const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => tags.includes(t));
 
       const okChannel = (viewMode === "dash" && selectedChannel) ? ((item[KEY.channel] || "").toString().trim() === selectedChannel) : true;
       const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true;
@@ -1090,16 +1111,8 @@
 
     // ===== RENDER =====
     function baseCardHTML(item, thumbUrl) {
-      const url = item[KEY.url] || "#";
-      const date = (item[KEY.date] || "").toString().trim();
-      const channel = (item[KEY.channel] || "").toString().trim();
-      const title = (item[KEY.title] || "").toString().trim();
-      const media = (item[KEY.media] || "").toString().trim();
-      const genre = (item[KEY.genre] || "").toString().trim();
-      const format = (item[KEY.format] || "").toString().trim();
-      const tags = splitTags(item[KEY.tag]);
-      const tagLine = tags.length ? ("#" + tags.join("  #")) : "";
-      const mediaBadge = media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : "";
+      const url = item[KEY.url] || "#", date = (item[KEY.date] || "").toString().trim(), channel = (item[KEY.channel] || "").toString().trim(), title = (item[KEY.title] || "").toString().trim(), media = (item[KEY.media] || "").toString().trim(), genre = (item[KEY.genre] || "").toString().trim(), format = (item[KEY.format] || "").toString().trim();
+      const tags = splitTags(item[KEY.tag]), tagLine = tags.length ? ("#" + tags.join("  #")) : "", mediaBadge = media ? `<span class="badge">${mediaIconSVG(media)}${escapeHTML(media)}</span>` : "";
 
       return `
         <div class="card" data-itemid="${getItemId(item)}">
@@ -1182,15 +1195,9 @@
       })).sort((a,b)=> b.total - a.total || a.g.localeCompare(b.g, "ko"));
     }
 
-    function renderLeftNav(){
+    function renderLeftNav(filtered){
       leftNavEl.innerHTML = "";
-      const base = allData.filter(it => {
-        const q = (searchEl.value || "").toLowerCase().trim(), title = (it[KEY.title] || "").toString().toLowerCase(), genre = (it[KEY.genre] || "").toString().trim(), media = (it[KEY.media] || "").toString().trim(), format = (it[KEY.format] || "").toString().trim(), tags = splitTags(it[KEY.tag]);
-        const okSearch = q ? title.includes(q) : true, okGenre = activeGenre ? genre === activeGenre : true, okMedia = activeMedia ? media === activeMedia : true, okFormat = activeFormat ? format === activeFormat : true, okTag = activeTags.size === 0 ? true : tags.some(t => activeTags.has(t)), okLiked = showLikedOnly ? isLiked(getItemId(it)) : true;
-        return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
-      });
-
-      const index = buildGenreChannelIndex(base);
+      const index = buildGenreChannelIndex(filtered); // 왼쪽 내비게이션도 현재 필터에 맞게 축소
       if (!index.length){ leftNavEl.innerHTML = `<div class="mutebox">표시할 채널이 없습니다.</div>`; return; }
 
       index.forEach((group, idx) => {
@@ -1211,7 +1218,7 @@
     }
 
     async function renderDashboard(filtered){
-      renderLeftNav();
+      renderLeftNav(filtered);
       if (!selectedChannel){ rightTitleEl.textContent = "채널 콘텐츠"; rightListEl.innerHTML = ""; rightEmptyEl.style.display = "block"; rightEmptyEl.textContent = "왼쪽에서 채널을 선택하면 해당 채널의 콘텐츠가 표시됩니다."; return; }
       rightTitleEl.textContent = selectedChannel;
 
@@ -1239,6 +1246,10 @@
     async function render(resetPagination = false){
       if (resetPagination) renderLimit = 30;
       const filtered = allData.filter(matchesFilter);
+      
+      // 🔥 6. 렌더링 할 때마다 버튼의 Active 컬러와 태그 여집합을 업데이트합니다.
+      updateChipsUI(filtered);
+      
       statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
 
       if (viewMode === "all"){ gridEl.style.display = "grid"; dashEl.classList.remove("active"); await renderGrid(filtered); }
@@ -1249,7 +1260,9 @@
       activeGenre = null; activeMedia = null; activeFormat = null; activeTags.clear();
       searchEl.value = ""; selectedChannel = null; showLikedOnly = false; sortMode = "date";
       likedOnlyBtn.classList.remove("active"); sortLikesBtn.classList.remove("active");
-      rebuildAllChips(); render(true);
+      
+      // 초기화할 때도 render 함수를 호출하면 updateChipsUI가 자동으로 돌면서 버튼들이 원래대로 싹 돌아옵니다!
+      render(true);
     }
 
     resetBtn.addEventListener("click", resetAll);
@@ -1302,7 +1315,6 @@
     modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modalOverlay.classList.contains("open")) closeModal(); });
 
-    // 🎨 모달 링크 복사 버튼 이벤트
     mCopyBtn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(mLink.href);
@@ -1372,7 +1384,6 @@
     }
 
     async function init() {
-      // 🎨 1. 스켈레톤 로딩 먼저 보여주기
       gridEl.innerHTML = Array(12).fill('<div class="skeleton-card"></div>').join("");
 
       try {
@@ -1382,7 +1393,7 @@
         const data = await res.json();
         allData = (Array.isArray(data) ? data : []).filter(x => x && (x[KEY.url] || x[KEY.title]));
 
-        rebuildAllChips();
+        extractBaseFilters(); // 💡 데이터 로드 직후 모든 장르/태그/매체 목록을 저장해둠
         await render(true);
       } catch (err) {
         gridEl.innerHTML = `<div style="opacity:.85; font-size:14px; padding:12px;">데이터를 불러오지 못했습니다.</div>`;
