@@ -158,19 +158,31 @@
         @media (max-width: 980px){ .dash.active{ grid-template-columns: 1fr; } .modal{ grid-template-columns: 1fr; max-height: 95vh; } .modalLeft{ border-right:0; border-bottom:1px solid rgba(255,255,255,0.06); } }
 
         /* Shorts 전용 레이아웃 */
-       @media (min-width: 981px) {
+      @media (min-width: 981px) {
+  /* 1. 일반 가로형 영상 모달 (기본값) */
+  .modal {
+    grid-template-columns: 350px 1fr !important;
+    max-width: 1280px;
+    max-height: min(90vh, 850px);
+  }
+  .modal #mVideoPlayer {
+    aspect-ratio: 16 / 9; /* 가로형 비율 복구 */
+    height: auto !important;
+  }
+
+  /* 2. 쇼츠 전용 영상 모달 (클래스가 있을 때만) */
   .modal.shorts-mode {
-    grid-template-columns: 380px 1fr !important; /* 왼쪽 정보창 너비 */
-    max-width: 850px; /* 쇼츠는 너무 넓지 않게 폭 제한 */
-    max-height: 95vh; /* 화면 높이에 맞춰 확장 */
+    grid-template-columns: 380px 1fr !important;
+    max-width: 850px; /* 쇼츠는 폭을 좁게 */
+    max-height: 95vh;
   }
   .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid rgba(255,255,255,0.1); }
   .modal.shorts-mode .modalRight { order: 2; padding: 10px; }
 
-  /* 쇼츠일 때 가로형 비율(16/9) 강제 해제 및 세로로 확장 */
+  /* 쇼츠일 때만 세로로 길게 확장 */
   .modal.shorts-mode #mVideoPlayer {
     aspect-ratio: auto !important; 
-    height: calc(90vh - 80px); /* 모달 높이에 맞춰 영상 영역 최대화 */
+    height: calc(90vh - 120px) !important;
   }
   .modal.shorts-mode #mIframe {
     height: 100% !important;
@@ -437,10 +449,14 @@
             }
 
             // 2. 쇼츠 레이아웃 체크
-            const isShorts = url.includes("/shorts/");
-            const modalContainer = modalOverlay.querySelector('.modal');
-            if (isShorts) { modalContainer.classList.add('shorts-mode'); } 
-            else { modalContainer.classList.remove('shorts-mode'); }
+           const isShorts = url.includes("/shorts/");
+const modalContainer = modalOverlay.querySelector('.modal');
+
+if (isShorts) {
+    modalContainer.classList.add('shorts-mode');
+} else {
+    modalContainer.classList.remove('shorts-mode'); // 일반 영상일 땐 반드시 제거해야 함
+}}
             
             modalOverlay.classList.add("open");
 
