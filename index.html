@@ -1202,66 +1202,91 @@ function buildGenreChannelIndex(items){
   .sort((a, b) => b.total - a.total); 
 }
 
-    function renderLeftNav(filtered){
-      leftNavEl.innerHTML = "";
-      const index = buildGenreChannelIndex(filtered); // 왼쪽 내비게이션도 현재 필터에 맞게 축소
-      if (!index.length){ leftNavEl.innerHTML = `<div class="mutebox">표시할 채널이 없습니다.</div>`; return; }
+function renderLeftNav() {
+  leftNavEl.innerHTML = "";
+  // filtered 대신 allData를 사용하여 전체 목록 유지
+  const index = buildGenreChannelIndex(allData); 
+  
+  if (!index.length) {
+    leftNavEl.innerHTML = `<div class="mutebox">표시할 채널이 없습니다.</div>`;
+    return;
+  }
 
-      index.forEach((group, idx) => {
-        const wrap = document.createElement("div"); wrap.className = "genreGroup";
-        const head = document.createElement("button"); head.className = "genreHead"; head.type = "button";
-        head.innerHTML = `<span>${escapeHTML(group.g)}</span><span class="meta"><span>${group.channels.length}ch</span><span>·</span><span>${group.total}</span></span>`;
-        const body = document.createElement("div"); body.className = "genreBody" + (idx < 2 ? " open" : "");
-        head.onclick = () => body.classList.toggle("open");
-        group.channels.forEach(({c, cnt}) => {
-          const b = document.createElement("button"); b.type = "button"; b.className = "channelItem" + (selectedChannel === c ? " active" : "");
-          b.innerHTML = `<span>${escapeHTML(c)}</span><span class="count">${cnt}</span>`;
-          b.onclick = () => { selectedChannel = c; render(true); };
-          body.appendChild(b);
-        });
-        wrap.appendChild(head); wrap.appendChild(body); leftNavEl.appendChild(wrap);
-      });
-      leftHintEl.textContent = selectedChannel ? `선택: ${selectedChannel}` : "채널 선택";
-    }
+  index.forEach((group, idx) => {
+    const wrap = document.createElement("div"); wrap.className = "genreGroup";
+    const head = document.createElement("button"); head.className = "genreHead"; head.type = "button";
+    head.innerHTML = `<span>${escapeHTML(group.g)}</span><span class="meta"><span>${group.channels.length}ch</span><span>·</span><span>${group.total}</span></span>`;
+    
+    const body = document.createElement("div"); 
+    body.className = "genreBody" + (idx < 2 ? " open" : "");
+    
+    head.onclick = () => body.classList.toggle("open");
+    
+    group.channels.forEach(({c, cnt}) => {
+      const b = document.createElement("button"); 
+      b.type = "button"; 
+      // id를 부여하여 나중에 스타일만 바꿀 수 있게 합니다.
+      b.id = `nav-ch-${fnv1a(c)}`;
+      b.className = "channelItem" + (selectedChannel === c ? " active" : "");
+      b.innerHTML = `<span>${escapeHTML(c)}</span><span class="count">${cnt}</span>`;
+      b.onclick = () => { 
+        selectedChannel = c; 
+        render(true); 
+      };
+      body.appendChild(b);
+    });
+    wrap.appendChild(head); 
+    wrap.appendChild(body); 
+    leftNavEl.appendChild(wrap);
+  });
+}
 
-    async function renderDashboard(filtered){
-      renderLeftNav(filtered);
-      if (!selectedChannel){ rightTitleEl.textContent = "채널 콘텐츠"; rightListEl.innerHTML = ""; rightEmptyEl.style.display = "block"; rightEmptyEl.textContent = "왼쪽에서 채널을 선택하면 해당 채널의 콘텐츠가 표시됩니다."; return; }
-      rightTitleEl.textContent = selectedChannel;
+async function renderDashboard(filtered) {
+  // 1. 기존 리스트를 새로 그리는 대신 active 클래스만 관리
+  document.querySelectorAll('.channelItem').forEach(el => el.classList.remove('active'));
+  if (selectedChannel) {
+    const activeEl = document.getElementById(`nav-ch-${fnv1a(selectedChannel)}`);
+    if (activeEl) activeEl.classList.add('active');
+  }
 
-      let list = [...filtered];
-      if (sortMode === "likes") list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
-      else list = sortByDateDesc(list);
+  // 2. 오른쪽 콘텐츠 영역 렌더링 (기존 로직 유지)
+  if (!selectedChannel) {
+    rightTitleEl.textContent = "채널 콘텐츠"; 
+    rightListEl.innerHTML = ""; 
+    rightEmptyEl.style.display = "block"; 
+    rightEmptyEl.textContent = "왼쪽에서 채널을 선택하면 해당 채널의 콘텐츠가 표시됩니다."; 
+    return; 
+  }
+  
+  rightTitleEl.textContent = selectedChannel;
+  let list = [...filtered];
+  if (sortMode === "likes") list.sort((a,b) => getLikesFromCache(getItemId(b)) - getLikesFromCache(getItemId(a)));
+  else list = sortByDateDesc(list);
 
-      if (!list.length){ rightListEl.innerHTML = ""; rightEmptyEl.style.display = "block"; rightEmptyEl.textContent = "현재 필터 조건에서 표시할 콘텐츠가 없습니다."; return; }
-      rightEmptyEl.style.display = "none";
-      
-      const sliced = list.slice(0, renderLimit);
-      rightListEl.innerHTML = sliced.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
-      if (list.length > renderLimit) { rightListEl.appendChild(scrollSentinel); observer.observe(scrollSentinel); }
-      else observer.disconnect();
+  if (!list.length) { 
+    rightListEl.innerHTML = ""; 
+    rightEmptyEl.style.display = "block"; 
+    rightEmptyEl.textContent = "현재 필터 조건에서 표시할 콘텐츠가 없습니다."; 
+    return; 
+  }
+  
+  rightEmptyEl.style.display = "none";
+  const sliced = list.slice(0, renderLimit);
+  rightListEl.innerHTML = sliced.map(it => rowHTML(it, THUMB_PLACEHOLDER)).join("");
+  
+  if (list.length > renderLimit) { 
+    rightListEl.appendChild(scrollSentinel); 
+    observer.observe(scrollSentinel); 
+  } else observer.disconnect();
 
-      const rows = Array.from(rightListEl.querySelectorAll(".row"));
-      await Promise.all(sliced.map(async (item, idx) => {
-        const t = await resolveThumbnail(item);
-        const img = rows[idx]?.querySelector("img.rowThumb");
-        if (img) img.src = t;
-      }));
-      await hydrateCountersFor(sliced.slice(0, 80).map(getItemId), 8);
-    }
-
-    async function render(resetPagination = false){
-      if (resetPagination) renderLimit = 30;
-      const filtered = allData.filter(matchesFilter);
-      
-      // 🔥 6. 렌더링 할 때마다 버튼의 Active 컬러와 태그 여집합을 업데이트합니다.
-      updateChipsUI(filtered);
-      
-      statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
-
-      if (viewMode === "all"){ gridEl.style.display = "grid"; dashEl.classList.remove("active"); await renderGrid(filtered); }
-      else { gridEl.style.display = "none"; dashEl.classList.add("active"); await renderDashboard(filtered); }
-    }
+  const rows = Array.from(rightListEl.querySelectorAll(".row"));
+  await Promise.all(sliced.map(async (item, idx) => {
+    const t = await resolveThumbnail(item);
+    const img = rows[idx]?.querySelector("img.rowThumb");
+    if (img) img.src = t;
+  }));
+  await hydrateCountersFor(sliced.slice(0, 80).map(getItemId), 8);
+}
 
     function resetAll() {
       activeGenre = null; activeMedia = null; activeFormat = null; activeTags.clear();
@@ -1390,22 +1415,21 @@ function buildGenreChannelIndex(items){
       } catch (e) { console.warn("Sync failed"); }
     }
 
-    async function init() {
-      gridEl.innerHTML = Array(12).fill('<div class="skeleton-card"></div>').join("");
+async function init() {
+  gridEl.innerHTML = Array(12).fill('<div class="skeleton-card"></div>').join("");
+  try {
+    await syncMyLikes();
+    const res = await fetch(SHEET_URL);
+    const data = await res.json();
+    allData = (Array.isArray(data) ? data : []).filter(x => x && (x[KEY.url] || x[KEY.title]));
 
-      try {
-        await syncMyLikes();
-        const res = await fetch(SHEET_URL);
-        if (!res.ok) throw new Error("Fetch failed");
-        const data = await res.json();
-        allData = (Array.isArray(data) ? data : []).filter(x => x && (x[KEY.url] || x[KEY.title]));
-
-        extractBaseFilters(); // 💡 데이터 로드 직후 모든 장르/태그/매체 목록을 저장해둠
-        await render(true);
-      } catch (err) {
-        gridEl.innerHTML = `<div style="opacity:.85; font-size:14px; padding:12px;">데이터를 불러오지 못했습니다.</div>`;
-      }
-    }
+    extractBaseFilters();
+    renderLeftNav(); // 👈 여기서 최초 한 번 전체 리스트를 그려줍니다.
+    await render(true);
+  } catch (err) {
+    gridEl.innerHTML = `<div style="opacity:.85; font-size:14px; padding:12px;">데이터를 불러오지 못했습니다.</div>`;
+  }
+}
 
     init();
 
