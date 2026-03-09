@@ -959,9 +959,24 @@ async function init() {
     });
 
     window.onscroll = () => fab.classList.toggle("visible", window.scrollY > 400);
-    fab.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+fab.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    init();
+// ⬇️ 여기에 무한 스크롤 코드를 추가하세요 ⬇️
+window.addEventListener("scroll", () => {
+  if (viewMode !== "all") return; // 전체 보기 모드일 때만 작동
+
+  // 바닥 근처(500px 남음)에 도달하면 추가 로드
+  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+    const filtered = allData.filter(matchesFilter);
+    if (renderLimit < filtered.length) {
+      renderLimit += RENDER_CHUNK; // 30개 단위로 제한 증가
+      render(false); // 기존 목록을 유지하면서 추가로 그리기
+    }
+  }
+});
+
+init(); // 964번 라인: 초기화 함수 호출
+</script>
   </script>
 </body>
 </html>
