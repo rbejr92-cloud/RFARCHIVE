@@ -621,25 +621,27 @@
   </div>
 </div>
 
-      <div class="modalRight">
-        <div class="modalHead">
-          <div class="modalHeadLeft h">
-            <span id="mCounts">👍 0 · 💬 0</span>
-            <button class="actionBtn like" id="mLikeBtn" type="button">👍 <span class="cnt" id="mLikeCnt">0</span></button>
-          </div>
-          <button class="xBtn" id="mClose" type="button">닫기 ✕</button>
-        </div>
-
-        <div class="memoList" id="mList"></div>
-
-        <div class="memoComposer">
-          <input id="mNick" type="text" placeholder="닉네임 (필수)" maxlength="24"/>
-          <input id="mMemo" type="text" placeholder="메모 (최대 200자)" maxlength="200"/>
-          <button class="primaryBtn" id="mSend" type="button">등록</button>
-        </div>
-      </div>
+<div class="modalRight">
+  <div class="modalHead">
+    <div class="modalHeadLeft h">
+      <span id="mCounts">👍 0 · 💬 0</span>
+      <button class="actionBtn like" id="mLikeBtn" type="button">👍 <span class="cnt" id="mLikeCnt">0</span></button>
     </div>
+    <button class="xBtn" id="mClose" type="button">닫기 ✕</button>
   </div>
+
+  <div id="mVideoPlayer" style="width:100%; aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; margin-bottom:10px; display:none;">
+    <iframe id="mIframe" width="100%" height="100%" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+  </div>
+
+  <div class="memoList" id="mList"></div>
+  
+  <div class="memoComposer">
+    <input id="mNick" type="text" placeholder="닉네임 (필수)" maxlength="24"/>
+    <input id="mMemo" type="text" placeholder="메모 (최대 200자)" maxlength="200"/>
+    <button class="primaryBtn" id="mSend" type="button">등록</button>
+  </div>
+</div>
 
   <script>
     // ===== DATA SOURCES =====
@@ -873,13 +875,15 @@
       }
     }
 
-// ===== INTERACTIONS & MODAL (수정본) =====
+// ===== INTERACTIONS & MODAL =====
 
-// 1. PIP 및 공유 버튼 변수 선언
+// [변수 선언] 중복을 제거하고 하나로 합쳤습니다.
+const mVideoPlayer = document.getElementById("mVideoPlayer");
+const mIframe = document.getElementById("mIframe");
 const mPipBtn = document.getElementById("mPipBtn");
 const mShareBtn = document.getElementById("mShareBtn");
 
-// 2. PIP 모드 실행 (유튜브 팝업 방식)
+// 1. PIP 모드 실행 (기존 팝업 방식 유지 혹은 재생 용도)
 mPipBtn.onclick = () => {
   const url = mLink.href;
   const ytId = getYoutubeID(url);
@@ -898,38 +902,52 @@ mPipBtn.onclick = () => {
   }
 };
 
-// 3. 공유 전용 URL 복사 (Deep Link)
+// 2. 공유 전용 URL 복사
 mShareBtn.onclick = () => {
   const itemId = modalOverlay.dataset.itemid;
-  // 현재 페이지 주소 뒤에 ?id=아이디 를 붙임
   const shareUrl = `${window.location.origin}${window.location.pathname}?id=${itemId}`;
-  
   navigator.clipboard.writeText(shareUrl).then(() => {
     showToast("공유용 직통 링크가 복사되었습니다!");
   });
 };
 
-// 4. 기존 모달 열기 함수 (수정 없음, 위치 확인용)
+// 3. 모달 열기 함수 (우측 영상 자동 재생 포함)
 async function openModalForItem(item){
   const itemId = getItemId(item); modalOverlay.dataset.itemid = itemId;
   mTitle.textContent = item[KEY.title]; mSub.textContent = `${item[KEY.channel]} · ${item[KEY.date]}`;
   mLink.href = item[KEY.url]; mThumb.src = await resolveThumbnail(item);
   mNick.value = getNickname(); mLikeBtn.classList.toggle("active", isLiked(itemId));
+  
+  // 🎥 영상 처리: 모달 우측 iframe에 주소 할당
+  const ytId = getYoutubeID(item[KEY.url]);
+  if(ytId) {
+    mVideoPlayer.style.display = "block";
+    mIframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+  } else {
+    mVideoPlayer.style.display = "none";
+    mIframe.src = "";
+  }
+
   modalOverlay.classList.add("open");
   const data = await fetchInteractions(itemId);
   mLikeCnt.textContent = data.likes;
   mList.innerHTML = data.memos.map(m => `<div class="memoItem"><div class="memoTop"><span class="memoNick">${escapeHTML(m.nickname)}</span></div><div class="memoText">${escapeHTML(m.memo)}</div></div>`).join("");
 }
 
-// 5. 페이지 접속 시 특정 영상 자동 열기 체크
-function checkDeepLink() {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
-  if (id && allData.length > 0) {
-    const item = allData.find(it => getItemId(it) === id);
-    if (item) openModalForItem(item);
+// 4. [중요] C. 배경 클릭 시 모달 닫기 및 영상 정지
+modalOverlay.onclick = (e) => {
+  // 클릭한 대상이 모달 내부가 아니라 바깥쪽 검은 배경(modalOverlay)일 때만 작동
+  if (e.target === modalOverlay) {
+    modalOverlay.classList.remove("open");
+    mIframe.src = ""; // 영상 주소를 비워야 소리가 멈춥니다.
   }
-}
+};
+
+// 5. 닫기 버튼 클릭 시 영상 정지
+mClose.onclick = () => {
+  modalOverlay.classList.remove("open");
+  mIframe.src = ""; // 영상 정지
+};
 
 // ===== INIT =====
 async function init() {
