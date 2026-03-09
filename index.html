@@ -610,12 +610,16 @@
         <img id="mThumb" class="modalThumb" alt="thumbnail"/>
         <div class="mTitle" id="mTitle"></div>
         <div class="mSub" id="mSub"></div>
-        <div style="display:flex; gap:8px;">
-          <a class="mLink" id="mLink" target="_blank" rel="noopener noreferrer" style="flex:1;">🔗 원본 열기</a>
-          <button class="actionBtn" id="mCopyBtn" type="button" style="border-radius:12px;">📋 링크 복사</button>
-        </div>
-        <div class="smallNote" style="font-size:12px;">좋아요/메모는 모두에게 공유됩니다.</div>
-      </div>
+       <div style="display:flex; flex-direction:column; gap:8px;">
+  <div style="display:flex; gap:8px;">
+    <a class="mLink" id="mLink" target="_blank" rel="noopener noreferrer" style="flex:1;">🔗 원본 열기</a>
+    <button class="actionBtn" id="mPipBtn" type="button" style="border-radius:12px;">📺 PIP 팝업</button>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button class="actionBtn" id="mCopyBtn" type="button" style="flex:1; border-radius:12px;">📋 링크 복사</button>
+    <button class="actionBtn" id="mShareBtn" type="button" style="flex:1; border-radius:12px; background:rgba(255,71,87,0.1); border-color:rgba(255,71,87,0.3);">🔗 공유 URL 생성</button>
+  </div>
+</div>
 
       <div class="modalRight">
         <div class="modalHead">
@@ -869,49 +873,80 @@
       }
     }
 
-    // ===== INTERACTIONS & MODAL =====
-    async function toggleLike(itemId){
-      const wasLiked = isLiked(itemId); setLikedState(itemId, !wasLiked);
-      render(); // 스타일 즉시 반영
-      await postInteraction({ itemId, action: "like", userId: getUserId(), nickname: getNickname() || "익명" });
-      interactionsCache.delete(itemId); await fetchInteractions(itemId); updateCountersInDOM(itemId);
-    }
+// ===== INTERACTIONS & MODAL (수정본) =====
 
-    async function openModalForItem(item){
-      const itemId = getItemId(item); modalOverlay.dataset.itemid = itemId;
-      mTitle.textContent = item[KEY.title]; mSub.textContent = `${item[KEY.channel]} · ${item[KEY.date]}`;
-      mLink.href = item[KEY.url]; mThumb.src = await resolveThumbnail(item);
-      mNick.value = getNickname(); mLikeBtn.classList.toggle("active", isLiked(itemId));
-      modalOverlay.classList.add("open");
-      const data = await fetchInteractions(itemId);
-      mLikeCnt.textContent = data.likes;
-      mList.innerHTML = data.memos.map(m => `<div class="memoItem"><div class="memoTop"><span class="memoNick">${escapeHTML(m.nickname)}</span></div><div class="memoText">${escapeHTML(m.memo)}</div></div>`).join("");
-    }
+// 1. PIP 및 공유 버튼 변수 선언
+const mPipBtn = document.getElementById("mPipBtn");
+const mShareBtn = document.getElementById("mShareBtn");
 
-    mSend.onclick = async () => {
-      const itemId = modalOverlay.dataset.itemid, nick = mNick.value.trim(), memo = mMemo.value.trim();
-      if (!nick || !memo) return alert("닉네임과 메모를 입력하세요.");
-      setNickname(nick);
-      await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() });
-      mMemo.value = ""; interactionsCache.delete(itemId); openModalForItem(allData.find(it => getItemId(it) === itemId));
-    };
+// 2. PIP 모드 실행 (유튜브 팝업 방식)
+mPipBtn.onclick = () => {
+  const url = mLink.href;
+  const ytId = getYoutubeID(url);
+  if (ytId) {
+    const width = 560, height = 315;
+    const left = window.screen.width - width - 20;
+    const top = window.screen.height - height - 60;
+    window.open(
+      `https://www.youtube.com/embed/${ytId}?autoplay=1`, 
+      'pipWindow', 
+      `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes`
+    );
+    showToast("PIP 팝업이 생성되었습니다.");
+  } else {
+    showToast("유튜브 영상만 PIP 팝업을 지원합니다.");
+  }
+};
 
-    mClose.onclick = () => modalOverlay.classList.remove("open");
-    mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("링크 복사 완료!"); };
+// 3. 공유 전용 URL 복사 (Deep Link)
+mShareBtn.onclick = () => {
+  const itemId = modalOverlay.dataset.itemid;
+  // 현재 페이지 주소 뒤에 ?id=아이디 를 붙임
+  const shareUrl = `${window.location.origin}${window.location.pathname}?id=${itemId}`;
+  
+  navigator.clipboard.writeText(shareUrl).then(() => {
+    showToast("공유용 직통 링크가 복사되었습니다!");
+  });
+};
 
-    // ===== INIT =====
-    async function init() {
-      try {
-        const res = await fetch(SHEET_URL);
-        allData = (await res.json()).filter(x => x && (x[KEY.url] || x[KEY.title]));
+// 4. 기존 모달 열기 함수 (수정 없음, 위치 확인용)
+async function openModalForItem(item){
+  const itemId = getItemId(item); modalOverlay.dataset.itemid = itemId;
+  mTitle.textContent = item[KEY.title]; mSub.textContent = `${item[KEY.channel]} · ${item[KEY.date]}`;
+  mLink.href = item[KEY.url]; mThumb.src = await resolveThumbnail(item);
+  mNick.value = getNickname(); mLikeBtn.classList.toggle("active", isLiked(itemId));
+  modalOverlay.classList.add("open");
+  const data = await fetchInteractions(itemId);
+  mLikeCnt.textContent = data.likes;
+  mList.innerHTML = data.memos.map(m => `<div class="memoItem"><div class="memoTop"><span class="memoNick">${escapeHTML(m.nickname)}</span></div><div class="memoText">${escapeHTML(m.memo)}</div></div>`).join("");
+}
+
+// 5. 페이지 접속 시 특정 영상 자동 열기 체크
+function checkDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (id && allData.length > 0) {
+    const item = allData.find(it => getItemId(it) === id);
+    if (item) openModalForItem(item);
+  }
+}
+
+// ===== INIT =====
+async function init() {
+  try {
+    const res = await fetch(SHEET_URL);
+    allData = (await res.json()).filter(x => x && (x[KEY.url] || x[KEY.title]));
         baseGenres = [...new Set(allData.map(i => (i[KEY.genre]||"").trim()).filter(Boolean))].sort();
         baseMedias = [...new Set(allData.map(i => (i[KEY.media]||"").trim()).filter(Boolean))].sort();
         baseFormats = [...new Set(allData.map(i => (i[KEY.format]||"").trim()).filter(Boolean))].sort();
         baseTags = [...new Set(allData.flatMap(i => splitTags(i[KEY.tag])))].sort();
-        renderLeftNav(); 
-        render(true);
-      } catch (e) { gridEl.innerHTML = "데이터 로드 실패"; }
-    }
+       renderLeftNav(); 
+    render(true);
+    
+    checkDeepLink(); // <--- 이 줄을 여기에 추가하세요!
+    
+  } catch (e) { gridEl.innerHTML = "데이터 로드 실패"; }
+}
 
     searchEl.oninput = debounce(() => render(true), 300);
     viewAllBtn.onclick = () => { viewMode = "all"; viewAllBtn.classList.add("active"); viewDashBtn.classList.remove("active"); render(true); };
