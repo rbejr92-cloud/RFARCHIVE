@@ -1190,14 +1190,16 @@ function buildGenreChannelIndex(items){
     const cm = genreMap.get(g);
     cm.set(c, (cm.get(c) || 0) + 1);
   }
-  
+
   return [...genreMap.entries()].map(([g, cm]) => ({
     g, 
     total: [...cm.values()].reduce((a,b)=>a+b,0),
-    // 👇 이 부분의 정렬 로직을 수정합니다 (cnt 기준 제거, 이름 기준 고정)
+    // 1. 채널은 가나다(ko) -> ABC(en) 순으로 정렬
     channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt }))
       .sort((a, b) => a.c.localeCompare(b.c, "ko")) 
-  })).sort((a, b) => a.g.localeCompare(b.g, "ko")); // 장르명도 가나다순으로 정렬
+  }))
+  // 2. 장르 그룹은 기존처럼 '포함된 전체 콘텐츠 개수'가 많은 순으로 정렬
+  .sort((a, b) => b.total - a.total); 
 }
 
     function renderLeftNav(filtered){
