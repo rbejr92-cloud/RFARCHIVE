@@ -4,84 +4,77 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Video Reference Archive</title>
+
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
   <style>
     :root{
       --bg:#0f0f10; --text:#eaeaea; --muted:rgba(234,234,234,.7);
       --line:#26262a; --line2:#2f2f35; --accent:#ff4757;
       --shadow: 0 14px 40px rgba(0,0,0,.35); --radius:16px;
     }
+
     *{ box-sizing:border-box; }
     body{
-      margin:0; padding:22px; color:var(--text);
-      background: radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%),
-                  radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%), var(--bg);
-      font-family: "Pretendard", ui-sans-serif, system-ui, sans-serif;
+      margin:0; padding:22px; background: radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%), radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%), var(--bg);
+      color:var(--text); font-family: "Pretendard", ui-sans-serif, system-ui, sans-serif;
     }
-    h1{ margin:0 0 12px 0; font-size:24px; display:flex; align-items:center; gap:10px; }
-    .topbarWrapper {
-      position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px;
-      background: rgba(15, 15, 16, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
+
+    /* 🎨 상단바 & 레이아웃 */
+    .topbarWrapper { position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; background: rgba(15, 15, 16, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
     .topbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-    input[type="text"]{
-      padding:10px 12px; width:320px; max-width:100%; border-radius:14px; border:1px solid var(--line);
-      background: rgba(20,20,22,.7); color:var(--text); outline:none; font-family: inherit;
-    }
-    .btn{
-      padding:10px 12px; border-radius:14px; border:1px solid var(--line); background: rgba(20,20,22,.7);
-      color:var(--text); cursor:pointer; font-size:13px; font-weight:700; font-family: inherit;
-    }
+    input[type="text"]{ padding:10px 12px; width:320px; max-width:100%; border-radius:14px; border:1px solid var(--line); background: rgba(20,20,22,.7); color:var(--text); outline:none; font-family: inherit; }
+    .btn{ padding:10px 12px; border-radius:14px; border:1px solid var(--line); background: rgba(20,20,22,.7); color:var(--text); cursor:pointer; font-size:13px; font-weight:700; font-family: inherit; }
     .btn.active{ border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,71,87,.12); }
-    .stats{ font-size:13px; color: var(--muted); margin-left:auto; }
-    .divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent); margin: 12px 0; }
     .viewToggle{ display:inline-flex; border:1px solid rgba(255,255,255,.10); background: rgba(20,20,22,.55); border-radius:999px; overflow:hidden; }
     .viewToggle button{ border:0; background: transparent; color: rgba(234,234,234,.78); padding:9px 12px; font-size:13px; font-weight:700; cursor:pointer; font-family: inherit; }
     .viewToggle button.active{ background: rgba(255,71,87,.14); color: #fff; }
-    .filterTabs{ display:flex; flex-wrap:wrap; gap:8px; margin: 8px 0 10px 0; }
+    
+    /* 🎨 필터 탭 */
     .tab{ padding:8px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background: rgba(20,20,22,.55); color: #fff; font-size:13px; cursor:pointer; font-family: inherit; }
     .tab.active{ border-color: var(--accent); background: rgba(20,20,22,.75); }
     .filterPanel{ border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.35); border-radius:14px; padding:10px; }
-    .chips{ display:flex; flex-wrap:wrap; gap:8px; display:none; }
+    .chips{ display:none; flex-wrap:wrap; gap:8px; }
     .chips.active{ display:flex; }
     .chip{ padding:7px 10px; border-radius:999px; border:1px solid var(--line); background: rgba(23,23,26,.8); cursor:pointer; font-size:13px; color: #fff; }
     .chip.active{ border-color: var(--accent); background: rgba(255,71,87,.1); }
-    .chip .count{ opacity:.55; margin-left:6px; font-size:12px; }
+
+    /* 🎨 그리드 & 카드 */
     .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px; margin-top: 14px; }
-    .card{ background: rgba(20,20,22,.92); border:1px solid var(--line); border-radius: var(--radius); overflow:hidden; transition: transform .2s; position:relative; cursor:pointer; }
-    .card:hover{ transform: translateY(-4px); border-color: rgba(255,255,255,.16); }
+    .card{ background: rgba(20,20,22,.92); border:1px solid var(--line); border-radius: var(--radius); overflow:hidden; transition: transform .2s; cursor:pointer; }
     .thumbWrap{ width:100%; height:200px; background:#0b0b0c; overflow:hidden; }
-    .thumb{ width:100%; height:100%; object-fit:contain; }
+    .thumb{ width:100%; height:100%; object-fit:contain; transition: transform 0.3s; }
     .metaBox{ padding:14px; border-top:1px solid rgba(255,255,255,.06); }
-    .channel{ font-size:14px; font-weight:700; margin:0 0 6px 0; color: var(--accent); }
-    .titleLine{ font-size:13.5px; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; color: #eee; }
+    .channel{ font-size:14px; font-weight:700; color: var(--accent); margin-bottom:5px; }
+
+    /* 🎨 대시보드 (채널별) */
     .dash{ display:none; grid-template-columns: 320px 1fr; gap:14px; margin-top: 14px; align-items:start; }
     .dash.active{ display:grid; }
-    .panel{ border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.40); border-radius:16px; overflow:hidden; }
-    .leftScroll{ max-height: calc(100vh - 300px); overflow:auto; padding:10px; }
-    .genreGroup{ border:1px solid rgba(255,255,255,.06); border-radius:14px; overflow:hidden; margin-bottom:10px; }
+    .leftScroll{ max-height: calc(100vh - 320px); overflow:auto; padding:10px; }
+    .genreGroup{ border:1px solid rgba(255,255,255,.06); border-radius:14px; margin-bottom:10px; overflow:hidden; }
     .genreHead{ width:100%; border:0; background: rgba(20,20,22,.55); color: #fff; padding:10px; cursor:pointer; display:flex; justify-content:space-between; font-weight:700; font-family: inherit; }
-    .genreBody{ padding:8px; display:none; }
+    .genreBody{ display:none; padding:8px; }
     .genreBody.open{ display:block; }
     .channelItem{ width:100%; border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55); color: #eee; padding:9px 10px; border-radius:12px; cursor:pointer; display:flex; justify-content:space-between; margin-bottom:6px; font-size:13px; font-family: inherit; }
-    .channelItem.active{ border-color: var(--accent); color: #fff; background: rgba(255,71,87,0.1); }
-    .row{ display:grid; grid-template-columns: 140px 1fr; gap:12px; border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55); border-radius:12px; overflow:hidden; margin-bottom:10px; cursor:pointer; }
-    .rowThumb{ width:100%; height:80px; object-fit:cover; }
-    .rowMeta{ padding:10px 12px; min-width:0; display:flex; flex-direction:column; gap:4px; }
-    
-    /* PIP 및 모달 스타일 */
+    .channelItem.active{ border-color: var(--accent); background: rgba(255,71,87,0.15); }
+
+    /* 🎨 모달 & PIP */
     .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.75); backdrop-filter: blur(4px); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
     .modalOverlay.open{ display:flex; }
-    .modal{ width:min(900px, 100%); max-height: 85vh; border-radius:20px; background: #161618; display:flex; flex-direction:column; overflow:hidden; border: 1px solid #333; transition: all 0.3s ease; }
-    
-    /* 🔥 PIP(작게 보기) 모드 스타일 */
-    .modal.pip { position: fixed; bottom: 20px; right: 20px; width: 360px; height: auto; z-index: 10001; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-    .modal.pip .modal-body { display: none; }
-    
+    .modal{ width:min(920px, 100%); max-height: 85vh; border-radius:20px; background: rgba(20,20,22,0.98); border: 1px solid #333; display:grid; grid-template-columns: 320px 1fr; overflow:hidden; transition: all 0.3s ease; }
+    .modal.pip { position: fixed; bottom: 20px; right: 20px; width: 360px; grid-template-columns: 1fr; z-index: 10001; }
+    .modal.pip .modalRight { display: none; }
+    .modalLeft { padding: 16px; border-right: 1px solid rgba(255,255,255,0.06); }
+    .modalRight { padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+    .memoList { flex:1; overflow:auto; border: 1px solid #222; border-radius: 12px; padding: 10px; }
+    .actionBtn { padding: 8px 12px; border-radius: 10px; border: 1px solid #333; background: #222; color: #fff; cursor: pointer; font-size: 13px; }
+    .actionBtn.active { border-color: var(--accent); background: rgba(255,71,87,0.1); }
+
     #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 12px 24px; border-radius: 999px; transition: bottom 0.4s; z-index: 10000; font-weight: 700; }
     #toast.show { bottom: 40px; }
-    #fab { position: fixed; bottom: 40px; right: 30px; width: 50px; height: 50px; border-radius: 50%; background: rgba(30, 30, 34, 0.85); border: 1px solid rgba(255,255,255,0.15); color: white; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 9000; backdrop-filter: blur(8px); }
+    #fab { position: fixed; bottom: 40px; right: 30px; width: 50px; height: 50px; border-radius: 50%; background: rgba(30, 30, 34, 0.85); color: white; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 9000; }
+
+    @media (max-width: 980px){ .modal{ grid-template-columns: 1fr; } .modalLeft{ border-right:0; border-bottom:1px solid #222; } }
   </style>
 </head>
 
@@ -97,6 +90,9 @@
         <button id="viewAllBtn" class="active">🟦 전체</button>
         <button id="viewDashBtn">📺 채널별</button>
       </div>
+      <button class="btn" id="likedOnlyBtn">❤️ 좋아요만</button>
+      <button class="btn" id="sortLikesBtn">🔥 좋아요순</button>
+      <button class="btn" id="adminBtn">🛠 관리자</button>
       <button class="btn" id="resetBtn">초기화</button>
       <div class="stats" id="stats">표시: 0 / 전체: 0</div>
     </div>
@@ -105,7 +101,7 @@
       <button class="tab active" data-tab="genre">장르</button>
       <button class="tab" data-tab="media">매체</button>
       <button class="tab" data-tab="format">포맷</button>
-      <button class="tab" data-tab="tag">TAG</button>
+      <button class="tab" data-tab="tag">TAG (다중선택)</button>
     </div>
     <div class="filterPanel">
       <div class="chips active" id="genreChips"></div>
@@ -119,44 +115,66 @@
 
   <div class="dash" id="dash">
     <div class="panel">
-      <div class="panelHeader" style="padding:12px; background:#1c1c1e; border-bottom:1px solid #333;">장르 → 채널</div>
+      <div class="panelHeader">장르 → 채널</div>
       <div class="leftScroll" id="leftNav"></div>
     </div>
     <div class="panel">
-      <div class="panelHeader" style="padding:12px; background:#1c1c1e; border-bottom:1px solid #333;" id="rightTitle">채널 콘텐츠</div>
+      <div class="panelHeader" id="rightTitle">채널 콘텐츠</div>
       <div class="rightWrap" style="padding:10px;"><div class="list" id="rightList"></div></div>
     </div>
   </div>
 
   <div class="modalOverlay" id="modalOverlay">
-    <div class="modal" id="videoModal">
-        <div style="position:relative; padding-top: 56.25%; background: #000;">
+    <div class="modal" id="mainModal">
+      <div class="modalLeft">
+        <div style="position:relative; padding-top: 56.25%; background: #000; border-radius:10px; overflow:hidden;">
           <iframe id="mIframe" style="position:absolute; top:0; left:0; width:100%; height:100%;" frameborder="0" allowfullscreen></iframe>
         </div>
-        <div class="modal-body" style="padding:20px; flex:1; overflow:auto;">
-          <div id="mChannel" style="color: var(--accent); font-weight:700;"></div>
-          <div id="mTitle" style="font-size:18px; font-weight:700; margin-top:5px;"></div>
-          <div style="display:flex; gap:10px; margin-top:20px;">
-            <button id="pipBtn" style="flex:1; padding:12px; background:#444; border:none; color:#fff; border-radius:10px; cursor:pointer; font-weight:700;">작게 보기</button>
-            <button id="mClose" style="flex:1; padding:12px; background:#333; border:none; color:#fff; border-radius:10px; cursor:pointer; font-weight:700;">닫기</button>
-          </div>
+        <div id="mTitle" style="font-weight:700; margin-top:15px; font-size:16px;"></div>
+        <div id="mSub" style="font-size:12px; opacity:0.6; margin-top:5px;"></div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-top:15px;">
+          <button class="actionBtn" id="pipBtn">📺 작게 보기</button>
+          <button class="actionBtn" id="copyBtn">📋 링크 복사</button>
         </div>
+        <a id="mLink" target="_blank" style="display:block; margin-top:8px; text-align:center; background:#333; color:#fff; padding:10px; border-radius:10px; text-decoration:none; font-size:13px;">🔗 유튜브 앱에서 열기</a>
+      </div>
+      <div class="modalRight">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div id="mCounts" style="font-weight:700;">👍 0 · 💬 0</div>
+          <button id="mClose" style="background:none; border:none; color:#fff; cursor:pointer; font-size:20px;">✕</button>
+        </div>
+        <button class="actionBtn" id="mLikeBtn" style="width:100%;">❤️ 좋아요 누르기 <span id="mLikeCnt">0</span></button>
+        <div class="memoList" id="mList"></div>
+        <div style="display:grid; grid-template-columns: 1fr 2fr auto; gap:5px;">
+          <input id="mNick" placeholder="닉네임" style="background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:8px; font-size:12px;">
+          <input id="mMemo" placeholder="메모 남기기" style="background:#111; border:1px solid #333; color:#fff; padding:8px; border-radius:8px; font-size:12px;">
+          <button id="mSend" style="background:var(--accent); border:none; color:#fff; padding:0 15px; border-radius:8px; cursor:pointer;">등록</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
+    // ===== CONFIG =====
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
     const KEY = { genre: "장르", channel: "채널명", title: "TITLE", url: "URL", tag: "TAG", date: "발행일", media: "매체", format: "포맷" };
-    
+
+    // ===== STATE =====
     let allData = [], baseFilters = { genre: [], media: [], format: [], tag: [] };
     let activeFilters = { genre: null, media: null, format: null, tag: new Set() };
-    let viewMode = "all", selectedChannel = null;
+    let viewMode = "all", selectedChannel = null, showLikedOnly = false, sortMode = "date";
+    const interactionsCache = new Map();
 
+    // ===== UTILS =====
     function escapeHTML(s) { return String(s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
     function fnv1a(s){ let h = 0x811c9dc5; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=(h+(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))>>>0; } return h.toString(16).padStart(8,'0'); }
+    function getItemId(it){ return fnv1a((it[KEY.url] || "").trim()); }
     function getYoutubeID(url) { const match = (url||"").match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); return (match && match[2].length === 11) ? match[2] : ""; }
+    function showToast(m) { const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),3000); }
+    function isLiked(id){ try{ return !!JSON.parse(localStorage.getItem("vra:liked")||"{}")[id]; }catch{return false;} }
 
-    // ===== URL 파라미터 로직 =====
+    // ===== 1. URL 파라미터 로직 (디벨롭) =====
     function updateURL(ch) {
       const url = new URL(window.location);
       if (ch) url.searchParams.set('ch', ch);
@@ -164,6 +182,22 @@
       window.history.replaceState({}, '', url);
     }
 
+    // ===== 2. API 연동 로직 (복구) =====
+    async function fetchInteractions(itemId){
+      if (interactionsCache.has(itemId)) return interactionsCache.get(itemId);
+      try {
+        const res = await fetch(`${API_URL}?itemId=${itemId}&t=${Date.now()}`);
+        const data = await res.json();
+        interactionsCache.set(itemId, data);
+        return data;
+      } catch { return { likes: 0, memos: [] }; }
+    }
+
+    async function postAction(payload) {
+      return fetch(API_URL, { method: "POST", mode: "cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+    }
+
+    // ===== 3. 렌더링 로직 (고정 메뉴 + 가나다 정렬) =====
     function renderLeftNav() {
       const leftNavEl = document.getElementById("leftNav");
       leftNavEl.innerHTML = "";
@@ -203,7 +237,8 @@
         const okMedia = activeFilters.media ? it[KEY.media] === activeFilters.media : true;
         const okFormat = activeFilters.format ? it[KEY.format] === activeFilters.format : true;
         const okTag = activeFilters.tag.size === 0 ? true : [...activeFilters.tag].every(t => (it[KEY.tag]||"").includes(t));
-        return okSearch && okGenre && okMedia && okFormat && okTag;
+        const okLiked = showLikedOnly ? isLiked(getItemId(it)) : true;
+        return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
       });
 
       document.getElementById("stats").textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
@@ -213,7 +248,7 @@
       if (viewMode === "all") {
         gridEl.style.display = "grid"; dashEl.style.display = "none";
         gridEl.innerHTML = filtered.slice(0, 60).map(it => `
-          <div class="card" onclick="openModal('${getYoutubeID(it[KEY.url])}', '${escapeHTML(it[KEY.channel])}', '${escapeHTML(it[KEY.title])}')">
+          <div class="card" onclick='openModalForItem(${JSON.stringify(it).replace(/'/g, "&#39;")})'>
             <div class="thumbWrap"><img class="thumb" src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/mqdefault.jpg"></div>
             <div class="metaBox"><div class="channel">${escapeHTML(it[KEY.channel])}</div><div class="titleLine">${escapeHTML(it[KEY.title])}</div></div>
           </div>`).join("");
@@ -225,7 +260,7 @@
         document.getElementById("rightTitle").textContent = selectedChannel || "채널 선택";
         const chList = filtered.filter(it => (it[KEY.channel]||"").trim() === selectedChannel);
         document.getElementById("rightList").innerHTML = chList.map(it => `
-          <div class="row" onclick="openModal('${getYoutubeID(it[KEY.url])}', '${escapeHTML(it[KEY.channel])}', '${escapeHTML(it[KEY.title])}')">
+          <div class="row" onclick='openModalForItem(${JSON.stringify(it).replace(/'/g, "&#39;")})'>
             <img class="rowThumb" src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/mqdefault.jpg">
             <div class="rowMeta"><div style="font-weight:700; font-size:14px; color:#fff;">${escapeHTML(it[KEY.title])}</div><div style="font-size:12px; opacity:0.5;">${it[KEY.date]||""}</div></div>
           </div>`).join("");
@@ -250,7 +285,7 @@
           const chip = document.createElement("div");
           chip.className = `chip ${(type==='tag' ? activeFilters.tag.has(val) : activeFilters[type]===val) ? 'active' : ''}`;
           chip.innerHTML = `${escapeHTML(val)} <span style="opacity:0.5; font-size:11px;">${count}</span>`;
-          chip.onclick = () => toggleFilter(type, val);
+          chip.onclick = (e) => { e.stopPropagation(); toggleFilter(type, val); };
           panel.appendChild(chip);
         });
       });
@@ -263,74 +298,142 @@
       render();
     }
 
-    // ===== 모달 & PIP 함수 =====
-    function openModal(id, ch, tit) {
-      if(!id) return;
-      const modal = document.getElementById("videoModal");
-      modal.classList.remove('pip'); // PIP 모드 초기화
+    // ===== 4. 모달 & PIP & 상호작용 (복구 및 추가) =====
+    async function openModalForItem(it) {
+      const id = getYoutubeID(it[KEY.url]);
+      const itemId = getItemId(it);
+      const modal = document.getElementById("mainModal");
+      const overlay = document.getElementById("modalOverlay");
+      
+      modal.classList.remove('pip');
+      overlay.style.pointerEvents = "auto";
+      overlay.style.background = "rgba(0,0,0,.75)";
+      
       document.getElementById("mIframe").src = `https://www.youtube.com/embed/${id}?autoplay=1`;
-      document.getElementById("mChannel").textContent = ch;
-      document.getElementById("mTitle").textContent = tit;
-      document.getElementById("modalOverlay").classList.add("open");
-      document.getElementById("pipBtn").textContent = "작게 보기";
+      document.getElementById("mTitle").textContent = it[KEY.title];
+      document.getElementById("mSub").textContent = `${it[KEY.channel]} · ${it[KEY.date]}`;
+      document.getElementById("mLink").href = it[KEY.url];
+      overlay.classList.add("open");
+      overlay.dataset.currentId = itemId;
+
+      // 서버 데이터 로드
+      const data = await fetchInteractions(itemId);
+      updateModalUI(data, itemId);
     }
 
-    document.getElementById("pipBtn").onclick = function(e) {
-      e.stopPropagation();
-      const modal = document.getElementById("videoModal");
+    function updateModalUI(data, itemId) {
+      document.getElementById("mLikeCnt").textContent = data.likes;
+      document.getElementById("mCounts").textContent = `👍 ${data.likes} · 💬 ${data.memos.length}`;
+      document.getElementById("mLikeBtn").classList.toggle("active", isLiked(itemId));
+      document.getElementById("mList").innerHTML = data.memos.length 
+        ? data.memos.reverse().map(m => `<div style="margin-bottom:8px; padding:8px; background:rgba(255,255,255,0.05); border-radius:8px;"><div style="font-weight:700; font-size:11px; color:var(--accent);">${escapeHTML(m.nickname)}</div><div style="font-size:13px;">${escapeHTML(m.memo)}</div></div>`).join("")
+        : `<div style="text-align:center; opacity:0.3; padding:20px;">첫 메모를 남겨보세요!</div>`;
+    }
+
+    // 좋아요 버튼 클릭
+    document.getElementById("mLikeBtn").onclick = async () => {
+      const itemId = document.getElementById("modalOverlay").dataset.currentId;
+      const likedMap = JSON.parse(localStorage.getItem("vra:liked")||"{}");
+      const wasLiked = !!likedMap[itemId];
+      
+      if(wasLiked) delete likedMap[itemId]; else likedMap[itemId] = true;
+      localStorage.setItem("vra:liked", JSON.stringify(likedMap));
+
+      await postAction({ itemId, action: "like", userId: "user", nickname: "익명" });
+      interactionsCache.delete(itemId);
+      const data = await fetchInteractions(itemId);
+      updateModalUI(data, itemId);
+      showToast(wasLiked ? "💔 좋아요 취소" : "❤️ 좋아요 완료!");
+    };
+
+    // 메모 등록
+    document.getElementById("mSend").onclick = async () => {
+      const itemId = document.getElementById("modalOverlay").dataset.currentId;
+      const nick = document.getElementById("mNick").value.trim() || "익명";
+      const memo = document.getElementById("mMemo").value.trim();
+      if(!memo) return alert("내용을 입력하세요.");
+
+      document.getElementById("mSend").disabled = true;
+      await postAction({ itemId, action: "memo", nickname: nick, memo, userId: "user" });
+      document.getElementById("mMemo").value = "";
+      document.getElementById("mSend").disabled = false;
+      
+      interactionsCache.delete(itemId);
+      const data = await fetchInteractions(itemId);
+      updateModalUI(data, itemId);
+      showToast("💬 메모 등록 완료!");
+    };
+
+    // PIP 모드
+    document.getElementById("pipBtn").onclick = () => {
+      const modal = document.getElementById("mainModal");
       const overlay = document.getElementById("modalOverlay");
       modal.classList.toggle('pip');
-      if (modal.classList.contains('pip')) {
-        overlay.style.pointerEvents = "none"; // 뒤쪽 클릭 가능하게
+      if(modal.classList.contains('pip')) {
+        overlay.style.pointerEvents = "none";
         overlay.style.background = "transparent";
         overlay.style.backdropFilter = "none";
-        this.textContent = "크게 보기";
+        showToast("📺 영상을 보면서 탐색할 수 있습니다.");
       } else {
         overlay.style.pointerEvents = "auto";
         overlay.style.background = "rgba(0,0,0,.75)";
         overlay.style.backdropFilter = "blur(4px)";
-        this.textContent = "작게 보기";
       }
     };
 
-    document.getElementById("mClose").onclick = function() {
-      const modal = document.getElementById("videoModal");
-      const overlay = document.getElementById("modalOverlay");
-      document.getElementById("mIframe").src = "";
-      overlay.classList.remove("open");
-      modal.classList.remove('pip');
-      overlay.style.pointerEvents = "auto";
-      overlay.style.background = "rgba(0,0,0,.75)";
+    document.getElementById("copyBtn").onclick = () => {
+      navigator.clipboard.writeText(document.getElementById("mLink").href);
+      showToast("🔗 링크가 복사되었습니다!");
     };
 
+    document.getElementById("mClose").onclick = () => {
+      document.getElementById("mIframe").src = "";
+      document.getElementById("modalOverlay").classList.remove("open");
+    };
+
+    // ===== 5. 관리자 통계 (복구) =====
+    document.getElementById("adminBtn").onclick = async () => {
+      showToast("📊 통계를 불러오는 중...");
+      try {
+        const res = await fetch(`${API_URL}?admin=1&t=${Date.now()}`);
+        const data = await res.json();
+        const sorted = data.sort((a,b)=> (b.likes||0) - (a.likes||0)).slice(0, 10);
+        const report = sorted.map((x,i) => `${i+1}. 👍 ${x.likes}회 | ID: ${x.itemId}`).join("\n");
+        alert("🔥 실시간 인기 영상 TOP 10 (좋아요 순)\n\n" + report);
+      } catch { alert("통계를 불러오지 못했습니다."); }
+    };
+
+    // ===== 6. 초기화 (URL 공유 반영) =====
     async function init() {
       try {
         const res = await fetch(SHEET_URL);
         allData = (await res.json()).filter(x => x && x[KEY.url]);
+        
         ['genre', 'media', 'format'].forEach(k => baseFilters[k] = [...new Set(allData.map(i => (i[KEY[k]]||"").trim()).filter(Boolean))].sort());
         baseFilters.tag = [...new Set(allData.flatMap(i => (i[KEY.tag]||"").split(',').map(t=>t.trim()).filter(Boolean)))].sort();
         
-        // 🔥 URL 파라미터 체크
-        const params = new URLSearchParams(window.location.search);
-        const shareCh = params.get('ch');
-        if (shareCh) { selectedChannel = shareCh; viewMode = "dash"; }
+        // URL 공유 채널 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const ch = urlParams.get('ch');
+        if(ch) { selectedChannel = ch; viewMode = "dash"; }
 
+        // 탭 이벤트
         document.querySelectorAll('.tab').forEach(t => t.onclick = function() {
           document.querySelectorAll('.tab, .chips').forEach(x => x.classList.remove('active'));
           this.classList.add('active'); document.getElementById(this.dataset.tab + 'Chips').classList.add('active');
         });
 
-        renderLeftNav(); render();
+        renderLeftNav();
+        render();
       } catch (e) { document.body.innerHTML = "로딩 실패: " + e; }
     }
 
-    document.getElementById("viewAllBtn").onclick = function() { viewMode="all"; this.classList.add("active"); document.getElementById("viewDashBtn").classList.remove("active"); updateURL(null); render(); };
+    document.getElementById("viewAllBtn").onclick = function() { viewMode="all"; this.classList.add("active"); document.getElementById("viewDashBtn").classList.remove("active"); render(); };
     document.getElementById("viewDashBtn").onclick = function() { viewMode="dash"; this.classList.add("active"); document.getElementById("viewAllBtn").classList.remove("active"); render(); };
-    document.getElementById("resetBtn").onclick = () => { activeFilters = { genre: null, media: null, format: null, tag: new Set() }; document.getElementById("search").value=""; updateURL(null); render(); };
-    document.getElementById("search").oninput = () => render();
-    window.onscroll = () => { document.getElementById("fab").style.display = window.scrollY > 400 ? "flex" : "none"; };
-    document.getElementById("fab").onclick = () => window.scrollTo({top:0, behavior:'smooth'});
-
+    document.getElementById("resetBtn").onclick = () => { location.href = location.pathname; }; // 파라미터까지 싹 초기화
+    document.getElementById("search").oninput = render;
+    document.getElementById("likedOnlyBtn").onclick = function() { showLikedOnly = !showLikedOnly; this.classList.toggle("active", showLikedOnly); render(); };
+    
     init();
   </script>
 </body>
