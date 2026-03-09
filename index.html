@@ -52,98 +52,29 @@
         .panelHeader{ padding:12px 12px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:space-between; gap:10px; background: rgba(20,20,22,.55); }
         .panelHeader .title{ font-size:13px; font-weight:700; color: rgba(234,234,234,.9); }
         .leftScroll{ max-height: calc(100vh - 320px); overflow:auto; padding:10px; }
-        ./* 장르 그룹 하이라이트 */
-.genreGroup.active {
-    border-color: var(--accent);
-    background: rgba(255, 71, 87, 0.05);
-}
 
-.genreHead {
-    transition: all 0.2s ease;
-}
+        /* 장르 그룹 하이라이트 및 구분 스타일 */
+        .genreGroup { border: 1px solid rgba(255,255,255,.06); border-radius: 14px; overflow: hidden; margin-bottom: 10px; background: rgba(20,20,22,.35); }
+        .genreGroup.active { border-color: var(--accent); background: rgba(255, 71, 87, 0.05); }
+        .genreHead { width:100%; border:0; background: rgba(20,20,22,.55); color: rgba(234,234,234,.92); padding:10px 10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; font-weight:700; font-family: inherit; transition: all 0.2s ease; }
+        .genreGroup.active .genreHead { color: var(--accent); }
+        .genreBody { padding: 5px 8px 10px 20px; border-top: 1px solid rgba(255, 255, 255, 0.03); }
+        .channelItem { width:100%; border:1px solid transparent; background: transparent; color: rgba(234,234,234,.88); padding:9px 10px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px; font-size:13px; font-weight:600; font-family: inherit; }
+        .channelItem.active { background: rgba(255, 71, 87, 0.15) !important; border-color: rgba(255, 71, 87, 0.3) !important; color: #fff !important; }
+        .channelItem:hover { background: rgba(255, 255, 255, 0.05); }
 
-/* 장르가 선택되었을 때의 스타일 */
-.genreGroup.active .genreHead {
-    color: var(--accent);
-}
-
-/* 채널 리스트 들여쓰기 및 구분선 */
-.genreBody {
-    padding: 5px 8px 10px 20px; /* 왼쪽에 여백을 주어 계층 구분 */
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-/* 채널 아이템 기본 및 활성화 스타일 */
-.channelItem {
-    margin-bottom: 4px;
-    border: 1px solid transparent; /* 기본은 투명하게 */
-    background: transparent;
-}
-
-.channelItem.active {
-    background: rgba(255, 71, 87, 0.15) !important;
-    border-color: rgba(255, 71, 87, 0.3) !important;
-    color: #fff !important;
-}
-
-.channelItem:hover {
-    background: rgba(255, 255, 255, 0.05);
-}
         .list{ display:flex; flex-direction:column; gap:10px; }
         .row{ display:grid; grid-template-columns: 160px 1fr; gap:12px; border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55); border-radius:16px; overflow:hidden; cursor:pointer; transition: transform 0.2s ease; }
         .rowThumb{ width:100%; height:96px; background:#0b0b0c; object-fit:cover; display:block; }
         .rowMeta{ padding:10px 12px; display:flex; flex-direction:column; gap:6px; min-width:0; }
 
-        /* 모달 스타일 수정 */
         .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.75); backdrop-filter: blur(4px); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
         .modalOverlay.open{ display:flex; }
-
-        .modal { 
-            width: min(1280px, 95vw); 
-            max-height: min(90vh, 850px); 
-            overflow: hidden; 
-            border-radius: 20px; 
-            border: 1px solid rgba(255,255,255,.10); 
-            background: rgba(20,20,22,.96); 
-            box-shadow: 0 30px 80px rgba(0,0,0,.65); 
-            display: grid; 
-            grid-template-columns: 350px 1fr; 
-        }
-
-        .modalLeft { 
-            border-right: 1px solid rgba(255,255,255,.06); 
-            padding: 20px; 
-            background: rgba(16,16,18,.55); 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-
-        .modalThumb { 
-            width: 100%; 
-            height: auto; 
-            aspect-ratio: 16/9; 
-            object-fit: contain; 
-            background: #0b0b0c; 
-            border-radius: 14px; 
-            border: 1px solid rgba(255,255,255,.06); 
-        }
-
-        .modalRight { 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 12px; 
-            min-height: 0; 
-        }
-
-        .modalHead { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            gap: 10px; 
-            padding-bottom: 5px;
-        }
+        .modal { width: min(1280px, 95vw); max-height: min(90vh, 850px); overflow: hidden; border-radius: 20px; border: 1px solid rgba(255,255,255,.10); background: rgba(20,20,22,.96); box-shadow: 0 30px 80px rgba(0,0,0,.65); display: grid; grid-template-columns: 350px 1fr; }
+        .modalLeft { border-right: 1px solid rgba(255,255,255,.06); padding: 20px; background: rgba(16,16,18,.55); display: flex; flex-direction: column; gap: 15px; }
+        .modalThumb { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: contain; background: #0b0b0c; border-radius: 14px; border: 1px solid rgba(255,255,255,.06); }
+        .modalRight { padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+        .modalHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 5px; }
 
         .memoList{ border:1px solid rgba(255,255,255,.08); border-radius:14px; background: rgba(255,255,255,.02); padding:12px; overflow:auto; flex:1; }
         .memoComposer{ display:grid; grid-template-columns: 140px 1fr auto; gap:10px; align-items:center; }
@@ -158,36 +89,15 @@
         @media (max-width: 980px){ .dash.active{ grid-template-columns: 1fr; } .modal{ grid-template-columns: 1fr; max-height: 95vh; } .modalLeft{ border-right:0; border-bottom:1px solid rgba(255,255,255,0.06); } }
 
         /* Shorts 전용 레이아웃 */
-      @media (min-width: 981px) {
-  /* 1. 일반 가로형 영상 모달 (기본값) */
-  .modal {
-    grid-template-columns: 350px 1fr !important;
-    max-width: 1280px;
-    max-height: min(90vh, 850px);
-  }
-  .modal #mVideoPlayer {
-    aspect-ratio: 16 / 9; /* 가로형 비율 복구 */
-    height: auto !important;
-  }
-
-  /* 2. 쇼츠 전용 영상 모달 (클래스가 있을 때만) */
-  .modal.shorts-mode {
-    grid-template-columns: 380px 1fr !important;
-    max-width: 850px; /* 쇼츠는 폭을 좁게 */
-    max-height: 95vh;
-  }
-  .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid rgba(255,255,255,0.1); }
-  .modal.shorts-mode .modalRight { order: 2; padding: 10px; }
-
-  /* 쇼츠일 때만 세로로 길게 확장 */
-  .modal.shorts-mode #mVideoPlayer {
-    aspect-ratio: auto !important; 
-    height: calc(90vh - 120px) !important;
-  }
-  .modal.shorts-mode #mIframe {
-    height: 100% !important;
-  }
-}
+        @media (min-width: 981px) {
+            .modal { grid-template-columns: 350px 1fr !important; max-width: 1280px; max-height: min(90vh, 850px); }
+            .modal #mVideoPlayer { aspect-ratio: 16 / 9; height: auto !important; }
+            .modal.shorts-mode { grid-template-columns: 380px 1fr !important; max-width: 850px; max-height: 95vh; }
+            .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid rgba(255,255,255,0.1); }
+            .modal.shorts-mode .modalRight { order: 2; padding: 10px; }
+            .modal.shorts-mode #mVideoPlayer { aspect-ratio: auto !important; height: calc(90vh - 120px) !important; }
+            .modal.shorts-mode #mIframe { height: 100% !important; }
+        }
     </style>
 </head>
 <body>
@@ -263,7 +173,7 @@
                     </div>
                     <button class="xBtn" id="mClose" style="background:none; border:none; color:white; cursor:pointer;">닫기 ✕</button>
                 </div>
-               <div id="mVideoPlayer" style="width:100%; background:#000; border-radius:12px; overflow:hidden; display:none;">
+                <div id="mVideoPlayer" style="width:100%; background:#000; border-radius:12px; overflow:hidden; display:none;">
                     <iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 </div>
                 <div class="memoList" id="mList"></div>
@@ -334,56 +244,47 @@
 
         function buildGenreChannelIndex(items){ const genreMap = new Map(); items.forEach(it => { const g = (it[KEY.genre] || "기타").trim(), c = (it[KEY.channel] || "미분류").trim(); if (!genreMap.has(g)) genreMap.set(g, new Map()); const cm = genreMap.get(g); cm.set(c, (cm.get(c) || 0) + 1); }); return [...genreMap.entries()].map(([g, cm]) => ({ g, total: [...cm.values()].reduce((a,b)=>a+b,0), channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt })).sort((a,b)=> a.c.localeCompare(b.c, "ko")) })).sort((a,b)=> b.total - a.total); }
 
-        function matchesFilter(item) { const q = searchEl.value.toLowerCase(); const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true; const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true; const okMedia = activeMedia ? item[KEY.media] === activeMedia : true; const okFormat = activeFormat ? item[KEY.format] === activeFormat : true; const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => splitTags(item[KEY.tag]).includes(t)); const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true; return okSearch && okGenre && okMedia && okFormat && okTag && okLiked; }
-
         function renderChipGroup(container, labelAll, baseList, countMap, activeState, onPick, isMulti = false) { container.innerHTML = ""; const isAllActive = isMulti ? activeState.size === 0 : activeState === null; const allChip = document.createElement("div"); allChip.className = "chip" + (isAllActive ? " active" : ""); allChip.textContent = labelAll; allChip.onclick = () => onPick(null); container.appendChild(allChip); baseList.forEach(val => { const isActive = isMulti ? activeState.has(val) : activeState === val; const chip = document.createElement("div"); chip.className = "chip" + (isActive ? " active" : ""); chip.innerHTML = `${escapeHTML(val)} <span class="count">${countMap.get(val)||0}</span>`; chip.onclick = () => onPick(val); container.appendChild(chip); }); }
         function updateChipsUI(filtered) { const gMap = new Map(), mMap = new Map(), fMap = new Map(), tMap = new Map(); allData.forEach(it => { gMap.set(it[KEY.genre], (gMap.get(it[KEY.genre])||0)+1); mMap.set(it[KEY.media], (mMap.get(it[KEY.media])||0)+1); fMap.set(it[KEY.format], (fMap.get(it[KEY.format])||0)+1); }); filtered.forEach(it => splitTags(it[KEY.tag]).forEach(t => tMap.set(t, (tMap.get(t)||0)+1))); renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => { activeGenre = v; render(true); }); renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => { activeMedia = v; render(true); }); renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => { activeFormat = v; render(true); }); renderChipGroup(tagChipsEl, "All", baseTags, tMap, activeTags, (v) => { if (v === null) activeTags.clear(); else activeTags.has(v) ? activeTags.delete(v) : activeTags.add(v); render(true); }, true); }
 
         function renderLeftNav() {
-    leftNavEl.innerHTML = "";
-    const index = buildGenreChannelIndex(allData);
-    
-    index.forEach((group, idx) => {
-        // 현재 이 장르 안에 선택된 채널이 있는지 확인
-        const isGenreActive = group.channels.some(ch => ch.c === selectedChannel);
-        
-        const wrap = document.createElement("div");
-        wrap.className = "genreGroup" + (isGenreActive ? " active" : "");
-        
-        const head = document.createElement("button");
-        head.className = "genreHead";
-        head.innerHTML = `<span>${escapeHTML(group.g)}</span><span style="font-size:11px; opacity:0.6;">${group.channels.length}ch</span>`;
-        
-        const body = document.createElement("div");
-        body.className = "genreBody";
-        // 선택된 장르거나 초기 2개 장르는 열어둠
-        body.style.display = (isGenreActive || idx < 2) ? "block" : "none";
-        
-        head.onclick = () => {
-            body.style.display = body.style.display === "none" ? "block" : "none";
-        };
-        
-        group.channels.forEach(({c, cnt}) => {
-            const b = document.createElement("button");
-            // 선택된 채널에 active 클래스 부여
-            b.className = "channelItem" + (selectedChannel === c ? " active" : "");
-            b.innerHTML = `<span>${escapeHTML(c)}</span><span style="font-size:11px; opacity:0.5;">${cnt}</span>`;
-            
-            b.onclick = () => {
-                selectedChannel = c;
-                render(true); // 목록 새로고침
-                renderLeftNav(); // 사이드바 하이라이트 업데이트를 위해 재호출
-            };
-            body.appendChild(b);
-        });
-        
-        wrap.append(head, body);
-        leftNavEl.appendChild(wrap);
-    });
-}
+            leftNavEl.innerHTML = "";
+            const index = buildGenreChannelIndex(allData);
+            index.forEach((group, idx) => {
+                const isGenreActive = group.channels.some(ch => ch.c === selectedChannel);
+                const wrap = document.createElement("div");
+                wrap.className = "genreGroup" + (isGenreActive ? " active" : "");
+                const head = document.createElement("button");
+                head.className = "genreHead";
+                head.innerHTML = `<span>${escapeHTML(group.g)}</span><span style="font-size:11px; opacity:0.6;">${group.channels.length}ch</span>`;
+                const body = document.createElement("div");
+                body.className = "genreBody";
+                body.style.display = (isGenreActive || idx < 2) ? "block" : "none";
+                head.onclick = () => { body.style.display = body.style.display === "none" ? "block" : "none"; };
+                group.channels.forEach(({c, cnt}) => {
+                    const b = document.createElement("button");
+                    b.className = "channelItem" + (selectedChannel === c ? " active" : "");
+                    b.innerHTML = `<span>${escapeHTML(c)}</span><span style="font-size:11px; opacity:0.5;">${cnt}</span>`;
+                    b.onclick = () => { selectedChannel = c; render(true); renderLeftNav(); };
+                    body.appendChild(b);
+                });
+                wrap.append(head, body);
+                leftNavEl.appendChild(wrap);
+            });
+        }
+
         async function render(resetPagination = false){
             if (resetPagination) renderLimit = RENDER_CHUNK;
-            const filtered = allData.filter(matchesFilter);
+            const filtered = allData.filter(item => {
+                const q = searchEl.value.toLowerCase();
+                const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
+                const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true;
+                const okMedia = activeMedia ? item[KEY.media] === activeMedia : true;
+                const okFormat = activeFormat ? item[KEY.format] === activeFormat : true;
+                const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => splitTags(item[KEY.tag]).includes(t));
+                const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true;
+                return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
+            });
             updateChipsUI(filtered);
             statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
             if (viewMode === "all"){
@@ -428,7 +329,6 @@
             const ytId = getYoutubeID(url);
             const isInstagram = url.includes("instagram.com");
 
-            // 1. 영상 영역 초기화 (기존 아이프레임 재생성)
             mVideoPlayer.innerHTML = '<iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
             const newIframe = document.getElementById("mIframe");
 
@@ -448,15 +348,10 @@
                 mVideoPlayer.style.display = "none";
             }
 
-            // 2. 쇼츠 레이아웃 체크
-           const isShorts = url.includes("/shorts/");
-const modalContainer = modalOverlay.querySelector('.modal');
-
-if (isShorts) {
-    modalContainer.classList.add('shorts-mode');
-} else {
-    modalContainer.classList.remove('shorts-mode'); // 일반 영상일 땐 반드시 제거해야 함
-}}
+            const isShorts = url.includes("/shorts/");
+            const modalContainer = modalOverlay.querySelector('.modal');
+            if (isShorts) { modalContainer.classList.add('shorts-mode'); } 
+            else { modalContainer.classList.remove('shorts-mode'); }
             
             modalOverlay.classList.add("open");
 
@@ -472,7 +367,6 @@ if (isShorts) {
         mShareBtn.onclick = () => { const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; navigator.clipboard.writeText(url); showToast("공유 링크 복사됨!"); };
         mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("원본 링크 복사됨!"); };
         
-        // 정지 로직 통합 (중복 제거됨)
         function closeModal() {
             modalOverlay.classList.remove("open");
             const iframe = document.getElementById("mIframe");
@@ -485,7 +379,7 @@ if (isShorts) {
 
         mSend.onclick = async () => { const itemId = modalOverlay.dataset.itemid, nick = mNick.value.trim(), memo = mMemo.value.trim(); if (!nick || !memo) return; setNickname(nick); await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() }); mMemo.value = ""; interactionsCache.delete(itemId); openModalForItem(allData.find(it => getItemId(it) === itemId)); };
 
-        window.addEventListener("scroll", () => { if (viewMode === "all" && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) { if (renderLimit < allData.filter(matchesFilter).length) { renderLimit += RENDER_CHUNK; render(false); } } });
+        window.addEventListener("scroll", () => { if (viewMode === "all" && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) { if (renderLimit < allData.length) { renderLimit += RENDER_CHUNK; render(false); } } });
         
         async function init() {
             try {
