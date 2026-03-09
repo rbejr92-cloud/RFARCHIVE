@@ -52,10 +52,43 @@
         .panelHeader{ padding:12px 12px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:space-between; gap:10px; background: rgba(20,20,22,.55); }
         .panelHeader .title{ font-size:13px; font-weight:700; color: rgba(234,234,234,.9); }
         .leftScroll{ max-height: calc(100vh - 320px); overflow:auto; padding:10px; }
-        .genreGroup{ border:1px solid rgba(255,255,255,.06); border-radius:14px; overflow:hidden; margin-bottom:10px; background: rgba(20,20,22,.35); }
-        .genreHead{ width:100%; border:0; background: rgba(20,20,22,.55); color: rgba(234,234,234,.92); padding:10px 10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; font-weight:700; font-family: inherit; }
-        .channelItem{ width:100%; border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55); color: rgba(234,234,234,.88); padding:9px 10px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:6px; font-size:13px; font-weight:600; font-family: inherit; }
-        .channelItem.active{ border-color: rgba(255,71,87,.70); box-shadow: 0 0 0 3px rgba(255,71,87,.12); background: rgba(255,71,87,.08); }
+        ./* 장르 그룹 하이라이트 */
+.genreGroup.active {
+    border-color: var(--accent);
+    background: rgba(255, 71, 87, 0.05);
+}
+
+.genreHead {
+    transition: all 0.2s ease;
+}
+
+/* 장르가 선택되었을 때의 스타일 */
+.genreGroup.active .genreHead {
+    color: var(--accent);
+}
+
+/* 채널 리스트 들여쓰기 및 구분선 */
+.genreBody {
+    padding: 5px 8px 10px 20px; /* 왼쪽에 여백을 주어 계층 구분 */
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* 채널 아이템 기본 및 활성화 스타일 */
+.channelItem {
+    margin-bottom: 4px;
+    border: 1px solid transparent; /* 기본은 투명하게 */
+    background: transparent;
+}
+
+.channelItem.active {
+    background: rgba(255, 71, 87, 0.15) !important;
+    border-color: rgba(255, 71, 87, 0.3) !important;
+    color: #fff !important;
+}
+
+.channelItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
         .list{ display:flex; flex-direction:column; gap:10px; }
         .row{ display:grid; grid-template-columns: 160px 1fr; gap:12px; border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55); border-radius:16px; overflow:hidden; cursor:pointer; transition: transform 0.2s ease; }
         .rowThumb{ width:100%; height:96px; background:#0b0b0c; object-fit:cover; display:block; }
@@ -294,8 +327,48 @@
         function renderChipGroup(container, labelAll, baseList, countMap, activeState, onPick, isMulti = false) { container.innerHTML = ""; const isAllActive = isMulti ? activeState.size === 0 : activeState === null; const allChip = document.createElement("div"); allChip.className = "chip" + (isAllActive ? " active" : ""); allChip.textContent = labelAll; allChip.onclick = () => onPick(null); container.appendChild(allChip); baseList.forEach(val => { const isActive = isMulti ? activeState.has(val) : activeState === val; const chip = document.createElement("div"); chip.className = "chip" + (isActive ? " active" : ""); chip.innerHTML = `${escapeHTML(val)} <span class="count">${countMap.get(val)||0}</span>`; chip.onclick = () => onPick(val); container.appendChild(chip); }); }
         function updateChipsUI(filtered) { const gMap = new Map(), mMap = new Map(), fMap = new Map(), tMap = new Map(); allData.forEach(it => { gMap.set(it[KEY.genre], (gMap.get(it[KEY.genre])||0)+1); mMap.set(it[KEY.media], (mMap.get(it[KEY.media])||0)+1); fMap.set(it[KEY.format], (fMap.get(it[KEY.format])||0)+1); }); filtered.forEach(it => splitTags(it[KEY.tag]).forEach(t => tMap.set(t, (tMap.get(t)||0)+1))); renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => { activeGenre = v; render(true); }); renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => { activeMedia = v; render(true); }); renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => { activeFormat = v; render(true); }); renderChipGroup(tagChipsEl, "All", baseTags, tMap, activeTags, (v) => { if (v === null) activeTags.clear(); else activeTags.has(v) ? activeTags.delete(v) : activeTags.add(v); render(true); }, true); }
 
-        function renderLeftNav() { leftNavEl.innerHTML = ""; const index = buildGenreChannelIndex(allData); index.forEach((group, idx) => { const wrap = document.createElement("div"); wrap.className = "genreGroup"; const head = document.createElement("button"); head.className = "genreHead"; head.innerHTML = `<span>${escapeHTML(group.g)}</span><span style="font-size:11px;">${group.channels.length}ch</span>`; const body = document.createElement("div"); body.style.display = idx < 2 ? "block" : "none"; head.onclick = () => body.style.display = body.style.display === "none" ? "block" : "none"; group.channels.forEach(({c, cnt}) => { const b = document.createElement("button"); b.className = "channelItem" + (selectedChannel === c ? " active" : ""); b.innerHTML = `<span>${escapeHTML(c)}</span><span style="font-size:11px;">${cnt}</span>`; b.onclick = () => { selectedChannel = c; render(true); }; body.appendChild(b); }); wrap.append(head, body); leftNavEl.appendChild(wrap); }); }
-
+        function renderLeftNav() {
+    leftNavEl.innerHTML = "";
+    const index = buildGenreChannelIndex(allData);
+    
+    index.forEach((group, idx) => {
+        // 현재 이 장르 안에 선택된 채널이 있는지 확인
+        const isGenreActive = group.channels.some(ch => ch.c === selectedChannel);
+        
+        const wrap = document.createElement("div");
+        wrap.className = "genreGroup" + (isGenreActive ? " active" : "");
+        
+        const head = document.createElement("button");
+        head.className = "genreHead";
+        head.innerHTML = `<span>${escapeHTML(group.g)}</span><span style="font-size:11px; opacity:0.6;">${group.channels.length}ch</span>`;
+        
+        const body = document.createElement("div");
+        body.className = "genreBody";
+        // 선택된 장르거나 초기 2개 장르는 열어둠
+        body.style.display = (isGenreActive || idx < 2) ? "block" : "none";
+        
+        head.onclick = () => {
+            body.style.display = body.style.display === "none" ? "block" : "none";
+        };
+        
+        group.channels.forEach(({c, cnt}) => {
+            const b = document.createElement("button");
+            // 선택된 채널에 active 클래스 부여
+            b.className = "channelItem" + (selectedChannel === c ? " active" : "");
+            b.innerHTML = `<span>${escapeHTML(c)}</span><span style="font-size:11px; opacity:0.5;">${cnt}</span>`;
+            
+            b.onclick = () => {
+                selectedChannel = c;
+                render(true); // 목록 새로고침
+                renderLeftNav(); // 사이드바 하이라이트 업데이트를 위해 재호출
+            };
+            body.appendChild(b);
+        });
+        
+        wrap.append(head, body);
+        leftNavEl.appendChild(wrap);
+    });
+}
         async function render(resetPagination = false){
             if (resetPagination) renderLimit = RENDER_CHUNK;
             const filtered = allData.filter(matchesFilter);
