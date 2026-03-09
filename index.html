@@ -1181,19 +1181,24 @@
       await hydrateCountersFor(sliced.slice(0, 60).map(getItemId), 8);
     }
 
-    function buildGenreChannelIndex(items){
-      const genreMap = new Map();
-      for (const it of items){
-        const g = (it[KEY.genre] || "기타").toString().trim() || "기타", c = (it[KEY.channel] || "채널명 없음").toString().trim() || "채널명 없음";
-        if (!genreMap.has(g)) genreMap.set(g, new Map());
-        const cm = genreMap.get(g);
-        cm.set(c, (cm.get(c) || 0) + 1);
-      }
-      return [...genreMap.entries()].map(([g, cm]) => ({
-        g, total: [...cm.values()].reduce((a,b)=>a+b,0),
-        channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt })).sort((a,b)=> b.cnt - a.cnt || a.c.localeCompare(b.c, "ko"))
-      })).sort((a,b)=> b.total - a.total || a.g.localeCompare(b.g, "ko"));
-    }
+function buildGenreChannelIndex(items){
+  const genreMap = new Map();
+  for (const it of items){
+    const g = (it[KEY.genre] || "기타").toString().trim() || "기타", 
+          c = (it[KEY.channel] || "채널명 없음").toString().trim() || "채널명 없음";
+    if (!genreMap.has(g)) genreMap.set(g, new Map());
+    const cm = genreMap.get(g);
+    cm.set(c, (cm.get(c) || 0) + 1);
+  }
+  
+  return [...genreMap.entries()].map(([g, cm]) => ({
+    g, 
+    total: [...cm.values()].reduce((a,b)=>a+b,0),
+    // 👇 이 부분의 정렬 로직을 수정합니다 (cnt 기준 제거, 이름 기준 고정)
+    channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt }))
+      .sort((a, b) => a.c.localeCompare(b.c, "ko")) 
+  })).sort((a, b) => a.g.localeCompare(b.g, "ko")); // 장르명도 가나다순으로 정렬
+}
 
     function renderLeftNav(filtered){
       leftNavEl.innerHTML = "";
