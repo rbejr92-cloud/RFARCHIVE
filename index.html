@@ -234,7 +234,23 @@
     function debounce(func, delay) { let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => func.apply(this, args), delay); }; }
     function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
     function sortByDateDesc(data) { return [...data].sort((a, b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-'))); }
-    function getYoutubeID(url) { try { const u = new URL(url); if (u.hostname.includes("youtu.be")) return u.pathname.slice(1); return u.searchParams.get("v"); } catch { return null; } }
+    function getYoutubeID(url) {
+  try {
+    const u = new URL(url);
+    // 1. 쇼츠(shorts/) 형식에서 ID 추출 기능 추가
+    if (u.pathname.includes("/shorts/")) {
+      return u.pathname.split("/shorts/")[1].split(/[?#]/)[0];
+    }
+    // 2. 모바일 공유(youtu.be) 형식 대응
+    if (u.hostname.includes("youtu.be")) {
+      return u.pathname.slice(1).split(/[?#]/)[0];
+    }
+    // 3. 일반 유튜브(?v=) 형식 대응
+    return u.searchParams.get("v");
+  } catch {
+    return null;
+  }
+}
     async function resolveThumbnail(item) { const ytId = getYoutubeID(item[KEY.url]); return ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : "https://via.placeholder.com/400x225?text=No+Thumbnail"; }
 
     async function fetchInteractions(itemId){ if (interactionsCache.has(itemId)) return interactionsCache.get(itemId); try { const res = await fetch(API_URL + "?itemId=" + itemId); const data = await res.json(); const norm = { likes: data.likes || 0, memos: data.memos || [] }; interactionsCache.set(itemId, norm); return norm; } catch { return { likes: 0, memos: [] }; } }
@@ -342,7 +358,12 @@ async function openModalForItem(item){
     mShareBtn.onclick = () => { const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; navigator.clipboard.writeText(url); showToast("공유 링크 복사됨!"); };
     mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("원본 링크 복사됨!"); };
     mClose.onclick = () => { modalOverlay.classList.remove("open"); mIframe.src = ""; };
-    modalOverlay.onclick = (e) => { if(e.target === modalOverlay) { modalOverlay.classList.remove("open"); mIframe.src = ""; } };
+   modalOverlay.onclick = (e) => { 
+    if(e.target === modalOverlay) { 
+        modalOverlay.classList.remove("open"); 
+        mIframe.src = ""; // 이 부분이 있어야 배경 클릭 시 영상 소리가 멈춥니다.
+    } 
+};
     mSend.onclick = async () => { const itemId = modalOverlay.dataset.itemid, nick = mNick.value.trim(), memo = mMemo.value.trim(); if (!nick || !memo) return; setNickname(nick); await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() }); mMemo.value = ""; interactionsCache.delete(itemId); openModalForItem(allData.find(it => getItemId(it) === itemId)); };
 
     window.addEventListener("scroll", () => { if (viewMode === "all" && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) { if (renderLimit < allData.filter(matchesFilter).length) { renderLimit += RENDER_CHUNK; render(false); } } });
