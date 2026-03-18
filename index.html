@@ -222,8 +222,8 @@
 
     <script>
        const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
-       const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
-       const KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", tag: "TAG", date: "발행일", thumbCandidates: ["thumb", "THUMB", "썸네일"] };
+        const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
+        const KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", tag: "TAG", date: "발행일", thumbCandidates: ["thumb", "THUMB", "썸네일"] };
 
         let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseTags = [];
         let activeGenre = null, activeMedia = null, activeFormat = null, activeTags = new Set();
@@ -350,184 +350,76 @@
             }
         }
 
-async function openModalForItem(item) {
-    const itemId = getItemId(item);
-    modalOverlay.dataset.itemid = itemId;
-    mTitle.textContent = item[KEY.title];
-    mSub.textContent = `${item[KEY.channel]} · ${item[KEY.date]}`;
-    mLink.href = item[KEY.url];
-    mThumb.src = await resolveThumbnail(item);
-    mNick.value = getNickname();
+        async function openModalForItem(item) {
+            const itemId = getItemId(item);
+            modalOverlay.dataset.itemid = itemId;
+            mTitle.textContent = item[KEY.title];
+            mSub.textContent = `${item[KEY.channel]} · ${item[KEY.date]}`;
+            mLink.href = item[KEY.url];
+            mThumb.src = await resolveThumbnail(item);
+            mNick.value = getNickname();
 
-    const url = item[KEY.url] || "";
-    const ytId = getYoutubeID(url);
-    const isInstagram = url.includes("instagram.com");
+            const url = item[KEY.url] || "";
+            const ytId = getYoutubeID(url);
+            const isInstagram = url.includes("instagram.com");
 
-    // 비디오 플레이어 초기화
-    mVideoPlayer.innerHTML = '<iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
-    const newIframe = document.getElementById("mIframe");
+            mVideoPlayer.innerHTML = '<iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+            const newIframe = document.getElementById("mIframe");
 
-    if (ytId) {
-        mVideoPlayer.style.display = "block";
-        mVideoPlayer.style.background = "#000";
-        newIframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
-    } else if (isInstagram) {
-        mVideoPlayer.style.display = "block";
-        mVideoPlayer.style.background = "#1a1a1c";
-        mVideoPlayer.innerHTML = `<div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#aaa; text-align:center; padding:20px;">
-            <div style="font-size:40px; margin-bottom:15px;">📸</div>
-            <p style="font-size:15px; line-height:1.5;">인스타그램은 보안 정책상 여기서 재생 불가</p>
-            <a href="${url}" target="_blank" style="margin-top:15px; color:#ff4757; text-decoration:underline; font-weight:700;">원본 보기</a>
-        </div>`;
-    } else {
-        mVideoPlayer.style.display = "none";
-    }
-
-    // [중요] 팝업 버튼 기능을 여기서 매번 새로 연결 (이벤트 증발 방지)
-    mPipBtn.onclick = (e) => {
-        e.preventDefault();
-        if (ytId) {
-            const newWin = window.open('about:blank', 'pip', 'width=800,height=600');
-            if (newWin) {
-                newWin.location.href = "https://www.youtube.com/watch?v=" + ytId;
+            if (ytId) {
+                mVideoPlayer.style.display = "block";
+                mVideoPlayer.style.background = "#000";
+                newIframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+            } else if (isInstagram) {
+                mVideoPlayer.style.display = "block";
+                mVideoPlayer.style.background = "#1a1a1c";
+                mVideoPlayer.innerHTML = `<div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#aaa; text-align:center; padding:20px;">
+                    <div style="font-size:40px; margin-bottom:15px;">📸</div>
+                    <p style="font-size:15px; line-height:1.5;">인스타그램은 보안 정책상 여기서 재생 불가</p>
+                    <a href="${url}" target="_blank" style="margin-top:15px; color:#ff4757; text-decoration:underline; font-weight:700;">원본 보기</a>
+                </div>`;
             } else {
-                showToast("팝업이 차단되었습니다. 설정을 확인해주세요.");
+                mVideoPlayer.style.display = "none";
             }
-        } else {
-            window.open(url, '_blank');
-        }
-    };
 
-    // 쇼츠 여부에 따른 레이아웃 처리
-    const isShorts = url.includes("/shorts/");
-    const modalContainer = modalOverlay.querySelector('.modal');
-    const memoSection = document.querySelector('.memoList');
-    const memoComposer = document.querySelector('.memoComposer');
-    const leftSection = document.querySelector('.modalLeft');
-    const rightSection = document.querySelector('.modalRight');
-
-    if (isShorts) {
-        modalContainer.classList.add('shorts-mode');
-        leftSection.appendChild(memoSection);
-        leftSection.appendChild(memoComposer);
-    } else {
-        modalContainer.classList.remove('shorts-mode');
-        rightSection.appendChild(memoSection);
-        rightSection.appendChild(memoComposer);
-    }
-
-    // 모달 표시
-    modalOverlay.classList.add("open");
-
-    // 데이터 로드 (좋아요/메모)
-    const data = await fetchInteractions(itemId);
-    mLikeCnt.textContent = data.likes;
-    mCounts.textContent = `👍 ${data.likes} · 💬 ${data.memos.length}`;
-    mList.innerHTML = data.memos.map(m => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>${escapeHTML(m.nickname)}</strong>: ${escapeHTML(m.memo)}</div>`).join("");
-}
+            mPipBtn.onclick = (e) => {
+                e.preventDefault();
+                if (ytId) {
+                    const newWin = window.open('about:blank', 'pip', 'width=800,height=600');
+                    if (newWin) newWin.location.href = "https://www.youtube.com/watch?v=" + ytId;
+                    else showToast("팝업이 차단되었습니다.");
+                } else { window.open(url, '_blank'); }
+            };
 
             const isShorts = url.includes("/shorts/");
-const modalContainer = modalOverlay.querySelector('.modal');
+            const modalContainer = modalOverlay.querySelector('.modal');
+            const memoSection = document.getElementById('mList');
+            const memoComposer = document.querySelector('.memoComposer');
+            const leftSection = document.querySelector('.modalLeft');
+            const rightSection = document.querySelector('.modalRight');
+
             if (isShorts) {
-    modalContainer.classList.add('shorts-mode');
-} else {
-    // 가로형 영상일 때는 반드시 이 클래스를 제거해야 원래 크기로 돌아옵니다!
-    modalContainer.classList.remove('shorts-mode'); 
-}
-const memoSection = document.querySelector('.memoList');
-const memoComposer = document.querySelector('.memoComposer');
-const leftSection = document.querySelector('.modalLeft');
-const rightSection = document.querySelector('.modalRight');
+                modalContainer.classList.add('shorts-mode');
+                leftSection.appendChild(memoSection);
+                leftSection.appendChild(memoComposer);
+            } else {
+                modalContainer.classList.remove('shorts-mode');
+                rightSection.appendChild(memoSection);
+                rightSection.appendChild(memoComposer);
+            }
 
-if (isShorts) {
-    modalContainer.classList.add('shorts-mode');
-    // 쇼츠일 때: 메모 리스트와 입력창을 왼쪽으로 이동
-    leftSection.appendChild(memoSection);
-    leftSection.appendChild(memoComposer);
-} else {
-    modalContainer.classList.remove('shorts-mode');
-    // 일반일 때: 메모 리스트와 입력창을 원래 위치(오른쪽)로 복구
-    rightSection.appendChild(memoSection);
-    rightSection.appendChild(memoComposer);
-}
-
-modalOverlay.classList.add("open");
-
+            modalOverlay.classList.add("open");
             const data = await fetchInteractions(itemId);
-            mLikeCnt.textContent = data.likes; 
+            mLikeCnt.textContent = data.likes;
             mCounts.textContent = `👍 ${data.likes} · 💬 ${data.memos.length}`;
             mList.innerHTML = data.memos.map(m => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>${escapeHTML(m.nickname)}</strong>: ${escapeHTML(m.memo)}</div>`).join("");
         }
 
         function checkDeepLink() { const params = new URLSearchParams(window.location.search); const id = params.get('id'); if (id) { const item = allData.find(it => getItemId(it) === id); if (item) openModalForItem(item); } }
 
-        // 1. PIP 팝업 버튼: 브라우저 차단 회피 및 모든 영상 재생 가능 버전
-        mPipBtn.onclick = () => {
-            const url = mLink.href;
-            const ytId = getYoutubeID(url);
-
-            if (ytId) {
-                // 클릭 즉시 빈 창을 먼저 열어 브라우저의 '팝업 차단'을 방지합니다.
-                const newWindow = window.open('about:blank', 'pip', 'width=800,height=600');
-                
-                // 퍼가기 금지 영상까지 모두 열리도록 표준 watch 주소를 사용합니다.
-                const finalUrl = `https://www.youtube.com/watch?v=${ytId}`;
-                
-                if (newWindow) {
-                    newWindow.location.href = finalUrl;
-                } else {
-                    showToast("팝업이 차단되었습니다. 설정을 확인해주세요.");
-                }
-            } else {
-                // 유튜브가 아닐 경우 원본 링크 새 탭 열기
-                window.open(url, '_blank');
-            }
-        };
-
-        // 2. 공유 버튼 (기존 유지)
-        mShareBtn.onclick = () => { 
-            const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; 
-            navigator.clipboard.writeText(url); 
-            showToast("공유 링크 복사됨!"); 
-        };
-
-        // 3. 링크 복사 버튼 (기존 유지)
-        mCopyBtn.onclick = () => { 
-            navigator.clipboard.writeText(mLink.href); 
-            showToast("원본 링크 복사됨!"); 
-        };
-      // --- 팝업 및 공유 관련 기능 시작 (기존 코드를 지우고 이 부분을 넣으세요) ---
-        mPipBtn.onclick = () => {
-            const url = mLink.href;
-            const ytId = getYoutubeID(url);
-            if (ytId) {
-                // 브라우저 팝업 차단을 피하기 위해 즉시 빈 창을 엽니다.
-                const newWin = window.open('about:blank', 'pip', 'width=800,height=600');
-                if (newWin) {
-                    newWin.location.href = "https://www.youtube.com/watch?v=" + ytId;
-                } else {
-                    showToast("팝업이 차단되었습니다. 브라우저 설정을 확인해주세요.");
-                }
-            } else {
-                // 유튜브가 아닐 경우 원본 링크를 새 탭으로 엽니다.
-                window.open(url, '_blank');
-            }
-        };
-
-        mShareBtn.onclick = () => {
-            const currentId = modalOverlay.dataset.itemid;
-            const shareUrl = window.location.origin + window.location.pathname + "?id=" + currentId;
-            navigator.clipboard.writeText(shareUrl);
-            showToast("공유 링크 복사됨!");
-        };
-
-        mCopyBtn.onclick = () => {
-            navigator.clipboard.writeText(mLink.href);
-            showToast("원본 링크 복사됨!");
-        };
-        // --- 기능 끝 ---
-
-        // 찾으신 기준점 함수 (여기서부터는 건드리지 마세요)
+        mShareBtn.onclick = () => { const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; navigator.clipboard.writeText(url); showToast("공유 링크 복사됨!"); };
+        mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("원본 링크 복사됨!"); };
+        
         function closeModal() {
             modalOverlay.classList.remove("open");
             const iframe = document.getElementById("mIframe");
