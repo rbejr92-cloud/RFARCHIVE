@@ -461,7 +461,16 @@
         viewDashBtn.onclick = () => { viewMode = "dash"; viewDashBtn.classList.add("active"); viewAllBtn.classList.remove("active"); render(true); };
         resetBtn.onclick = () => { activeGenre = activeMedia = activeFormat = null; activeTags.clear(); searchEl.value = ""; render(true); };
         document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => { document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active')); e.target.classList.add('active'); document.getElementById(e.target.dataset.tab + "Chips").classList.add('active'); });
-        
+
+                // ID로 데이터를 찾아서 모달을 열어주는 안전한 함수
+function openById(id) {
+    const item = allData.find(it => getItemId(it) === id);
+    if (item) {
+        openModalForItem(item);
+    }
+}
+
+                
         init();
     </script>
 </body>
