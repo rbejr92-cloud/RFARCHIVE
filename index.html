@@ -221,9 +221,9 @@
     </div>
 
     <script>
-        const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
-        const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
-        const KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", tag: "TAG", date: "발행일", thumbCandidates: ["thumb", "THUMB", "썸네일"] };
+const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
+const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
+const KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", tag: "TAG", date: "발행일", thumbCandidates: ["thumb", "THUMB", "썸네일"] };
 
         let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseTags = [];
         let activeGenre = null, activeMedia = null, activeFormat = null, activeTags = new Set();
