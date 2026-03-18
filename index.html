@@ -452,6 +452,38 @@ modalOverlay.classList.add("open");
             navigator.clipboard.writeText(mLink.href); 
             showToast("원본 링크 복사됨!"); 
         };
+      // --- 팝업 및 공유 관련 기능 시작 (기존 코드를 지우고 이 부분을 넣으세요) ---
+        mPipBtn.onclick = () => {
+            const url = mLink.href;
+            const ytId = getYoutubeID(url);
+            if (ytId) {
+                // 브라우저 팝업 차단을 피하기 위해 즉시 빈 창을 엽니다.
+                const newWin = window.open('about:blank', 'pip', 'width=800,height=600');
+                if (newWin) {
+                    newWin.location.href = "https://www.youtube.com/watch?v=" + ytId;
+                } else {
+                    showToast("팝업이 차단되었습니다. 브라우저 설정을 확인해주세요.");
+                }
+            } else {
+                // 유튜브가 아닐 경우 원본 링크를 새 탭으로 엽니다.
+                window.open(url, '_blank');
+            }
+        };
+
+        mShareBtn.onclick = () => {
+            const currentId = modalOverlay.dataset.itemid;
+            const shareUrl = window.location.origin + window.location.pathname + "?id=" + currentId;
+            navigator.clipboard.writeText(shareUrl);
+            showToast("공유 링크 복사됨!");
+        };
+
+        mCopyBtn.onclick = () => {
+            navigator.clipboard.writeText(mLink.href);
+            showToast("원본 링크 복사됨!");
+        };
+        // --- 기능 끝 ---
+
+        // 찾으신 기준점 함수 (여기서부터는 건드리지 마세요)
         function closeModal() {
             modalOverlay.classList.remove("open");
             const iframe = document.getElementById("mIframe");
