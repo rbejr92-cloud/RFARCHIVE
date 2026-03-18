@@ -325,19 +325,29 @@
                 gridEl.style.display = "grid"; dashEl.style.display = "none";
                 const list = (sortMode === "likes") ? [...filtered].sort((a,b)=> (interactionsCache.get(getItemId(b))?.likes||0) - (interactionsCache.get(getItemId(a))?.likes||0)) : sortByDateDesc(filtered);
                 const sliced = list.slice(0, renderLimit);
-                gridEl.innerHTML = sliced.map(it => `
+                if (viewMode === "all"){
+                gridEl.style.display = "grid"; dashEl.style.display = "none";
+                const list = (sortMode === "likes") ? [...filtered].sort((a,b)=> (interactionsCache.get(getItemId(b))?.likes||0) - (interactionsCache.get(getItemId(a))?.likes||0)) : sortByDateDesc(filtered);
+                const sliced = list.slice(0, renderLimit);
+                
+                gridEl.innerHTML = sliced.map(it => {
+                    const itemId = getItemId(it);
+                    // it 전체를 넘기지 않고 itemId만 전달합니다.
+                    return `
                     <div class="card">
-                        <div class="thumbWrap" onclick='openModalForItem(${JSON.stringify(it)})'>
-                            <img class="thumb" src="https://via.placeholder.com/400x225?text=Loading..." id="img-${getItemId(it)}">
+                        <div class="thumbWrap" onclick="openById('${itemId}')">
+                            <img class="thumb" src="https://via.placeholder.com/400x225?text=Loading..." id="img-${itemId}">
                         </div>
                         <div class="metaBox">
                             <div class="metaLeft"><div class="channel">${escapeHTML(it[KEY.channel])}</div><div class="titleLine">${escapeHTML(it[KEY.title])}</div></div>
                             <div class="actionsBar">
-                                <button class="actionBtn ${isLiked(getItemId(it))?'active':''}" onclick="toggleLike('${getItemId(it)}')">👍 <span id="like-${getItemId(it)}">0</span></button>
-                                <button class="actionBtn" onclick='openModalForItem(${JSON.stringify(it)})'>💬 <span id="memo-${getItemId(it)}">0</span></button>
+                                <button class="actionBtn ${isLiked(itemId)?'active':''}" onclick="event.stopPropagation(); toggleLike('${itemId}')">👍 <span id="like-${itemId}">0</span></button>
+                                <button class="actionBtn" onclick="openById('${itemId}')">💬 <span id="memo-${itemId}">0</span></button>
                             </div>
                         </div>
-                    </div>`).join("");
+                    </div>`;
+                }).join("");
+                
                 sliced.forEach(async it => { const t = await resolveThumbnail(it); document.getElementById(`img-${getItemId(it)}`).src = t; });
                 hydrateCountersFor(sliced.map(getItemId));
             } else {
@@ -345,10 +355,10 @@
                 if (!selectedChannel) { rightTitleEl.textContent = "채널 선택"; rightListEl.innerHTML = ""; return; }
                 rightTitleEl.textContent = selectedChannel;
                 const list = sortByDateDesc(filtered.filter(it => it[KEY.channel] === selectedChannel));
-                rightListEl.innerHTML = list.map(it => `<div class="row" onclick='openModalForItem(${JSON.stringify(it)})'><img class="rowThumb" src="https://via.placeholder.com/160x90" id="rowimg-${getItemId(it)}"><div class="rowMeta"><strong>${escapeHTML(it[KEY.title])}</strong><div style="font-size:12px;">${it[KEY.date]}</div></div></div>`).join("");
+                // 여기서도 openById를 사용합니다.
+                rightListEl.innerHTML = list.map(it => `<div class="row" onclick="openById('${getItemId(it)}')"><img class="rowThumb" src="https://via.placeholder.com/160x90" id="rowimg-${getItemId(it)}"><div class="rowMeta"><strong>${escapeHTML(it[KEY.title])}</strong><div style="font-size:12px;">${it[KEY.date]}</div></div></div>`).join("");
                 list.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`rowimg-${getItemId(it)}`); if(img) img.src = t; });
             }
-        }
 
         async function openModalForItem(item) {
             const itemId = getItemId(item);
