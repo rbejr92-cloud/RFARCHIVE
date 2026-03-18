@@ -417,10 +417,41 @@ modalOverlay.classList.add("open");
 
         function checkDeepLink() { const params = new URLSearchParams(window.location.search); const id = params.get('id'); if (id) { const item = allData.find(it => getItemId(it) === id); if (item) openModalForItem(item); } }
 
-        mPipBtn.onclick = () => { const ytId = getYoutubeID(mLink.href); if (ytId) window.open(`https://www.youtube.com/embed/${ytId}?autoplay=1`, 'pip', 'width=560,height=315'); };
-        mShareBtn.onclick = () => { const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; navigator.clipboard.writeText(url); showToast("공유 링크 복사됨!"); };
-        mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("원본 링크 복사됨!"); };
-        
+        // 1. PIP 팝업 버튼: 브라우저 차단 회피 및 모든 영상 재생 가능 버전
+        mPipBtn.onclick = () => {
+            const url = mLink.href;
+            const ytId = getYoutubeID(url);
+
+            if (ytId) {
+                // 클릭 즉시 빈 창을 먼저 열어 브라우저의 '팝업 차단'을 방지합니다.
+                const newWindow = window.open('about:blank', 'pip', 'width=800,height=600');
+                
+                // 퍼가기 금지 영상까지 모두 열리도록 표준 watch 주소를 사용합니다.
+                const finalUrl = `https://www.youtube.com/watch?v=${ytId}`;
+                
+                if (newWindow) {
+                    newWindow.location.href = finalUrl;
+                } else {
+                    showToast("팝업이 차단되었습니다. 설정을 확인해주세요.");
+                }
+            } else {
+                // 유튜브가 아닐 경우 원본 링크 새 탭 열기
+                window.open(url, '_blank');
+            }
+        };
+
+        // 2. 공유 버튼 (기존 유지)
+        mShareBtn.onclick = () => { 
+            const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; 
+            navigator.clipboard.writeText(url); 
+            showToast("공유 링크 복사됨!"); 
+        };
+
+        // 3. 링크 복사 버튼 (기존 유지)
+        mCopyBtn.onclick = () => { 
+            navigator.clipboard.writeText(mLink.href); 
+            showToast("원본 링크 복사됨!"); 
+        };
         function closeModal() {
             modalOverlay.classList.remove("open");
             const iframe = document.getElementById("mIframe");
