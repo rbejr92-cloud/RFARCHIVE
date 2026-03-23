@@ -138,21 +138,21 @@
         .panelHeader .title{ font-size:14px; font-weight:800; color: #fff; }
         .leftScroll{ flex: 1; overflow-y:auto; padding:12px; }
 
-       /* 장르 그룹 박스 - sticky가 작동하도록 overflow를 수정함 */
+       /* 1. 장르 그룹 박스 - 제목이 상단에 고정될 수 있도록 통로를 열어줌 */
 .genreGroup { 
     border: 1px solid var(--line); 
     border-radius: 14px; 
-    /* overflow: hidden; 을 제거하거나 visible로 변경해야 sticky가 작동합니다 */
-    overflow: visible; 
     margin-bottom: 8px; 
     background: rgba(0,0,0,0.1); 
+    /* 중요: overflow: hidden을 제거해야 제목이 부모를 따라 상단에 고정됩니다 */
+    overflow: visible; 
 }
 
-/* 장르 헤더 상단 고정 설정 */
+/* 2. 장르 헤더 - 스크롤 내려도 상단에 딱 붙어서 리스트를 접는 버튼 역할 */
 .genreHead { 
     width: 100%; 
     border: 0; 
-    /* 스크롤 시 뒤쪽 글자가 절대 안 비치게 확실한 불투명 배경색 부여 */
+    /* 고정되었을 때 뒤쪽 채널 글씨가 안 비치게 진한 배경색 필수 */
     background: #161618 !important; 
     color: #fff; 
     padding: 12px 14px; 
@@ -165,26 +165,28 @@
     font-weight: 800; 
     transition: 0.2s;
 
-    /* 핵심 속성 */
-    position: -webkit-sticky; /* 사파리 대응 */
+    /* 핵심 속성: 스크롤 시 상단 고정 */
+    position: -webkit-sticky; /* 사파리 브라우저 대응 */
     position: sticky; 
-    top: 0; 
-    z-index: 20; /* 채널 아이콘보다 위에 오도록 */
+    top: 0;           /* 패널 맨 위에 붙음 */
+    z-index: 20;      /* 채널 아이콘이나 글씨보다 무조건 위로 */
+    
     border-bottom: 1px solid var(--line);
-    border-radius: 14px 14px 0 0; /* 상단만 둥글게 */
+    border-radius: 14px 14px 0 0;
 }
 
 .genreHead:hover { 
     background: #252528 !important; 
 }
 
+/* 리스트 몸체 */
 .genreBody { 
     padding: 4px 8px 12px 14px; 
     border-top: 1px solid var(--line); 
     display: none; 
 }
 
-/* 열려 있는 상태 */
+/* 장르가 열려있을 때 스타일 */
 .genreGroup.active .genreBody { 
     display: block; 
 }
