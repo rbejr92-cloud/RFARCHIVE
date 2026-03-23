@@ -6,114 +6,235 @@
     <title>Video Reference Archive</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
-        :root{ --bg:#0f0f10; --text:#eaeaea; --muted:rgba(234,234,234,.7); --line:#26262a; --line2:#2f2f35; --accent:#ff4757; --shadow: 0 14px 40px rgba(0,0,0,.35); --radius:16px; }
-        *{ box-sizing:border-box; }
-        body{ margin:0; padding:22px; background: radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%), radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%), var(--bg); color:var(--text); font-family: "Pretendard", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-        h1{ margin:0 0 12px 0; font-size:24px; letter-spacing:.2px; display:flex; align-items:center; gap:10px; }
-        .topbarWrapper { position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; background: rgba(15, 15, 16, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        :root{ 
+            --bg:#0b0b0c; 
+            --panel-bg: rgba(20, 20, 22, 0.85);
+            --text:#eaeaea; 
+            --muted:rgba(234,234,234,.6); 
+            --line:rgba(255,255,255,0.08); 
+            --line2:rgba(255,255,255,0.15); 
+            --accent:#ff4757; 
+            --accent-glow: rgba(255, 71, 87, 0.3);
+            --shadow: 0 14px 40px rgba(0,0,0,.5); 
+            --radius:16px; 
+            --glass: blur(16px) saturate(180%);
+        }
+        *{ box-sizing:border-box; outline: none; }
+        
+        /* 스크롤바 스타일 정의 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        body{ 
+            margin:0; padding:22px; 
+            background: radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%), radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%), var(--bg); 
+            color:var(--text); 
+            font-family: "Pretendard", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; 
+            overflow-x: hidden;
+        }
+        
+        h1{ margin:0 0 12px 0; font-size:24px; letter-spacing:.2px; display:flex; align-items:center; gap:12px; color: #fff; }
+        
+        /* 2-2. 유리 질감 상단 바 & 애니메이션 정의 */
+        .topbarWrapper { 
+            position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; 
+            background: rgba(11, 11, 12, 0.6); 
+            backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); 
+            z-index: 100; border-bottom: 1px solid var(--line); 
+        }
         .topbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-        input[type="text"]{ padding:10px 12px; width:320px; max-width:100%; border-radius:14px; border:1px solid var(--line); background: rgba(20,20,22,.7); color:var(--text); outline:none; font-family: inherit; }
-        input[type="text"]::placeholder{ color: rgba(234,234,234,.45); }
-        .btn{ padding:10px 12px; border-radius:14px; border:1px solid var(--line); background: rgba(20,20,22,.7); color:var(--text); cursor:pointer; font-size:13px; white-space:nowrap; font-weight:700; font-family: inherit; }
-        .btn:hover{ border-color: var(--line2); }
-        .btn.active{ border-color: rgba(255,71,87,.65); box-shadow: 0 0 0 3px rgba(255,71,87,.12); }
-        .stats{ font-size:13px; color: var(--muted); margin-left:auto; white-space:nowrap; }
-        .divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.10), transparent); margin: 12px 0; }
-        .viewToggle{ display:inline-flex; border:1px solid rgba(255,255,255,.10); background: rgba(20,20,22,.55); border-radius:999px; overflow:hidden; }
-        .viewToggle button{ border:0; background: transparent; color: rgba(234,234,234,.78); padding:9px 12px; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px; font-family: inherit; }
-        .viewToggle button.active{ background: rgba(255,71,87,.14); color: rgba(234,234,234,.95); }
+        
+        input[type="text"]{ 
+            padding:12px 16px; width:320px; max-width:100%; border-radius:14px; border:1px solid var(--line); 
+            background: rgba(0,0,0,0.2); color:var(--text); font-size: 14px; transition: 0.2s;
+        }
+        input[type="text"]:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+        
+        .btn{ 
+            padding:10px 16px; border-radius:12px; border:1px solid var(--line); 
+            background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; 
+            font-size:13px; font-weight:700; white-space:nowrap; transition: 0.2s; 
+        }
+        .btn:hover{ border-color: var(--line2); background: rgba(255,255,255,0.06); }
+        .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
+        
+        /* 1. <RF 업데이트> 버튼 스티키 & 고정 배치 */
+        .admin-controls { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+        .stats{ font-size:13px; color: var(--muted); white-space:nowrap; }
+        .update-btn { 
+            background: rgba(255,71,87,0.15); border: 1px solid var(--accent); color: var(--accent); 
+            padding: 10px 18px; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 13px; 
+            transition: 0.2s; box-shadow: 0 4px 12px var(--accent-glow); 
+        }
+        .update-btn:hover { background: rgba(255,71,87,0.25); box-shadow: 0 6px 16px var(--accent-glow); transform: translateY(-1px); }
+
+        .divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); margin: 12px 0; }
+        
         .filterTabs{ display:flex; flex-wrap:wrap; gap:8px; margin: 8px 0 10px 0; }
-        .tab{ padding:8px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background: rgba(20,20,22,.55); color: rgba(234,234,234,.88); font-size:13px; font-weight:700; cursor:pointer; line-height:1; white-space:nowrap; font-family: inherit; }
-        .tab:hover{ border-color: rgba(255,255,255,.18); }
-        .tab.active{ border-color: rgba(255,71,87,.65); box-shadow: 0 0 0 3px rgba(255,71,87,.12); background: rgba(20,20,22,.75); }
-        .filterPanel{ border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.35); border-radius:14px; padding:10px; }
+        .tab{ 
+            padding:8px 12px; border-radius:10px; border:1px solid transparent; 
+            background: transparent; color: var(--muted); font-size:13px; font-weight:700; cursor:pointer; 
+            transition: 0.2s; 
+        }
+        .tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .tab.active{ border-color: var(--line2); background: rgba(255,255,255,0.08); color: #fff; }
+        
+        .filterPanel{ border:1px solid var(--line); background: rgba(0,0,0,0.1); border-radius:14px; padding:12px; }
         .chips{ display:flex; flex-wrap:wrap; gap:8px; }
         .chipsPanel{ display:none; }
         .chipsPanel.active{ display:flex; }
-        .chip{ padding:7px 10px; border-radius:999px; border:1px solid var(--line); background: rgba(23,23,26,.8); cursor:pointer; user-select:none; font-size:13px; color: rgba(234,234,234,.9); white-space:nowrap; transition: all 0.2s ease; }
-        .chip:hover{ border-color: var(--line2); }
-        .chip.active{ border-color: rgba(255,71,87,.7); background: rgba(255,71,87,.1); box-shadow: 0 0 0 3px rgba(255,71,87,.12); }
-        .chip .count{ opacity:.55; margin-left:6px; font-size:12px; }
-        .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:16px; margin-top: 14px; }
-        .card{ background: rgba(20,20,22,.92); border:1px solid var(--line); border-radius: var(--radius); overflow:hidden; box-shadow: var(--shadow); transition: transform .2s ease, border-color .2s ease; position:relative; }
-        .card:hover{ transform: translateY(-4px); border-color: rgba(255,255,255,.16); }
-        .thumbWrap{ width:100%; background:#0b0b0c; overflow:hidden; cursor:pointer; }
-        .thumb{ width:100%; height:220px; object-fit:contain; display:block; background:#0b0b0c; transition: transform 0.3s ease; }
-        .card:hover .thumb { transform: scale(1.05); }
-        .metaBox{ padding:14px 14px 15px; border-top:1px solid rgba(255,255,255,.06); }
-        .metaLeft .channel{ font-size:15px; font-weight:700; line-height:1.25; margin:0 0 6px 0; }
-        .metaLeft .titleLine{ font-size:13.5px; color: rgba(234,234,234,.86); line-height:1.45; margin:0 0 10px 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-        .actionsBar{ margin-top:10px; display:flex; gap:8px; align-items:center; justify-content:flex-start; }
-        .actionBtn{ border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04); color: rgba(234,234,234,.9); padding:7px 12px; border-radius:999px; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; line-height:1; user-select:none; font-family: inherit; transition: all 0.2s ease; }
-        .actionBtn.like.active{ border-color: rgba(255,71,87,.65); background: rgba(255,71,87,.15); box-shadow: 0 0 0 3px rgba(255,71,87,.10); }
-        .dash{ display:none; grid-template-columns: 320px 1fr; gap:14px; margin-top: 14px; align-items:start; }
+        
+        /* 2-2. 칩 애니메이션 & 디자인 정의 */
+        .chip{ 
+            padding:7px 12px; border-radius:999px; border:1px solid var(--line); 
+            background: rgba(255,255,255,0.03); color: var(--muted); cursor:pointer; 
+            font-size:12px; font-weight: 600; white-space:nowrap; transition: all 0.3s ease; 
+        }
+        .chip:hover{ border-color: var(--line2); color: #fff; transform: translateY(-1px); }
+        .chip.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+        .chip .count{ opacity:.6; margin-left:6px; font-size:11px; }
+
+        .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; margin-top: 14px; }
+        
+        /* 2-1. 카드 디자인 고도화 (Neon Border & Glow) */
+        .card{ 
+            background: var(--panel-bg); border:1px solid var(--line); border-radius: var(--radius); 
+            overflow:hidden; box-shadow: var(--shadow); transition: all 0.3s ease; position:relative; 
+        }
+        .card:hover{ 
+            transform: translateY(-5px) scale(1.01); 
+            border-color: var(--accent); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 15px var(--accent-glow); 
+        }
+        
+        .thumbWrap{ width:100%; background:#000; overflow:hidden; cursor:pointer; position: relative; aspect-ratio: 16/9; }
+        .thumb{ width:100%; height:100%; object-fit:cover; display:block; transition: transform 0.5s ease; }
+        .card:hover .thumb { transform: scale(1.08); }
+        
+        /* 카드 내 미니 태그 스타일 */
+        .card-tags { padding: 0 14px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: -8px; margin-bottom: 10px; }
+        .mini-tag { font-size: 10px; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; }
+
+        .metaBox{ padding:14px; border-top:1px solid var(--line); }
+        .metaLeft .channel{ font-size:14px; font-weight:800; color: #fff; margin:0 0 4px 0; }
+        .metaLeft .titleLine{ font-size:13px; color: rgba(234,234,234,.8); line-height:1.5; margin:0 0 12px 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height: 2.9em; }
+        
+        .actionsBar{ margin-top:12px; display:flex; gap:8px; align-items:center; }
+        .actionBtn{ 
+            border:1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--muted); 
+            padding:8px 14px; border-radius:999px; font-size:12px; font-weight:700; cursor:pointer; 
+            display:inline-flex; align-items:center; gap:6px; transition: 0.2s; 
+        }
+        .actionBtn:hover { border-color: var(--line2); color: #fff; background: rgba(255,255,255,0.06); }
+        .actionBtn.like.active{ border-color: var(--accent); background: rgba(255,71,87,0.15); color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .actionBtn.like.active span { color: var(--accent); }
+
+        .dash{ display:none; grid-template-columns: 320px 1fr; gap:16px; margin-top: 14px; align-items:start; }
         .dash.active{ display:grid; }
-        .panel{ border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.40); border-radius:16px; overflow:hidden; box-shadow: var(--shadow); }
-        .panelHeader{ padding:12px 12px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:space-between; gap:10px; background: rgba(20,20,22,.55); }
-        .panelHeader .title{ font-size:13px; font-weight:700; color: rgba(234,234,234,.9); }
-        .leftScroll{ max-height: calc(100vh - 320px); overflow:auto; padding:10px; }
+        .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; overflow:hidden; box-shadow: var(--shadow); height: calc(100vh - 260px); display: flex; flex-direction: column; }
+        .panelHeader{ padding:14px 16px; border-bottom:1px solid var(--line); background: rgba(0,0,0,0.1); }
+        .panelHeader .title{ font-size:14px; font-weight:800; color: #fff; }
+        .leftScroll{ flex: 1; overflow-y:auto; padding:12px; }
 
-        .genreGroup { border: 1px solid rgba(255,255,255,.06); border-radius: 14px; overflow: hidden; margin-bottom: 10px; background: rgba(20,20,22,.35); }
-        .genreGroup.active { border-color: var(--accent); background: rgba(255, 71, 87, 0.05); }
-        .genreHead { width:100%; border:0; background: rgba(20,20,22,.55); color: rgba(234,234,234,.92); padding:10px 10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; font-weight:700; font-family: inherit; transition: all 0.2s ease; }
-        .genreGroup.active .genreHead { color: var(--accent); }
-        .genreBody { padding: 5px 8px 10px 20px; border-top: 1px solid rgba(255, 255, 255, 0.03); }
-        .channelItem { width:100%; border:1px solid transparent; background: transparent; color: rgba(234,234,234,.88); padding:9px 10px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px; font-size:13px; font-weight:600; font-family: inherit; }
-        .channelItem.active { background: rgba(255, 71, 87, 0.15) !important; border-color: rgba(255, 71, 87, 0.3) !important; color: #fff !important; }
-        .channelItem:hover { background: rgba(255, 255, 255, 0.05); }
+        /* 장르 그룹 하이라이트 및 구분 스타일 */
+        .genreGroup { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 8px; background: rgba(0,0,0,0.1); }
+        .genreGroup.active { border-color: var(--line2); background: rgba(255, 255, 255, 0.03); }
+        .genreHead { width:100%; border:0; background: transparent; color: #fff; padding:12px 14px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; font-weight:700; transition: 0.2s; }
+        .genreHead:hover { background: rgba(255,255,255,0.05); }
+        .genreBody { padding: 4px 8px 12px 14px; border-top: 1px solid var(--line); display: none; }
+        .genreGroup.active .genreBody { display: block; }
+        
+        /* 2-3. 채널 아이콘(자동 생성) 디자인 정의 */
+        .channelItem { 
+            width:100%; border:1px solid transparent; background: transparent; color: var(--muted); 
+            padding:9px 12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:10px; 
+            margin-bottom:4px; font-size:13px; font-weight:600; transition: 0.2s; 
+        }
+        .channelItem:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
+        .channelItem.active { background: rgba(255, 71, 87, 0.1) !important; color: var(--accent) !important; font-weight: 800; }
+        
+        /* 채널 아이콘 원형 프레임 */
+        .channel-icon { 
+            width: 24px; height: 24px; border-radius: 50%; 
+            background: linear-gradient(135deg, var(--accent), #4b6cb7); 
+            display: flex; align-items: center; justify-content: center; 
+            color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; 
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .channelItem.active .channel-icon { box-shadow: 0 0 8px var(--accent-glow); border-color: var(--accent); }
 
-        .list{ display:flex; flex-direction:column; gap:10px; }
-        .row{ display:grid; grid-template-columns: 160px 1fr; gap:12px; border:1px solid rgba(255,255,255,.08); background: rgba(20,20,22,.55); border-radius:16px; overflow:hidden; cursor:pointer; transition: transform 0.2s ease; }
-        .rowThumb{ width:100%; height:96px; background:#0b0b0c; object-fit:cover; display:block; }
-        .rowMeta{ padding:10px 12px; display:flex; flex-direction:column; gap:6px; min-width:0; }
+        .rightWrap { flex: 1; overflow-y: auto; padding: 16px; }
+        .list{ display:flex; flex-direction:column; gap:12px; }
+        .row{ 
+            display:grid; grid-template-columns: 160px 1fr; gap:14px; border:1px solid var(--line); 
+            background: rgba(255,255,255,0.02); border-radius:12px; overflow:hidden; cursor:pointer; 
+            transition: 0.2s; 
+        }
+        .row:hover { border-color: var(--line2); background: rgba(255,255,255,0.05); transform: translateX(2px); }
+        .rowThumb{ width:100%; height:90px; background:#000; object-fit:cover; display:block; }
+        .rowMeta{ padding:12px; display:flex; flex-direction:column; gap:6px; min-width:0; }
 
-        .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.75); backdrop-filter: blur(4px); display:none; align-items:center; justify-content:center; padding:18px; z-index:9999; }
+        .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.8); backdrop-filter: blur(8px); display:none; align-items:center; justify-content:center; padding:20px; z-index:9999; }
         .modalOverlay.open{ display:flex; }
-        .modal { width: min(1280px, 95vw); max-height: min(90vh, 850px); overflow: hidden; border-radius: 20px; border: 1px solid rgba(255,255,255,.10); background: rgba(20,20,22,.96); box-shadow: 0 30px 80px rgba(0,0,0,.65); display: grid; grid-template-columns: 350px 1fr; }
-        .modalLeft { border-right: 1px solid rgba(255,255,255,.06); padding: 20px; background: rgba(16,16,18,.55); display: flex; flex-direction: column; gap: 15px; }
-        .modalThumb { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: contain; background: #0b0b0c; border-radius: 14px; border: 1px solid rgba(255,255,255,.06); }
-        .modalRight { padding: 20px; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-        .modalHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 5px; }
+        .modal { 
+            width: min(1400px, 95vw); max-height: 90vh; overflow: hidden; border-radius: 20px; 
+            border: 1px solid var(--line2); background: #161618; box-shadow: 0 30px 80px rgba(0,0,0,0.8); 
+            display: grid; grid-template-columns: 350px 1fr; 
+        }
+        .modalLeft { border-right: 1px solid var(--line); padding: 24px; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
+        .modalThumb { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: contain; background: #000; border-radius: 12px; border: 1px solid var(--line); }
+        .modalRight { padding: 24px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+        .modalHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 8px; }
 
-        .memoList{ border:1px solid rgba(255,255,255,.08); border-radius:14px; background: rgba(255,255,255,.02); padding:12px; overflow:auto; flex:1; }
-        .memoComposer{ display:grid; grid-template-columns: 140px 1fr auto; gap:10px; align-items:center; }
-        .memoComposer input{ width:100%; padding:12px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background: rgba(20,20,22,.65); color: rgba(234,234,234,.95); outline:none; font-family: inherit; }
-        .primaryBtn{ padding:12px 16px; border-radius:12px; border:1px solid rgba(255,71,87,.55); background: rgba(255,71,87,.20); color: rgba(234,234,234,.95); cursor:pointer; font-weight:700; font-family: inherit; }
+        .memoList{ border:1px solid var(--line); border-radius:12px; background: rgba(0,0,0,0.1); padding:14px; overflow:auto; flex:1; }
+        .memoComposer{ display:grid; grid-template-columns: 120px 1fr auto; gap:10px; align-items:center; margin-top: 10px; }
+        .memoComposer input{ width:100%; padding:12px; border-radius:10px; border:1px solid var(--line); background: rgba(0,0,0,0.2); color: #fff; font-size: 13px; }
+        .primaryBtn{ padding:12px 20px; border-radius:10px; border:1px solid var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); cursor:pointer; font-weight:800; font-size: 13px; transition: 0.2s; }
+        .primaryBtn:hover { background: rgba(255,71,87,0.2); box-shadow: 0 0 10px var(--accent-glow); }
 
-        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: rgba(255, 71, 87, 0.95); color: #fff; padding: 12px 24px; border-radius: 999px; font-weight: 700; transition: bottom 0.4s; z-index: 10000; }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 14px 28px; border-radius: 999px; font-weight: 700; font-size: 14px; transition: 0.4s; z-index: 10000; box-shadow: 0 10px 30px var(--accent-glow); }
         #toast.show { bottom: 40px; }
-        #fab { position: fixed; bottom: 40px; right: 30px; width: 50px; height: 50px; border-radius: 50%; background: rgba(30, 30, 34, 0.85); border: 1px solid rgba(255,255,255,0.15); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 9000; }
-        #fab.visible { opacity: 1; pointer-events: auto; }
 
-        @media (max-width: 980px){ .dash.active{ grid-template-columns: 1fr; } .modal{ grid-template-columns: 1fr; max-height: 95vh; } .modalLeft{ border-right:0; border-bottom:1px solid rgba(255,255,255,0.06); } }
+        @media (max-width: 980px){ 
+            .topbar input[type="text"] { width: 100%; }
+            .admin-controls { width: 100%; justify-content: space-between; margin-top: 10px; }
+            .dash.active{ grid-template-columns: 1fr; } 
+            .panel { height: 50vh; }
+            .modal{ grid-template-columns: 1fr; max-height: 95vh; overflow-y: auto; } 
+            .modalLeft{ border-right:0; border-bottom:1px solid var(--line); } 
+            .modal #mVideoPlayer { height: auto !important; aspect-ratio: 16/9 !important; }
+        }
 
         @media (min-width: 981px) {
-            .modal { grid-template-columns: 320px 1fr !important; max-width: 1600px !important; width: 95vw; max-height: 90vh; }
-            .modal #mVideoPlayer { aspect-ratio: 16 / 9 !important; height: auto !important; width: 100% !important; max-height: 80vh; }
-            .modal.shorts-mode { grid-template-columns: 420px 1fr !important; max-width: 1000px !important; height: 95vh !important; max-height: none !important; }
-            .modal.shorts-mode #mVideoPlayer { aspect-ratio: auto !important; height: calc(90vh - 120px) !important; }
-            .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid rgba(255,255,255,0.1); }
-            .modal.shorts-mode .modalRight { order: 2; background: #000; display: flex; align-items: center; }
-            .modal.shorts-mode #mVideoPlayer { aspect-ratio: auto !important; height: calc(90vh - 120px) !important; width: 100%; }
+            .modal #mVideoPlayer { aspect-ratio: 16 / 9 !important; height: auto !important; width: 100% !important; max-height: 75vh; }
+            .modal.shorts-mode { grid-template-columns: 420px 1fr !important; max-width: 1000px !important; height: 90vh !important; }
+            .modal.shorts-mode #mVideoPlayer { aspect-ratio: auto !important; height: calc(85vh - 120px) !important; width: 100%; }
+            .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid var(--line); }
+            .modal.shorts-mode .modalRight { order: 2; background: #000; display: flex; align-items: center; justify-content: center; }
         }
     </style>
 </head>
 <body>
     <div id="toast">알림 메시지</div>
-    <div id="fab">⬆️</div>
 
     <div class="topbarWrapper">
         <h1>🎬 Video Reference Archive</h1>
         <div class="topbar">
             <input id="search" type="text" placeholder="제목 검색..." />
             <div class="viewToggle">
-                <button id="viewAllBtn" class="active">🟦 전체</button>
-                <button id="viewDashBtn">📺 채널별</button>
+                <button id="viewAllBtn" class="active">🟦 전체 보기</button>
+                <button id="viewDashBtn">📺 채널별 보기</button>
             </div>
-            <button class="btn" id="likedOnlyBtn">❤️ 좋아요만</button>
-            <button class="btn" id="sortLikesBtn">🔥 좋아요순</button>
+            <button class="btn" id="likedOnlyBtn">❤️ 좋아요</button>
+            <button class="btn" id="sortLikesBtn">🔥 인기순</button>
             <button class="btn" id="resetBtn">초기화</button>
-            <div class="stats" id="stats">표시: 0 / 전체: 0</div>
+            
+            <div class="admin-controls">
+                <div class="stats" id="stats">표시: 0 / 전체: 0</div>
+                <a href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="update-btn">📊 &lt;RF 업데이트&gt;</a>
+            </div>
         </div>
         <div class="divider"></div>
         <div class="filterTabs" id="filterTabs">
@@ -149,34 +270,35 @@
         <div class="modal">
             <div class="modalLeft">
                 <img id="mThumb" class="modalThumb" alt="thumbnail"/>
-                <div id="mTitle" style="font-weight:700; font-size:16px;"></div>
-                <div id="mSub" style="font-size:13px; color:rgba(234,234,234,0.6);"></div>
-                <div style="display:flex; flex-direction:column; gap:8px;">
+                <div id="mTitle" style="font-weight:800; font-size:18px; color:#fff;"></div>
+                <div id="mSub" style="font-size:13px; color:var(--muted);"></div>
+                <div style="display:flex; flex-direction:column; gap:8px; margin-top: 10px;">
                     <div style="display:flex; gap:8px;">
-                        <a class="mLink" id="mLink" target="_blank" style="flex:1; background:rgba(255,255,255,0.08); padding:10px; border-radius:10px; text-decoration:none; text-align:center; color:white; font-size:13px;">🔗 원본 열기</a>
-                        <button class="actionBtn" id="mPipBtn" type="button" style="border-radius:10px;">📺 PIP 팝업</button>
+                        <a class="update-btn mLink" id="mLink" target="_blank" style="flex:1; text-align:center; font-size:13px;">🔗 원본 열기</a>
+                        <button class="actionBtn" id="mPipBtn" type="button" style="border-radius:12px; background:rgba(255,255,255,0.05);">📺 PIP 팝업</button>
                     </div>
                     <div style="display:flex; gap:8px;">
-                        <button class="actionBtn" id="mCopyBtn" type="button" style="flex:1; border-radius:10px;">📋 링크 복사</button>
-                        <button class="actionBtn" id="mShareBtn" type="button" style="flex:1; border-radius:10px; background:rgba(255,71,87,0.1);">🔗 공유 URL</button>
+                        <button class="actionBtn" id="mCopyBtn" type="button" style="flex:1; border-radius:12px;">📋 링크 복사</button>
+                        <button class="actionBtn" id="mShareBtn" type="button" style="flex:1; border-radius:12px; background:rgba(255,71,87,0.08); color:var(--accent);">🔗 공유 URL</button>
                     </div>
                 </div>
+                <div id="memoSectionPlaceholder"></div>
             </div>
             <div class="modalRight">
                 <div class="modalHead">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span id="mCounts" style="font-size:13px;">👍 0 · 💬 0</span>
-                        <button class="actionBtn like" id="mLikeBtn">👍 <span id="mLikeCnt">0</span></button>
+                        <span id="mCounts" style="font-size:13px; color:var(--muted);">👍 0 · 💬 0</span>
+                        <button class="actionBtn like" id="mLikeBtn">👍 <span id="mLikeCnt" style="font-weight:800; color:var(--muted);">0</span></button>
                     </div>
-                    <button class="xBtn" id="mClose" style="background:none; border:none; color:white; cursor:pointer;">닫기 ✕</button>
+                    <button class="xBtn" id="mClose" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size: 20px; font-weight: 300;">✕</button>
                 </div>
-                <div id="mVideoPlayer" style="width:100%; background:#000; border-radius:12px; overflow:hidden; display:none;">
-                    <iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <div id="mVideoPlayer" style="width:100%; background:#000; border-radius:14px; overflow:hidden; display:none;">
+                    <iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border:0;"></iframe>
                 </div>
                 <div class="memoList" id="mList"></div>
                 <div class="memoComposer">
                     <input id="mNick" type="text" placeholder="닉네임" />
-                    <input id="mMemo" type="text" placeholder="메모" />
+                    <input id="mMemo" type="text" placeholder="메모 내용" />
                     <button class="primaryBtn" id="mSend">등록</button>
                 </div>
             </div>
@@ -195,9 +317,9 @@
         const interactionsCache = new Map();
         const LS_NICK = "vra:nickname", LS_UID = "vra:userId", LS_LIKED = "vra:liked";
 
-        const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search"), resetBtn = document.getElementById("resetBtn"), viewAllBtn = document.getElementById("viewAllBtn"), viewDashBtn = document.getElementById("viewDashBtn"), genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), tagChipsEl = document.getElementById("tagChips"), leftNavEl = document.getElementById("leftNav"), rightTitleEl = document.getElementById("rightTitle"), rightListEl = document.getElementById("rightList"), modalOverlay = document.getElementById("modalOverlay"), mClose = document.getElementById("mClose"), mThumb = document.getElementById("mThumb"), mTitle = document.getElementById("mTitle"), mSub = document.getElementById("mSub"), mLink = document.getElementById("mLink"), mCopyBtn = document.getElementById("mCopyBtn"), mCounts = document.getElementById("mCounts"), mLikeBtn = document.getElementById("mLikeBtn"), mLikeCnt = document.getElementById("mLikeCnt"), mList = document.getElementById("mList"), mNick = document.getElementById("mNick"), mMemo = document.getElementById("mMemo"), mSend = document.getElementById("mSend"), fab = document.getElementById("fab"), mVideoPlayer = document.getElementById("mVideoPlayer"), mIframe = document.getElementById("mIframe"), mPipBtn = document.getElementById("mPipBtn"), mShareBtn = document.getElementById("mShareBtn");
+        const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search"), resetBtn = document.getElementById("resetBtn"), viewAllBtn = document.getElementById("viewAllBtn"), viewDashBtn = document.getElementById("viewDashBtn"), genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), tagChipsEl = document.getElementById("tagChips"), leftNavEl = document.getElementById("leftNav"), rightTitleEl = document.getElementById("rightTitle"), rightListEl = document.getElementById("rightList"), modalOverlay = document.getElementById("modalOverlay"), mClose = document.getElementById("mClose"), mThumb = document.getElementById("mThumb"), mTitle = document.getElementById("mTitle"), mSub = document.getElementById("mSub"), mLink = document.getElementById("mLink"), mCopyBtn = document.getElementById("mCopyBtn"), mCounts = document.getElementById("mCounts"), mLikeBtn = document.getElementById("mLikeBtn"), mLikeCnt = document.getElementById("mLikeCnt"), mList = document.getElementById("mList"), mNick = document.getElementById("mNick"), mMemo = document.getElementById("mMemo"), mSend = document.getElementById("mSend"), mVideoPlayer = document.getElementById("mVideoPlayer"), mIframe = document.getElementById("mIframe"), mPipBtn = document.getElementById("mPipBtn"), mShareBtn = document.getElementById("mShareBtn");
 
-        function escapeHTML(str) { return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+        function escapeHTML(str) { return String(str || "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
         function splitTags(s) { return (s || "").split(/[ ,/]+/).filter(Boolean); }
         function fnv1a(str){ let h = 0x811c9dc5; for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = (h + ((h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24))) >>> 0; } return h.toString(16).padStart(8,"0"); }
         function getItemId(item){ return fnv1a((item[KEY.url] || "").trim()); }
@@ -212,47 +334,17 @@
         function sortByDateDesc(data) { return [...data].sort((a, b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-'))); }
         
         function getYoutubeID(url) {
-    if (!url) return null;
-    try {
-        // [1] URL 객체로 파싱 시도 (가장 정확)
-        const u = new URL(url);
-        
-        // 쇼츠(Shorts) 주소 처리
-        if (u.pathname.includes("/shorts/")) {
-            return u.pathname.split("/shorts/")[1].split(/[?#]/)[0];
+            try {
+                const u = new URL(url);
+                if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0];
+                if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split(/[?#]/)[0];
+                return u.searchParams.get("v");
+            } catch { return null; }
         }
-        
-        // 라이브(Live) 주소 처리
-        if (u.pathname.includes("/live/")) {
-            return u.pathname.split("/live/")[1].split(/[?#]/)[0];
-        }
-
-        // 모바일 공유 주소 (youtu.be) 처리
-        if (u.hostname === "youtu.be") {
-            return u.pathname.slice(1).split(/[?#]/)[0];
-        }
-
-        // 일반 영상 주소 (watch?v=...) 처리
-        if (u.searchParams.has("v")) {
-            return u.searchParams.get("v");
-        }
-
-        // [2] 정규식으로 한 번 더 체크 (예외 케이스 대비)
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-
-    } catch (e) {
-        // URL 객체 파싱 실패 시 정규식만 사용
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-    }
-}
 
         async function resolveThumbnail(item) { const ytId = getYoutubeID(item[KEY.url]); return ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : "https://via.placeholder.com/400x225?text=No+Thumbnail"; }
         async function fetchInteractions(itemId){ if (interactionsCache.has(itemId)) return interactionsCache.get(itemId); try { const res = await fetch(API_URL + "?itemId=" + itemId); const data = await res.json(); const norm = { likes: data.likes || 0, memos: data.memos || [] }; interactionsCache.set(itemId, norm); return norm; } catch { return { likes: 0, memos: [] }; } }
-        async function postInteraction(payload){ await fetch(API_URL, { method: "POST", mode: "cors", body: JSON.stringify(payload) }); }
+        async function postInteraction(payload){ try { await fetch(API_URL, { method: "POST", mode: "cors", body: JSON.stringify(payload) }); } catch(e) {} }
         
         function updateCountersInDOM(itemId){ 
             const data = interactionsCache.get(itemId); 
@@ -267,12 +359,28 @@
         }
 
         async function hydrateCountersFor(ids){ for (const id of [...new Set(ids)]) { await fetchInteractions(id); updateCountersInDOM(id); } }
-        async function toggleLike(itemId){ const wasLiked = isLiked(itemId); setLikedState(itemId, !wasLiked); render(); await postInteraction({ itemId, action: "like", userId: getUserId(), nickname: getNickname() || "익명" }); interactionsCache.delete(itemId); await fetchInteractions(itemId); updateCountersInDOM(itemId); }
+        async function toggleLike(itemId){ 
+            const wasLiked = isLiked(itemId); 
+            setLikedState(itemId, !wasLiked); 
+            updateCountersInDOM(itemId); // 즉시 반영
+            await postInteraction({ itemId, action: "like", userId: getUserId(), nickname: getNickname() || "익명" }); 
+            interactionsCache.delete(itemId); 
+            await fetchInteractions(itemId); 
+            updateCountersInDOM(itemId); 
+        }
 
         function buildGenreChannelIndex(items){ const genreMap = new Map(); items.forEach(it => { const g = (it[KEY.genre] || "기타").trim(), c = (it[KEY.channel] || "미분류").trim(); if (!genreMap.has(g)) genreMap.set(g, new Map()); const cm = genreMap.get(g); cm.set(c, (cm.get(c) || 0) + 1); }); return [...genreMap.entries()].map(([g, cm]) => ({ g, total: [...cm.values()].reduce((a,b)=>a+b,0), channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt })).sort((a,b)=> a.c.localeCompare(b.c, "ko")) })).sort((a,b)=> b.total - a.total); }
 
         function renderChipGroup(container, labelAll, baseList, countMap, activeState, onPick, isMulti = false) { container.innerHTML = ""; const isAllActive = isMulti ? activeState.size === 0 : activeState === null; const allChip = document.createElement("div"); allChip.className = "chip" + (isAllActive ? " active" : ""); allChip.textContent = labelAll; allChip.onclick = () => onPick(null); container.appendChild(allChip); baseList.forEach(val => { const isActive = isMulti ? activeState.has(val) : activeState === val; const chip = document.createElement("div"); chip.className = "chip" + (isActive ? " active" : ""); chip.innerHTML = `${escapeHTML(val)} <span class="count">${countMap.get(val)||0}</span>`; chip.onclick = () => onPick(val); container.appendChild(chip); }); }
+        
         function updateChipsUI(filtered) { const gMap = new Map(), mMap = new Map(), fMap = new Map(), tMap = new Map(); allData.forEach(it => { gMap.set(it[KEY.genre], (gMap.get(it[KEY.genre])||0)+1); mMap.set(it[KEY.media], (mMap.get(it[KEY.media])||0)+1); fMap.set(it[KEY.format], (fMap.get(it[KEY.format])||0)+1); }); filtered.forEach(it => splitTags(it[KEY.tag]).forEach(t => tMap.set(t, (tMap.get(t)||0)+1))); renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => { activeGenre = v; render(true); }); renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => { activeMedia = v; render(true); }); renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => { activeFormat = v; render(true); }); renderChipGroup(tagChipsEl, "All", baseTags, tMap, activeTags, (v) => { if (v === null) activeTags.clear(); else activeTags.has(v) ? activeTags.delete(v) : activeTags.add(v); render(true); }, true); }
+
+        // 2-3. 채널 아이콘 생성 도우미 함수
+        function getChannelIcon(name) {
+            const firstChar = name.trim().charAt(0).toUpperCase();
+            // 장르/채널에 따른 고정 색상 해시 로직 (미구현, 기본 그라데이션 사용)
+            return `<div class="channel-icon">${firstChar}</div>`;
+        }
 
         function renderLeftNav() {
             leftNavEl.innerHTML = "";
@@ -287,11 +395,12 @@
                 const body = document.createElement("div");
                 body.className = "genreBody";
                 body.style.display = (isGenreActive || idx < 2) ? "block" : "none";
-                head.onclick = () => { body.style.display = body.style.display === "none" ? "block" : "none"; };
+                head.onclick = () => { wrap.classList.toggle("active"); const b = wrap.querySelector(".genreBody"); b.style.display = b.style.display === "none" ? "block" : "none"; };
                 group.channels.forEach(({c, cnt}) => {
                     const b = document.createElement("button");
                     b.className = "channelItem" + (selectedChannel === c ? " active" : "");
-                    b.innerHTML = `<span>${escapeHTML(c)}</span><span style="font-size:11px; opacity:0.5;">${cnt}</span>`;
+                    // 2-3. 채널 아이콘 추가
+                    b.innerHTML = `${getChannelIcon(c)}<span>${escapeHTML(c)}</span><span style="font-size:11px; opacity:0.5; margin-left:auto;">${cnt}</span>`;
                     b.onclick = () => { selectedChannel = c; render(true); renderLeftNav(); };
                     body.appendChild(b);
                 });
@@ -316,10 +425,20 @@
             statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
             if (viewMode === "all"){
                 gridEl.style.display = "grid"; dashEl.style.display = "none";
-                const list = (sortMode === "likes") ? [...filtered].sort((a,b)=> (interactionsCache.get(getItemId(b))?.likes||0) - (interactionsCache.get(getItemId(a))?.likes||0)) : sortByDateDesc(filtered);
+                let list = sortByDateDesc(filtered);
+                if (sortMode === "likes") {
+                    list = [...filtered].sort((a,b)=> {
+                        const likesA = interactionsCache.get(getItemId(a))?.likes || 0;
+                        const likesB = interactionsCache.get(getItemId(b))?.likes || 0;
+                        return likesB - likesA;
+                    });
+                }
                 const sliced = list.slice(0, renderLimit);
                 gridEl.innerHTML = sliced.map(it => {
                     const itemId = getItemId(it);
+                    const isLikedState = isLiked(itemId);
+                    // 2-1. 태그 자동 노출 로직 (최대 3개)
+                    const tagsHTML = splitTags(it[KEY.tag]).slice(0, 3).map(t => `<span class="mini-tag">#${escapeHTML(t)}</span>`).join("");
                     return `
                     <div class="card">
                         <div class="thumbWrap" onclick='openModalById("${itemId}")'>
@@ -327,14 +446,17 @@
                         </div>
                         <div class="metaBox">
                             <div class="metaLeft"><div class="channel">${escapeHTML(it[KEY.channel])}</div><div class="titleLine">${escapeHTML(it[KEY.title])}</div></div>
+                            
+                            <div class="card-tags">${tagsHTML}</div>
+                            
                             <div class="actionsBar">
-                                <button class="actionBtn ${isLiked(itemId)?'active':''}" onclick="event.stopPropagation(); toggleLike('${itemId}')">👍 <span id="like-${itemId}">0</span></button>
-                                <button class="actionBtn" onclick='openModalById("${itemId}")'>💬 <span id="memo-${itemId}">0</span></button>
+                                <button class="actionBtn like ${isLikedState?'active':''}" onclick="event.stopPropagation(); toggleLike('${itemId}')">👍 <span id="like-${itemId}" style="font-weight:800;">0</span></button>
+                                <button class="actionBtn" onclick='openModalById("${itemId}")'>💬 <span id="memo-${itemId}" style="font-weight:800;">0</span></button>
                             </div>
                         </div>
                     </div>`;
                 }).join("");
-                sliced.forEach(async it => { const t = await resolveThumbnail(it); document.getElementById(`img-${getItemId(it)}`).src = t; });
+                sliced.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`img-${getItemId(it)}`); if(img) img.src = t; });
                 hydrateCountersFor(sliced.map(getItemId));
             } else {
                 gridEl.style.display = "none"; dashEl.style.display = "grid";
@@ -368,7 +490,7 @@
             const isInstagram = url.includes("instagram.com");
             const isShorts = url.includes("/shorts/");
 
-            mIframe.src = "";
+            mIframe.src = ""; // Reset
             if(ytId) {
                 mVideoPlayer.style.display = "block";
                 mVideoPlayer.style.background = "#000";
@@ -405,13 +527,13 @@
             const data = await fetchInteractions(itemId);
             mLikeCnt.textContent = data.likes; 
             mCounts.textContent = `👍 ${data.likes} · 💬 ${data.memos.length}`;
-            mList.innerHTML = data.memos.map(m => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>${escapeHTML(m.nickname)}</strong>: ${escapeHTML(m.memo)}</div>`).join("");
+            mList.innerHTML = data.memos.map(m => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px;"><strong style="color:#fff;">${escapeHTML(m.nickname)}</strong>: ${escapeHTML(m.memo)}</div>`).join("");
         }
 
         function closeModal() {
             modalOverlay.classList.remove("open");
             mIframe.src = "";
-            mVideoPlayer.innerHTML = '<iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+            mVideoPlayer.innerHTML = '<iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border:0;"></iframe>';
         }
 
         mClose.onclick = closeModal;
@@ -420,27 +542,72 @@
         mPipBtn.onclick = () => { const ytId = getYoutubeID(mLink.href); if (ytId) window.open(`https://www.youtube.com/embed/${ytId}?autoplay=1`, 'pip', 'width=560,height=315'); };
         mShareBtn.onclick = () => { const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; navigator.clipboard.writeText(url); showToast("공유 링크 복사됨!"); };
         mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("원본 링크 복사됨!"); };
-        mSend.onclick = async () => { const itemId = modalOverlay.dataset.itemid, nick = mNick.value.trim(), memo = mMemo.value.trim(); if (!nick || !memo) return; setNickname(nick); await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() }); mMemo.value = ""; interactionsCache.delete(itemId); openModalById(itemId); };
+        
+        mSend.onclick = async () => {
+            const itemId = modalOverlay.dataset.itemid, nick = mNick.value.trim(), memo = mMemo.value.trim();
+            if (!nick || !memo) return;
+            setNickname(nick);
+            await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() });
+            mMemo.value = "";
+            interactionsCache.delete(itemId);
+            // 모달 데이터 갱신
+            const item = allData.find(it => getItemId(it) === itemId);
+            if (item) openModalForItem(item);
+        };
 
         async function init() {
             try {
+                statsEl.textContent = "데이터 로딩 중...";
                 const res = await fetch(SHEET_URL);
                 allData = (await res.json()).filter(x => x && (x[KEY.url] || x[KEY.title]));
+                
                 baseGenres = [...new Set(allData.map(i => (i[KEY.genre]||"").trim()).filter(Boolean))].sort();
                 baseMedias = [...new Set(allData.map(i => (i[KEY.media]||"").trim()).filter(Boolean))].sort();
                 baseFormats = [...new Set(allData.map(i => (i[KEY.format]||"").trim()).filter(Boolean))].sort();
+                // 태그 자동 추출 로직 (A|B,C 등 다양한 구분자 처리)
                 baseTags = [...new Set(allData.flatMap(i => splitTags(i[KEY.tag])))].sort();
+                
                 renderLeftNav(); render(true);
                 const params = new URLSearchParams(window.location.search);
                 if(params.get('id')) openModalById(params.get('id'));
-            } catch (e) { console.error(e); }
+            } catch (e) { 
+                console.error(e); 
+                statsEl.textContent = "데이터 로드 실패";
+                gridEl.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:50px; color:var(--accent);">데이터 로드 실패: 구글 시트 링크나 인터넷 연결을 확인하세요.</div>`;
+            }
         }
         
+        // Event Listeners
         searchEl.oninput = debounce(() => render(true), 300);
         viewAllBtn.onclick = () => { viewMode = "all"; viewAllBtn.classList.add("active"); viewDashBtn.classList.remove("active"); render(true); };
         viewDashBtn.onclick = () => { viewMode = "dash"; viewDashBtn.classList.add("active"); viewAllBtn.classList.remove("active"); render(true); };
         resetBtn.onclick = () => { activeGenre = activeMedia = activeFormat = null; activeTags.clear(); searchEl.value = ""; render(true); };
-        document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => { document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active')); e.target.classList.add('active'); document.getElementById(e.target.dataset.tab + "Chips").classList.add('active'); });
+        
+        // 좋아요만 필터링
+        document.getElementById("likedOnlyBtn").onclick = (e) => { 
+            showLikedOnly = !showLikedOnly; 
+            e.target.classList.toggle("active", showLikedOnly); 
+            render(true); 
+        };
+        // 좋아요순 정렬
+        document.getElementById("sortLikesBtn").onclick = (e) => { 
+            sortMode = (sortMode === "date") ? "likes" : "date";
+            e.target.classList.toggle("active", sortMode === "likes");
+            e.target.textContent = (sortMode === "likes") ? "🔥 인기순" : "📅 날짜순";
+            render(true); 
+        };
+
+        document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => {
+            document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById(e.target.dataset.tab + "Chips").classList.add('active');
+        });
+
+        window.addEventListener("scroll", () => {
+            if (viewMode === "all" && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                if (renderLimit < allData.length) { renderLimit += RENDER_CHUNK; render(false); }
+            }
+        });
 
         init();
     </script>
