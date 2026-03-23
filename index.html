@@ -136,26 +136,33 @@
         .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; overflow:hidden; box-shadow: var(--shadow); height: calc(100vh - 260px); display: flex; flex-direction: column; }
         .panelHeader{ padding:14px 16px; border-bottom:1px solid var(--line); background: rgba(0,0,0,0.1); }
         .panelHeader .title{ font-size:14px; font-weight:800; color: #fff; }
-        .leftScroll{ flex: 1; overflow-y:auto; padding:12px; }
+       /* 1. 왼쪽 스크롤 패널 (부모) - 여기서 sticky 기준점이 잡힙니다 */
+.leftScroll { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 12px; 
+    /* 패널 안에서 장르 제목이 돌아다닐 수 있도록 상대 위치 설정 */
+    position: relative; 
+}
 
-       /* 1. 장르 그룹 박스 - 제목이 상단에 고정될 수 있도록 통로를 열어줌 */
+/* 2. 장르 그룹 박스 - overflow 설정을 완전히 끕니다 */
 .genreGroup { 
     border: 1px solid var(--line); 
     border-radius: 14px; 
     margin-bottom: 8px; 
     background: rgba(0,0,0,0.1); 
-    /* 중요: overflow: hidden을 제거해야 제목이 부모를 따라 상단에 고정됩니다 */
-    overflow: visible; 
+    /* 중요: overflow가 hidden이면 sticky가 절대 안 됩니다 */
+    overflow: visible !important; 
 }
 
-/* 2. 장르 헤더 - 스크롤 내려도 상단에 딱 붙어서 리스트를 접는 버튼 역할 */
+/* 3. 장르 헤더 (핵심) - 스크롤 시 패널 최상단에 붙음 */
 .genreHead { 
     width: 100%; 
     border: 0; 
-    /* 고정되었을 때 뒤쪽 채널 글씨가 안 비치게 진한 배경색 필수 */
-    background: #161618 !important; 
+    /* 고정 시 뒤가 안 비치게 패널과 같은 배경색을 강제로 지정 */
+    background: #0b0b0c !important; 
     color: #fff; 
-    padding: 12px 14px; 
+    padding: 14px; 
     cursor: pointer; 
     display: flex; 
     align-items: center; 
@@ -165,33 +172,37 @@
     font-weight: 800; 
     transition: 0.2s;
 
-    /* 핵심 속성: 스크롤 시 상단 고정 */
-    position: -webkit-sticky; /* 사파리 브라우저 대응 */
-    position: sticky; 
-    top: 0;           /* 패널 맨 위에 붙음 */
-    z-index: 20;      /* 채널 아이콘이나 글씨보다 무조건 위로 */
+    /* sticky 속성 강제 적용 */
+    position: -webkit-sticky !important;
+    position: sticky !important; 
+    top: -12px !important; /* leftScroll의 padding-top 값만큼 조절 */
+    z-index: 100 !important; /* 채널 리스트보다 무조건 위 */
     
     border-bottom: 1px solid var(--line);
     border-radius: 14px 14px 0 0;
 }
 
+/* 마우스 올렸을 때 */
 .genreHead:hover { 
-    background: #252528 !important; 
+    background: #1a1a1c !important; 
 }
 
-/* 리스트 몸체 */
-.genreBody { 
-    padding: 4px 8px 12px 14px; 
-    border-top: 1px solid var(--line); 
-    display: none; 
-}
-
-/* 장르가 열려있을 때 스타일 */
-.genreGroup.active .genreBody { 
-    display: block; 
+/* 장르가 열려있을 때(활성화) */
+.genreGroup.active { 
+    border-color: var(--line2); 
 }
 .genreGroup.active .genreHead {
     color: var(--accent);
+}
+
+/* 채널 리스트 몸체 */
+.genreBody { 
+    padding: 8px 8px 12px 14px; 
+    border-top: 1px solid var(--line); 
+    display: none; 
+}
+.genreGroup.active .genreBody { 
+    display: block; 
 }
         
         /* 2-3. 채널 아이콘(자동 생성) 디자인 정의 */
