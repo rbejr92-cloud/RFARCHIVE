@@ -212,13 +212,43 @@
         function sortByDateDesc(data) { return [...data].sort((a, b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-'))); }
         
         function getYoutubeID(url) {
-            try {
-                const u = new URL(url);
-                if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0];
-                if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split(/[?#]/)[0];
-                return u.searchParams.get("v");
-            } catch { return null; }
+    if (!url) return null;
+    try {
+        // [1] URL 객체로 파싱 시도 (가장 정확)
+        const u = new URL(url);
+        
+        // 쇼츠(Shorts) 주소 처리
+        if (u.pathname.includes("/shorts/")) {
+            return u.pathname.split("/shorts/")[1].split(/[?#]/)[0];
         }
+        
+        // 라이브(Live) 주소 처리
+        if (u.pathname.includes("/live/")) {
+            return u.pathname.split("/live/")[1].split(/[?#]/)[0];
+        }
+
+        // 모바일 공유 주소 (youtu.be) 처리
+        if (u.hostname === "youtu.be") {
+            return u.pathname.slice(1).split(/[?#]/)[0];
+        }
+
+        // 일반 영상 주소 (watch?v=...) 처리
+        if (u.searchParams.has("v")) {
+            return u.searchParams.get("v");
+        }
+
+        // [2] 정규식으로 한 번 더 체크 (예외 케이스 대비)
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+
+    } catch (e) {
+        // URL 객체 파싱 실패 시 정규식만 사용
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+}
 
         async function resolveThumbnail(item) { const ytId = getYoutubeID(item[KEY.url]); return ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : "https://via.placeholder.com/400x225?text=No+Thumbnail"; }
         async function fetchInteractions(itemId){ if (interactionsCache.has(itemId)) return interactionsCache.get(itemId); try { const res = await fetch(API_URL + "?itemId=" + itemId); const data = await res.json(); const norm = { likes: data.likes || 0, memos: data.memos || [] }; interactionsCache.set(itemId, norm); return norm; } catch { return { likes: 0, memos: [] }; } }
