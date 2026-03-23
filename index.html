@@ -214,6 +214,87 @@
             .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid var(--line); }
             .modal.shorts-mode .modalRight { order: 2; background: #000; display: flex; align-items: center; justify-content: center; }
         }
+   
+    /* 1. 보기 모드 토글 버튼 디자인 복구 */
+.viewToggle { 
+    display: inline-flex; 
+    border: 1px solid var(--line); 
+    background: rgba(255, 255, 255, 0.03); 
+    border-radius: 12px; 
+    overflow: hidden; 
+    padding: 3px;
+    gap: 4px;
+}
+.viewToggle button { 
+    border: 0; 
+    background: transparent; 
+    color: var(--muted); 
+    padding: 8px 14px; 
+    font-size: 13px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    font-family: inherit; 
+    border-radius: 9px;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.viewToggle button:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.05);
+}
+.viewToggle button.active { 
+    background: var(--accent) !important; 
+    color: #fff !important; 
+    box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* 2. 장르 그룹 및 상단 고정(Sticky) 헤더 스타일 */
+.genreGroup { 
+    border: 1px solid var(--line); 
+    border-radius: 14px; 
+    overflow: hidden; 
+    margin-bottom: 8px; 
+    background: rgba(0,0,0,0.1); 
+}
+.genreHead { 
+    width: 100%; 
+    border: 0; 
+    background: #1a1a1c; 
+    color: #fff; 
+    padding: 12px 14px; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 10px; 
+    font-size: 13px; 
+    font-weight: 700; 
+    transition: 0.2s;
+    position: sticky; 
+    top: 0; 
+    z-index: 10; 
+    border-bottom: 1px solid var(--line);
+}
+.genreHead:hover { 
+    background: #252528; 
+}
+.genreBody { 
+    padding: 4px 8px 12px 14px; 
+    border-top: 1px solid var(--line); 
+    display: none; 
+}
+.genreGroup.active { 
+    border-color: var(--line2); 
+    background: rgba(255, 255, 255, 0.03); 
+}
+.genreGroup.active .genreHead {
+    color: var(--accent);
+}
+.genreGroup.active .genreBody { 
+    display: block; 
+}
     </style>
 </head>
 <body>
