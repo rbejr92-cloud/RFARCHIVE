@@ -307,8 +307,9 @@
             });
         }
 
-        async function render(resetPagination = false){
+       async function render(resetPagination = false){
             if (resetPagination) renderLimit = RENDER_CHUNK;
+            
             const filtered = allData.filter(item => {
                 const q = searchEl.value.toLowerCase();
                 const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
@@ -319,27 +320,32 @@
                 const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true;
                 return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
             });
+
             updateChipsUI(filtered);
             statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
+
             if (viewMode === "all"){
-                gridEl.style.display = "grid"; dashEl.style.display = "none";
-                const list = (sortMode === "likes") ? [...filtered].sort((a,b)=> (interactionsCache.get(getItemId(b))?.likes||0) - (interactionsCache.get(getItemId(a))?.likes||0)) : sortByDateDesc(filtered);
-                const sliced = list.slice(0, renderLimit);
-                if (viewMode === "all"){
-                gridEl.style.display = "grid"; dashEl.style.display = "none";
-                const list = (sortMode === "likes") ? [...filtered].sort((a,b)=> (interactionsCache.get(getItemId(b))?.likes||0) - (interactionsCache.get(getItemId(a))?.likes||0)) : sortByDateDesc(filtered);
+                gridEl.style.display = "grid"; 
+                dashEl.style.display = "none";
+                
+                const list = (sortMode === "likes") 
+                    ? [...filtered].sort((a,b)=> (interactionsCache.get(getItemId(b))?.likes||0) - (interactionsCache.get(getItemId(a))?.likes||0)) 
+                    : sortByDateDesc(filtered);
+                
                 const sliced = list.slice(0, renderLimit);
                 
                 gridEl.innerHTML = sliced.map(it => {
                     const itemId = getItemId(it);
-                    // it 전체를 넘기지 않고 itemId만 전달합니다.
                     return `
                     <div class="card">
                         <div class="thumbWrap" onclick="openById('${itemId}')">
                             <img class="thumb" src="https://via.placeholder.com/400x225?text=Loading..." id="img-${itemId}">
                         </div>
                         <div class="metaBox">
-                            <div class="metaLeft"><div class="channel">${escapeHTML(it[KEY.channel])}</div><div class="titleLine">${escapeHTML(it[KEY.title])}</div></div>
+                            <div class="metaLeft">
+                                <div class="channel">${escapeHTML(it[KEY.channel])}</div>
+                                <div class="titleLine">${escapeHTML(it[KEY.title])}</div>
+                            </div>
                             <div class="actionsBar">
                                 <button class="actionBtn ${isLiked(itemId)?'active':''}" onclick="event.stopPropagation(); toggleLike('${itemId}')">👍 <span id="like-${itemId}">0</span></button>
                                 <button class="actionBtn" onclick="openById('${itemId}')">💬 <span id="memo-${itemId}">0</span></button>
@@ -348,127 +354,49 @@
                     </div>`;
                 }).join("");
                 
-                sliced.forEach(async it => { const t = await resolveThumbnail(it); document.getElementById(`img-${getItemId(it)}`).src = t; });
+                // 썸네일 로드 및 카운터 업데이트
+                sliced.forEach(async it => { 
+                    const t = await resolveThumbnail(it); 
+                    const img = document.getElementById(`img-${getItemId(it)}`);
+                    if(img) img.src = t; 
+                });
                 hydrateCountersFor(sliced.map(getItemId));
+
             } else {
-                gridEl.style.display = "none"; dashEl.style.display = "grid";
-                if (!selectedChannel) { rightTitleEl.textContent = "채널 선택"; rightListEl.innerHTML = ""; return; }
+                gridEl.style.display = "none"; 
+                dashEl.style.display = "grid";
+                
+                if (!selectedChannel) { 
+                    rightTitleEl.textContent = "채널 선택"; 
+                    rightListEl.innerHTML = '<div style="padding:40px; text-align:center; opacity:0.5;">왼쪽에서 채널을 선택해주세요.</div>'; 
+                    return; 
+                }
+                
                 rightTitleEl.textContent = selectedChannel;
                 const list = sortByDateDesc(filtered.filter(it => it[KEY.channel] === selectedChannel));
-                // 여기서도 openById를 사용합니다.
-                rightListEl.innerHTML = list.map(it => `<div class="row" onclick="openById('${getItemId(it)}')"><img class="rowThumb" src="https://via.placeholder.com/160x90" id="rowimg-${getItemId(it)}"><div class="rowMeta"><strong>${escapeHTML(it[KEY.title])}</strong><div style="font-size:12px;">${it[KEY.date]}</div></div></div>`).join("");
-                list.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`rowimg-${getItemId(it)}`); if(img) img.src = t; });
+                
+                rightListEl.innerHTML = list.map(it => `
+                    <div class="row" onclick="openById('${getItemId(it)}')">
+                        <img class="rowThumb" src="https://via.placeholder.com/160x90" id="rowimg-${getItemId(it)}">
+                        <div class="rowMeta">
+                            <strong>${escapeHTML(it[KEY.title])}</strong>
+                            <div style="font-size:12px; opacity:0.6;">${it[KEY.date]}</div>
+                        </div>
+                    </div>`).join("");
+
+                list.forEach(async it => { 
+                    const t = await resolveThumbnail(it); 
+                    const img = document.getElementById(`rowimg-${getItemId(it)}`); 
+                    if(img) img.src = t; 
+                });
             }
-
-        async function openModalForItem(item) {
-            const itemId = getItemId(item);
-            modalOverlay.dataset.itemid = itemId;
-            mTitle.textContent = item[KEY.title];
-            mSub.textContent = `${item[KEY.channel]} · ${item[KEY.date]}`;
-            mLink.href = item[KEY.url];
-            mThumb.src = await resolveThumbnail(item);
-            mNick.value = getNickname();
-
-            const url = item[KEY.url] || "";
-            const ytId = getYoutubeID(url);
-            const isInstagram = url.includes("instagram.com");
-
-            mVideoPlayer.innerHTML = '<iframe id="mIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
-            const newIframe = document.getElementById("mIframe");
-
-            if (ytId) {
-                mVideoPlayer.style.display = "block";
-                mVideoPlayer.style.background = "#000";
-                newIframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
-            } else if (isInstagram) {
-                mVideoPlayer.style.display = "block";
-                mVideoPlayer.style.background = "#1a1a1c";
-                mVideoPlayer.innerHTML = `<div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#aaa; text-align:center; padding:20px;">
-                    <div style="font-size:40px; margin-bottom:15px;">📸</div>
-                    <p style="font-size:15px; line-height:1.5;">인스타그램은 보안 정책상 여기서 재생 불가</p>
-                    <a href="${url}" target="_blank" style="margin-top:15px; color:#ff4757; text-decoration:underline; font-weight:700;">원본 보기</a>
-                </div>`;
-            } else {
-                mVideoPlayer.style.display = "none";
-            }
-
-            mPipBtn.onclick = (e) => {
-                e.preventDefault();
-                if (ytId) {
-                    const newWin = window.open('about:blank', 'pip', 'width=800,height=600');
-                    if (newWin) newWin.location.href = "https://www.youtube.com/watch?v=" + ytId;
-                    else showToast("팝업이 차단되었습니다.");
-                } else { window.open(url, '_blank'); }
-            };
-
-            const isShorts = url.includes("/shorts/");
-            const modalContainer = modalOverlay.querySelector('.modal');
-            const memoSection = document.getElementById('mList');
-            const memoComposer = document.querySelector('.memoComposer');
-            const leftSection = document.querySelector('.modalLeft');
-            const rightSection = document.querySelector('.modalRight');
-
-            if (isShorts) {
-                modalContainer.classList.add('shorts-mode');
-                leftSection.appendChild(memoSection);
-                leftSection.appendChild(memoComposer);
-            } else {
-                modalContainer.classList.remove('shorts-mode');
-                rightSection.appendChild(memoSection);
-                rightSection.appendChild(memoComposer);
-            }
-
-            modalOverlay.classList.add("open");
-            const data = await fetchInteractions(itemId);
-            mLikeCnt.textContent = data.likes;
-            mCounts.textContent = `👍 ${data.likes} · 💬 ${data.memos.length}`;
-            mList.innerHTML = data.memos.map(m => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05);"><strong>${escapeHTML(m.nickname)}</strong>: ${escapeHTML(m.memo)}</div>`).join("");
         }
 
-        function checkDeepLink() { const params = new URLSearchParams(window.location.search); const id = params.get('id'); if (id) { const item = allData.find(it => getItemId(it) === id); if (item) openModalForItem(item); } }
-
-        mShareBtn.onclick = () => { const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; navigator.clipboard.writeText(url); showToast("공유 링크 복사됨!"); };
-        mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("원본 링크 복사됨!"); };
-        
-        function closeModal() {
-            modalOverlay.classList.remove("open");
-            const iframe = document.getElementById("mIframe");
-            if (iframe) iframe.src = "";
-            mVideoPlayer.innerHTML = ""; 
+        // ID로 데이터를 찾아서 모달을 열어주는 함수
+        function openById(id) {
+            const item = allData.find(it => getItemId(it) === id);
+            if (item) openModalForItem(item);
         }
-
-        mClose.onclick = closeModal;
-        modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
-
-        mSend.onclick = async () => { const itemId = modalOverlay.dataset.itemid, nick = mNick.value.trim(), memo = mMemo.value.trim(); if (!nick || !memo) return; setNickname(nick); await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() }); mMemo.value = ""; interactionsCache.delete(itemId); openModalForItem(allData.find(it => getItemId(it) === itemId)); };
-
-        window.addEventListener("scroll", () => { if (viewMode === "all" && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) { if (renderLimit < allData.length) { renderLimit += RENDER_CHUNK; render(false); } } });
-        
-        async function init() {
-            try {
-                const res = await fetch(SHEET_URL);
-                allData = (await res.json()).filter(x => x && (x[KEY.url] || x[KEY.title]));
-                baseGenres = [...new Set(allData.map(i => (i[KEY.genre]||"").trim()).filter(Boolean))].sort();
-                baseMedias = [...new Set(allData.map(i => (i[KEY.media]||"").trim()).filter(Boolean))].sort();
-                baseFormats = [...new Set(allData.map(i => (i[KEY.format]||"").trim()).filter(Boolean))].sort();
-                baseTags = [...new Set(allData.flatMap(i => splitTags(i[KEY.tag])))].sort();
-                renderLeftNav(); render(true); checkDeepLink();
-            } catch (e) { console.error(e); gridEl.innerHTML = "데이터 로드 실패"; }
-        }
-        
-        searchEl.oninput = debounce(() => render(true), 300);
-        viewAllBtn.onclick = () => { viewMode = "all"; viewAllBtn.classList.add("active"); viewDashBtn.classList.remove("active"); render(true); };
-        viewDashBtn.onclick = () => { viewMode = "dash"; viewDashBtn.classList.add("active"); viewAllBtn.classList.remove("active"); render(true); };
-        resetBtn.onclick = () => { activeGenre = activeMedia = activeFormat = null; activeTags.clear(); searchEl.value = ""; render(true); };
-        document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => { document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active')); e.target.classList.add('active'); document.getElementById(e.target.dataset.tab + "Chips").classList.add('active'); });
-
-                // ID로 데이터를 찾아서 모달을 열어주는 안전한 함수
-function openById(id) {
-    const item = allData.find(it => getItemId(it) === id);
-    if (item) {
-        openModalForItem(item);
-    }
-}
 
                 
         init();
