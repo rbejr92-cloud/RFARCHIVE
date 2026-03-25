@@ -136,7 +136,7 @@
         .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; overflow:hidden; box-shadow: var(--shadow); height: calc(100vh - 260px); display: flex; flex-direction: column; }
         .panelHeader{ padding:14px 16px; border-bottom:1px solid var(--line); background: rgba(0,0,0,0.1); }
         .panelHeader .title{ font-size:14px; font-weight:800; color: #fff; }
-       /* 1. 왼쪽 스크롤 패널 (부모) - 여기서 sticky 기준점이 잡힙니다 */
+        /* 1. 왼쪽 스크롤 패널 (부모) - 여기서 sticky 기준점이 잡힙니다 */
 .leftScroll { 
     flex: 1; 
     overflow-y: auto; 
@@ -367,9 +367,12 @@
                 <button id="viewAllBtn" class="active">🟦 전체 보기</button>
                 <button id="viewDashBtn">📺 채널별 보기</button>
             </div>
-            <button class="btn" id="likedOnlyBtn">❤️ 좋아요</button>
+            
+            <button class="btn active" id="sortDateBtn">📅 발행일순</button>
+            <button class="btn" id="sortUpdateBtn">🆕 업데이트순</button>
             <button class="btn" id="sortLikesBtn">🔥 인기순</button>
-            <button class="btn" id="sortLikesBtn">📅 날짜순</button>
+            
+            <button class="btn" id="likedOnlyBtn">❤️ 좋아요만</button>
             <button class="btn" id="resetBtn">초기화</button>
             
             <div class="admin-controls">
@@ -459,6 +462,12 @@
         const LS_NICK = "vra:nickname", LS_UID = "vra:userId", LS_LIKED = "vra:liked";
 
         const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search"), resetBtn = document.getElementById("resetBtn"), viewAllBtn = document.getElementById("viewAllBtn"), viewDashBtn = document.getElementById("viewDashBtn"), genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), tagChipsEl = document.getElementById("tagChips"), leftNavEl = document.getElementById("leftNav"), rightTitleEl = document.getElementById("rightTitle"), rightListEl = document.getElementById("rightList"), modalOverlay = document.getElementById("modalOverlay"), mClose = document.getElementById("mClose"), mThumb = document.getElementById("mThumb"), mTitle = document.getElementById("mTitle"), mSub = document.getElementById("mSub"), mLink = document.getElementById("mLink"), mCopyBtn = document.getElementById("mCopyBtn"), mCounts = document.getElementById("mCounts"), mLikeBtn = document.getElementById("mLikeBtn"), mLikeCnt = document.getElementById("mLikeCnt"), mList = document.getElementById("mList"), mNick = document.getElementById("mNick"), mMemo = document.getElementById("mMemo"), mSend = document.getElementById("mSend"), mVideoPlayer = document.getElementById("mVideoPlayer"), mIframe = document.getElementById("mIframe"), mPipBtn = document.getElementById("mPipBtn"), mShareBtn = document.getElementById("mShareBtn");
+        
+        // 정렬 버튼 엘리먼트
+        const sortDateBtn = document.getElementById("sortDateBtn");
+        const sortUpdateBtn = document.getElementById("sortUpdateBtn");
+        const sortLikesBtn = document.getElementById("sortLikesBtn");
+        const likedOnlyBtn = document.getElementById("likedOnlyBtn");
 
         function escapeHTML(str) { return String(str || "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
         function splitTags(s) { return (s || "").split(/[ ,/]+/).filter(Boolean); }
@@ -516,10 +525,8 @@
         
         function updateChipsUI(filtered) { const gMap = new Map(), mMap = new Map(), fMap = new Map(), tMap = new Map(); allData.forEach(it => { gMap.set(it[KEY.genre], (gMap.get(it[KEY.genre])||0)+1); mMap.set(it[KEY.media], (mMap.get(it[KEY.media])||0)+1); fMap.set(it[KEY.format], (fMap.get(it[KEY.format])||0)+1); }); filtered.forEach(it => splitTags(it[KEY.tag]).forEach(t => tMap.set(t, (tMap.get(t)||0)+1))); renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => { activeGenre = v; render(true); }); renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => { activeMedia = v; render(true); }); renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => { activeFormat = v; render(true); }); renderChipGroup(tagChipsEl, "All", baseTags, tMap, activeTags, (v) => { if (v === null) activeTags.clear(); else activeTags.has(v) ? activeTags.delete(v) : activeTags.add(v); render(true); }, true); }
 
-        // 2-3. 채널 아이콘 생성 도우미 함수
         function getChannelIcon(name) {
             const firstChar = name.trim().charAt(0).toUpperCase();
-            // 장르/채널에 따른 고정 색상 해시 로직 (미구현, 기본 그라데이션 사용)
             return `<div class="channel-icon">${firstChar}</div>`;
         }
 
@@ -540,7 +547,6 @@
                 group.channels.forEach(({c, cnt}) => {
                     const b = document.createElement("button");
                     b.className = "channelItem" + (selectedChannel === c ? " active" : "");
-                    // 2-3. 채널 아이콘 추가
                     b.innerHTML = `${getChannelIcon(c)}<span>${escapeHTML(c)}</span><span style="font-size:11px; opacity:0.5; margin-left:auto;">${cnt}</span>`;
                     b.onclick = () => { selectedChannel = c; render(true); renderLeftNav(); };
                     body.appendChild(b);
@@ -550,102 +556,79 @@
             });
         }
 
-        // 1. render 함수 내부의 정렬 로직 수정
-async function render(resetPagination = false){
-    if (resetPagination) renderLimit = RENDER_CHUNK;
-    
-    const filtered = allData.filter(item => {
-        const q = searchEl.value.toLowerCase();
-        const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
-        const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true;
-        const okMedia = activeMedia ? item[KEY.media] === activeMedia : true;
-        const okFormat = activeFormat ? item[KEY.format] === activeFormat : true;
-        const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => splitTags(item[KEY.tag]).includes(t));
-        const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true;
-        return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
-    });
-
-    updateChipsUI(filtered);
-    statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
-
-    if (viewMode === "all"){
-        gridEl.style.display = "grid"; dashEl.style.display = "none";
-        
-        // --- 정렬 로직 시작 ---
-        let list = [...filtered];
-        if (sortMode === "likes") {
-            list.sort((a,b)=> {
-                const likesA = interactionsCache.get(getItemId(a))?.likes || 0;
-                const likesB = interactionsCache.get(getItemId(b))?.likes || 0;
-                return likesB - likesA;
+        async function render(resetPagination = false){
+            if (resetPagination) renderLimit = RENDER_CHUNK;
+            
+            const filtered = allData.filter(item => {
+                const q = searchEl.value.toLowerCase();
+                const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
+                const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true;
+                const okMedia = activeMedia ? item[KEY.media] === activeMedia : true;
+                const okFormat = activeFormat ? item[KEY.format] === activeFormat : true;
+                const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => splitTags(item[KEY.tag]).includes(t));
+                const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true;
+                return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
             });
-        } else if (sortMode === "date") {
-            list = sortByDateDesc(list); // 발행일순 (기존 함수 활용)
-        } else if (sortMode === "update") {
-            // 시트의 가장 아래에 있는 데이터가 가장 최근 업데이트된 것이므로 역순 정렬
-            list = [...filtered].reverse(); 
+
+            updateChipsUI(filtered);
+            statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
+
+            if (viewMode === "all"){
+                gridEl.style.display = "grid"; dashEl.style.display = "none";
+                
+                let list = [...filtered];
+                if (sortMode === "likes") {
+                    list.sort((a,b)=> {
+                        const likesA = interactionsCache.get(getItemId(a))?.likes || 0;
+                        const likesB = interactionsCache.get(getItemId(b))?.likes || 0;
+                        return likesB - likesA;
+                    });
+                } else if (sortMode === "date") {
+                    list = sortByDateDesc(list);
+                } else if (sortMode === "update") {
+                    // 시트 역순 (최근 추가분 상단)
+                    list = [...filtered].reverse(); 
+                }
+
+                const sliced = list.slice(0, renderLimit);
+                gridEl.innerHTML = sliced.map(it => {
+                    const itemId = getItemId(it);
+                    const isLikedState = isLiked(itemId);
+                    const tagsHTML = splitTags(it[KEY.tag]).slice(0, 3).map(t => `<span class="mini-tag">#${escapeHTML(t)}</span>`).join("");
+                    return `
+                    <div class="card">
+                        <div class="thumbWrap" onclick='openModalById("${itemId}")'>
+                            <img class="thumb" src="https://via.placeholder.com/400x225?text=Loading..." id="img-${itemId}">
+                        </div>
+                        <div class="metaBox">
+                            <div class="metaLeft"><div class="channel">${escapeHTML(it[KEY.channel])}</div><div class="titleLine">${escapeHTML(it[KEY.title])}</div></div>
+                            <div class="card-tags">${tagsHTML}</div>
+                            <div class="actionsBar">
+                                <button class="actionBtn like ${isLikedState?'active':''}" onclick="event.stopPropagation(); toggleLike('${itemId}')">👍 <span id="like-${itemId}" style="font-weight:800;">0</span></button>
+                                <button class="actionBtn" onclick='openModalById("${itemId}")'>💬 <span id="memo-${itemId}" style="font-weight:800;">0</span></button>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join("");
+                sliced.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`img-${getItemId(it)}`); if(img) img.src = t; });
+                hydrateCountersFor(sliced.map(getItemId));
+            } else {
+                gridEl.style.display = "none"; dashEl.style.display = "grid";
+                if (!selectedChannel) { rightTitleEl.textContent = "채널 선택"; rightListEl.innerHTML = ""; return; }
+                rightTitleEl.textContent = selectedChannel;
+                
+                let list = filtered.filter(it => it[KEY.channel] === selectedChannel);
+                if (sortMode === "date") list = sortByDateDesc(list);
+                else if (sortMode === "update") list.reverse();
+
+                rightListEl.innerHTML = list.map(it => {
+                    const itemId = getItemId(it);
+                    return `<div class="row" onclick='openModalById("${itemId}")'><img class="rowThumb" src="https://via.placeholder.com/160x90" id="rowimg-${itemId}"><div class="rowMeta"><strong>${escapeHTML(it[KEY.title])}</strong><div style="font-size:12px;">${it[KEY.date]}</div></div></div>`;
+                }).join("");
+                list.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`rowimg-${getItemId(it)}`); if(img) img.src = t; });
+            }
         }
-        // --- 정렬 로직 끝 ---
 
-        const sliced = list.slice(0, renderLimit);
-        // ... (이하 렌더링 코드는 기존과 동일)
-        gridEl.innerHTML = sliced.map(it => {
-            const itemId = getItemId(it);
-            const isLikedState = isLiked(itemId);
-            const tagsHTML = splitTags(it[KEY.tag]).slice(0, 3).map(t => `<span class="mini-tag">#${escapeHTML(t)}</span>`).join("");
-            return `
-            <div class="card">
-                <div class="thumbWrap" onclick='openModalById("${itemId}")'>
-                    <img class="thumb" src="https://via.placeholder.com/400x225?text=Loading..." id="img-${itemId}">
-                </div>
-                <div class="metaBox">
-                    <div class="metaLeft"><div class="channel">${escapeHTML(it[KEY.channel])}</div><div class="titleLine">${escapeHTML(it[KEY.title])}</div></div>
-                    <div class="card-tags">${tagsHTML}</div>
-                    <div class="actionsBar">
-                        <button class="actionBtn like ${isLikedState?'active':''}" onclick="event.stopPropagation(); toggleLike('${itemId}')">👍 <span id="like-${itemId}" style="font-weight:800;">0</span></button>
-                        <button class="actionBtn" onclick='openModalById("${itemId}")'>💬 <span id="memo-${itemId}" style="font-weight:800;">0</span></button>
-                    </div>
-                </div>
-            </div>`;
-        }).join("");
-        sliced.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`img-${getItemId(it)}`); if(img) img.src = t; });
-        hydrateCountersFor(sliced.map(getItemId));
-    } else {
-        // 채널별 보기(Dash) 모드에서도 동일한 정렬 적용 가능 (필요시)
-        gridEl.style.display = "none"; dashEl.style.display = "grid";
-        if (!selectedChannel) { rightTitleEl.textContent = "채널 선택"; rightListEl.innerHTML = ""; return; }
-        rightTitleEl.textContent = selectedChannel;
-        
-        let list = filtered.filter(it => it[KEY.channel] === selectedChannel);
-        if (sortMode === "date") list = sortByDateDesc(list);
-        else if (sortMode === "update") list.reverse();
-
-        rightListEl.innerHTML = list.map(it => {
-            const itemId = getItemId(it);
-            return `<div class="row" onclick='openModalById("${itemId}")'><img class="rowThumb" src="https://via.placeholder.com/160x90" id="rowimg-${itemId}"><div class="rowMeta"><strong>${escapeHTML(it[KEY.title])}</strong><div style="font-size:12px;">${it[KEY.date]}</div></div></div>`;
-        }).join("");
-        list.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`rowimg-${getItemId(it)}`); if(img) img.src = t; });
-    }
-}
-
-// 2. 버튼 클릭 이벤트 리스너 수정
-document.getElementById("sortLikesBtn").onclick = (e) => { 
-    // date -> update -> likes 순서로 순환
-    if (sortMode === "date") {
-        sortMode = "update";
-        e.target.textContent = "🆕 업데이트순";
-        e.target.classList.add("active");
-    } else if (sortMode === "update") {
-        sortMode = "likes";
-        e.target.textContent = "🔥 인기순";
-        e.target.classList.add("active");
-    } else {
-        sortMode = "date";
-        e.target.textContent = "📅 날짜순";
-        e.target.classList.remove("active");
-    }
-    render(true); 
-};
         function openModalById(id) {
             const item = allData.find(it => getItemId(it) === id);
             if (item) openModalForItem(item);
@@ -725,7 +708,6 @@ document.getElementById("sortLikesBtn").onclick = (e) => {
             await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() });
             mMemo.value = "";
             interactionsCache.delete(itemId);
-            // 모달 데이터 갱신
             const item = allData.find(it => getItemId(it) === itemId);
             if (item) openModalForItem(item);
         };
@@ -739,7 +721,6 @@ document.getElementById("sortLikesBtn").onclick = (e) => {
                 baseGenres = [...new Set(allData.map(i => (i[KEY.genre]||"").trim()).filter(Boolean))].sort();
                 baseMedias = [...new Set(allData.map(i => (i[KEY.media]||"").trim()).filter(Boolean))].sort();
                 baseFormats = [...new Set(allData.map(i => (i[KEY.format]||"").trim()).filter(Boolean))].sort();
-                // 태그 자동 추출 로직 (A|B,C 등 다양한 구분자 처리)
                 baseTags = [...new Set(allData.flatMap(i => splitTags(i[KEY.tag])))].sort();
                 
                 renderLeftNav(); render(true);
@@ -752,23 +733,49 @@ document.getElementById("sortLikesBtn").onclick = (e) => {
             }
         }
         
+        // 정렬 상태 업데이트 도우미
+        function updateSortButtons(activeBtn) {
+            [sortDateBtn, sortUpdateBtn, sortLikesBtn].forEach(btn => btn.classList.remove("active"));
+            activeBtn.classList.add("active");
+        }
+
         // Event Listeners
         searchEl.oninput = debounce(() => render(true), 300);
         viewAllBtn.onclick = () => { viewMode = "all"; viewAllBtn.classList.add("active"); viewDashBtn.classList.remove("active"); render(true); };
         viewDashBtn.onclick = () => { viewMode = "dash"; viewDashBtn.classList.add("active"); viewAllBtn.classList.remove("active"); render(true); };
-        resetBtn.onclick = () => { activeGenre = activeMedia = activeFormat = null; activeTags.clear(); searchEl.value = ""; render(true); };
         
-        // 좋아요만 필터링
-        document.getElementById("likedOnlyBtn").onclick = (e) => { 
-            showLikedOnly = !showLikedOnly; 
-            e.target.classList.toggle("active", showLikedOnly); 
+        resetBtn.onclick = () => { 
+            activeGenre = activeMedia = activeFormat = null; 
+            activeTags.clear(); 
+            searchEl.value = ""; 
+            showLikedOnly = false;
+            sortMode = "date";
+            likedOnlyBtn.classList.remove("active");
+            updateSortButtons(sortDateBtn);
             render(true); 
         };
-        // 좋아요순 정렬
-        document.getElementById("sortLikesBtn").onclick = (e) => { 
-            sortMode = (sortMode === "date") ? "likes" : "date";
-            e.target.classList.toggle("active", sortMode === "likes");
-            e.target.textContent = (sortMode === "likes") ? "🔥 인기순" : "📅 날짜순";
+
+        sortDateBtn.onclick = () => {
+            sortMode = "date";
+            updateSortButtons(sortDateBtn);
+            render(true);
+        };
+
+        sortUpdateBtn.onclick = () => {
+            sortMode = "update";
+            updateSortButtons(sortUpdateBtn);
+            render(true);
+        };
+
+        sortLikesBtn.onclick = () => {
+            sortMode = "likes";
+            updateSortButtons(sortLikesBtn);
+            render(true);
+        };
+
+        likedOnlyBtn.onclick = () => { 
+            showLikedOnly = !showLikedOnly; 
+            likedOnlyBtn.classList.toggle("active", showLikedOnly); 
             render(true); 
         };
 
