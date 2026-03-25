@@ -556,19 +556,29 @@
             });
         }
 
-        async function render(resetPagination = false){
-            if (resetPagination) renderLimit = RENDER_CHUNK;
-            
-            const filtered = allData.filter(item => {
-                const q = searchEl.value.toLowerCase();
-                const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
-                const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true;
-                const okMedia = activeMedia ? item[KEY.media] === activeMedia : true;
-                const okFormat = activeFormat ? item[KEY.format] === activeFormat : true;
-                const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => splitTags(item[KEY.tag]).includes(t));
-                const okLiked = showLikedOnly ? isLiked(getItemId(item)) : true;
-                return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
+       async function render(resetPagination = false){
+    if (resetPagination) renderLimit = RENDER_CHUNK;
+    
+    const filtered = allData.filter(item => {
+        const q = searchEl.value.toLowerCase();
+        const itemId = getItemId(item); // ID 미리 생성
+        
+        const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
+        const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true;
+        const okMedia = activeMedia ? item[KEY.media] === activeMedia : true;
+        const okFormat = activeFormat ? item[KEY.format] === activeFormat : true;
+        const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => splitTags(item[KEY.tag]).includes(t));
             });
+
+           let okLiked = true;
+        if (showLikedOnly) {
+            const stat = interactionsCache.get(itemId);
+            okLiked = stat && stat.likes > 0;
+        }
+        // -------------------------
+
+        return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
+    });
 
             updateChipsUI(filtered);
             statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
