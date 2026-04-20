@@ -81,7 +81,8 @@
         .filterPanel{ border:1px solid var(--line); background: rgba(0,0,0,0.1); border-radius:14px; padding:12px; }
         .chips{ display:flex; flex-wrap:wrap; gap:8px; }
         .chipsPanel{ display:none; }
-        .chipsPanel.active{ display:flex; }
+        /* 수정: active일 때 display: flex; flex-wrap: wrap; 으로 설정하여 가로 정렬 복구 */
+        .chipsPanel.active{ display:flex; flex-wrap: wrap; }
         
         .chip{ 
             padding:7px 12px; border-radius:999px; border:1px solid var(--line); 
@@ -199,7 +200,7 @@
             .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid var(--line); }
             .modal.shorts-mode .modalRight { order: 2; background: #000; display: flex; align-items: center; justify-content: center; }
         }
-   
+    
         .viewToggle { display: inline-flex; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); border-radius: 12px; overflow: hidden; padding: 3px; gap: 4px; }
         .viewToggle button { border: 0; background: transparent; color: var(--muted); padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; border-radius: 9px; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
         .viewToggle button:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
@@ -313,15 +314,17 @@
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
     
-    // 🌟 이미지에 맞게 KEY 매핑 변경 🌟
     const KEY = { 
         genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", 
         content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" 
     };
 
     let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseContents = [], baseStages = [], baseMethods = [], baseCasts = [], baseTones = [];
-    // 🌟 모든 카테고리를 Set으로 관리하여 다중 선택 지원 🌟
     let activeGenre = new Set(), activeMedia = new Set(), activeFormat = new Set(), activeContents = new Set(), activeStages = new Set(), activeMethod = new Set(), activeCast = new Set(), activeTone = new Set();
+    
+    // 추가된 변수: 출연자 대분류(Role) 상태 관리
+    let activeCastRole = "전체"; 
+    
     let viewMode = "all", selectedChannel = null, showLikedOnly = false, sortMode = "date", renderLimit = 30;
     const RENDER_CHUNK = 30;
     const interactionsCache = new Map();
@@ -350,6 +353,12 @@
     function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
     function sortByDateDesc(data) { return [...data].sort((a, b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-'))); }
     
+    // 추가: 출연자 태그에서 괄호 안의 직업(Role)을 추출하는 함수
+    function getRole(tag) {
+        const match = tag.match(/\(([^)]+)\)/);
+        return match ? match[1] : "기타"; // 괄호가 없으면 '기타'로 분류
+    }
+
     function getYoutubeID(url) {
         try {
             const u = new URL(url);
@@ -388,6 +397,7 @@
 
     function buildGenreChannelIndex(items){ const genreMap = new Map(); items.forEach(it => { const g = (it[KEY.genre] || "기타").trim(), c = (it[KEY.channel] || "미분류").trim(); if (!genreMap.has(g)) genreMap.set(g, new Map()); const cm = genreMap.get(g); cm.set(c, (cm.get(c) || 0) + 1); }); return [...genreMap.entries()].map(([g, cm]) => ({ g, total: [...cm.values()].reduce((a,b)=>a+b,0), channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt })).sort((a,b)=> a.c.localeCompare(b.c, "ko")) })).sort((a,b)=> b.total - a.total); }
 
+    // 범용 칩 렌더링 함수 (장르, 매체 등 가로 정렬용)
     function renderChipGroup(container, labelAll, baseList, countMap, activeState, onPick) { 
         container.innerHTML = ""; 
         const isAllActive = activeState.size === 0; 
@@ -406,7 +416,7 @@
         }); 
     }
     
-    // 🌟 모든 카테고리에 splitTags 적용 및 맵 업데이트 🌟
+    // UI 업데이트 함수: 필터링된 데이터에 맞춰 칩 리스트를 새로 고침
     function updateChipsUI(filtered) { 
         const gMap = new Map(), mMap = new Map(), fMap = new Map(), cntMap = new Map(), stgMap = new Map(), methMap = new Map(), cMap = new Map(), tnMap = new Map(); 
         
@@ -421,20 +431,71 @@
             splitTags(it[KEY.tone]).forEach(t => tnMap.set(t, (tnMap.get(t)||0)+1));
         });
         
+        // 상태 변경 함수: All 클릭 시 해제, 개별 클릭 시 토글
         const toggleActive = (stateSet, val) => {
             if (val === null) stateSet.clear();
             else stateSet.has(val) ? stateSet.delete(val) : stateSet.add(val);
             render(true);
         };
 
+        // 출연자를 제외한 나머지 카테고리는 범용 칩 렌더링 사용 (가로 정렬)
         renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => toggleActive(activeGenre, v)); 
         renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => toggleActive(activeMedia, v)); 
         renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => toggleActive(activeFormat, v)); 
         renderChipGroup(contentChipsEl, "All", baseContents, cntMap, activeContents, (v) => toggleActive(activeContents, v)); 
         renderChipGroup(stageChipsEl, "All", baseStages, stgMap, activeStages, (v) => toggleActive(activeStages, v)); 
         renderChipGroup(methodChipsEl, "All", baseMethods, methMap, activeMethod, (v) => toggleActive(activeMethod, v)); 
-        renderChipGroup(castChipsEl, "All", baseCasts, cMap, activeCast, (v) => toggleActive(activeCast, v)); 
         renderChipGroup(toneChipsEl, "All", baseTones, tnMap, activeTone, (v) => toggleActive(activeTone, v)); 
+
+        // [출연자 로직]: 대분류(Role) -> 소분류(이름) 2단 구조로 렌더링
+        const roles = ["전체", ...new Set(baseCasts.map(getRole))];
+        castChipsEl.innerHTML = ""; 
+
+        // 1. 대분류(Role) 필터 행 생성 (상단에 배치)
+        const roleRow = document.createElement("div");
+        roleRow.className = "chips";
+        roleRow.style.width = "100%";
+        roleRow.style.marginBottom = "10px";
+        roleRow.style.paddingBottom = "10px";
+        roleRow.style.borderBottom = "1px solid var(--line)";
+        
+        roles.forEach(role => {
+            const btn = document.createElement("div");
+            btn.className = "chip" + (activeCastRole === role ? " active" : "");
+            btn.textContent = role;
+            // 직업군을 클릭하면 해당 상태로 변경하고 리스트 다시 그림 (페이지네이션은 유지)
+            btn.onclick = () => { activeCastRole = role; render(false); };
+            roleRow.appendChild(btn);
+        });
+        castChipsEl.appendChild(roleRow);
+
+        // 2. 소분류(이름) 칩들이 들어갈 공간 생성 (대분류 아래에 배치)
+        const castListContainer = document.createElement("div");
+        castListContainer.className = "chips";
+        
+        // 현재 선택된 Role에 맞게 출연자 베이스 리스트 필터링
+        const filteredBaseCasts = activeCastRole === "전체" 
+            ? baseCasts 
+            : baseCasts.filter(c => getRole(c) === activeCastRole);
+
+        // 필터링된 리스트를 순회하며 칩 생성
+        filteredBaseCasts.forEach(val => {
+            const isActive = activeCast.has(val);
+            const count = cMap.get(val) || 0;
+            // 개수가 0개라도 이미 선택된 상태라면 보여줌 (All 필터링 시 유용)
+            if(count === 0 && !isActive) return; 
+
+            const chip = document.createElement("div");
+            chip.className = "chip" + (isActive ? " active" : "");
+            chip.innerHTML = `${escapeHTML(val)} <span class="count">${count}</span>`;
+            // 소분류 이름을 클릭하면 실제 필터링에 반영 (다중 선택)
+            chip.onclick = () => {
+                activeCast.has(val) ? activeCast.delete(val) : activeCast.add(val);
+                render(true); // 실제 데이터 필터링이므로 1페이지부터 다시 그림
+            };
+            castListContainer.appendChild(chip);
+        });
+        castChipsEl.appendChild(castListContainer);
     }
 
     function getChannelIcon(name) {
@@ -442,6 +503,7 @@
         return `<div class="channel-icon">${firstChar}</div>`;
     }
 
+    // 대시보드 모드: 왼쪽 채널 네비게이션 렌더링
     function renderLeftNav() {
         leftNavEl.innerHTML = "";
         const index = buildGenreChannelIndex(allData);
@@ -454,6 +516,7 @@
             head.innerHTML = `<span>${escapeHTML(group.g)}</span><span style="font-size:11px; opacity:0.6;">${group.channels.length}ch</span>`;
             const body = document.createElement("div");
             body.className = "genreBody";
+            // 현재 활성화된 채널이 있거나, 첫 2개 장르는 기본으로 펼침
             body.style.display = (isGenreActive || idx < 2) ? "block" : "none";
             head.onclick = () => { wrap.classList.toggle("active"); const b = wrap.querySelector(".genreBody"); b.style.display = b.style.display === "none" ? "block" : "none"; };
             group.channels.forEach(({c, cnt}) => {
@@ -468,25 +531,28 @@
         });
     }
 
+    // 메인 렌더링 함수: 검색, 필터, 정렬 상태에 따라 그리드 또는 리스트를 그림
     async function render(resetPagination = false){
-        if (resetPagination) renderLimit = RENDER_CHUNK;
+        if (resetPagination) renderLimit = RENDER_CHUNK; // 새 검색/필터링 시 1페이지로 초기화
         
-        // 🌟 다중 선택 필터링 로직 (AND 조건) 🌟
+        // 데이터 필터링 로직 (AND 조건)
         const filtered = allData.filter(item => {
             const q = searchEl.value.toLowerCase();
             const itemId = getItemId(item);
             
             const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
             
+            // 다중 선택(AND) 체크 함수: 선택된 모든 태그를 포함해야 함
             const checkTags = (activeSet, key) => activeSet.size === 0 ? true : [...activeSet].every(t => splitTags(item[key]).includes(t));
 
+            // 각 카테고리별 필터 체크
             const okGenre = checkTags(activeGenre, KEY.genre);
             const okMedia = checkTags(activeMedia, KEY.media);
             const okFormat = checkTags(activeFormat, KEY.format);
             const okContent = checkTags(activeContents, KEY.content);
             const okStage = checkTags(activeStages, KEY.stage);
             const okMethod = checkTags(activeMethod, KEY.method);
-            const okCast = checkTags(activeCast, KEY.cast);
+            const okCast = checkTags(activeCast, KEY.cast); // 출연자 소분류 AND 체크
             const okTone = checkTags(activeTone, KEY.tone);
             
             let okLiked = true;
@@ -494,16 +560,20 @@
                 const stat = interactionsCache.get(itemId);
                 okLiked = (stat && stat.likes > 0);
             }
+            // 모든 필터 조건을 충족해야 함
             return okSearch && okGenre && okMedia && okFormat && okContent && okStage && okMethod && okCast && okTone && okLiked;
         });
 
+        // 필터링된 결과에 맞춰 칩 UI 업데이트 (개수 등)
         updateChipsUI(filtered);
         statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
 
         if (viewMode === "all"){
+            // 전체 보기 (그리드)
             gridEl.style.display = "grid"; dashEl.style.display = "none";
             
             let list = [...filtered];
+            // 정렬 로직
             if (sortMode === "likes") {
                 list.sort((a,b)=> {
                     const likesA = interactionsCache.get(getItemId(a))?.likes || 0;
@@ -516,7 +586,9 @@
                 list = [...filtered].reverse(); 
             }
 
+            // 페이지네이션 적용 (Sliced)
             const sliced = list.slice(0, renderLimit);
+            // 그리드 HTML 생성 및 삽입
             gridEl.innerHTML = sliced.map(it => {
                 const itemId = getItemId(it);
                 const isLikedState = isLiked(itemId);
@@ -536,46 +608,54 @@
                     </div>
                 </div>`;
             }).join("");
+            // 썸네일 비동기 로딩
             sliced.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`img-${getItemId(it)}`); if(img) img.src = t; });
+            // 좋아요/메모 개수 비동기 로딩 및 업데이트
             hydrateCountersFor(sliced.map(getItemId));
         } else {
+            // 대시보드 모드 (채널별 리스트)
             gridEl.style.display = "none"; dashEl.style.display = "grid";
             if (!selectedChannel) { rightTitleEl.textContent = "채널 선택"; rightListEl.innerHTML = ""; return; }
             rightTitleEl.textContent = selectedChannel;
             
+            // 현재 선택된 채널의 데이터만 필터링
             let list = filtered.filter(it => it[KEY.channel] === selectedChannel);
+            // 정렬 로직 적용
             if (sortMode === "date") list = sortByDateDesc(list);
             else if (sortMode === "update") list.reverse();
 
+            // 리스트 HTML 생성 및 삽입
             rightListEl.innerHTML = list.map(it => {
                 const itemId = getItemId(it);
                 return `<div class="row" onclick='openModalById("${itemId}")'><img class="rowThumb" src="https://via.placeholder.com/160x90" id="rowimg-${itemId}"><div class="rowMeta"><strong>${escapeHTML(it[KEY.title])}</strong><div style="font-size:12px;">${it[KEY.date]}</div></div></div>`;
             }).join("");
+            // 썸네일 비동기 로딩
             list.forEach(async it => { const t = await resolveThumbnail(it); const img = document.getElementById(`rowimg-${getItemId(it)}`); if(img) img.src = t; });
         }
     }
 
+    // ID로 모달 열기 함수 (그리드/리스트 클릭 시 호출)
     function openModalById(id) {
         const item = allData.find(it => getItemId(it) === id);
         if (item) openModalForItem(item);
     }
 
-   async function openModalForItem(item){
+    // 특정 항목으로 모달 내용을 채우고 열기
+    async function openModalForItem(item){
         const itemId = getItemId(item); 
         modalOverlay.dataset.itemid = itemId;
         mTitle.textContent = item[KEY.title]; 
         mSub.textContent = `${item[KEY.channel]} · ${item[KEY.date]}`;
         mLink.href = item[KEY.url]; 
         mThumb.src = await resolveThumbnail(item);
-        mNick.value = getNickname();
+        mNick.value = getNickname(); // 저장된 닉네임 불러오기
 
         const url = item[KEY.url] || "";
         const ytId = getYoutubeID(url);
         const isInstagram = url.includes("instagram.com");
         const isShorts = url.includes("/shorts/");
 
-        // --- 🌟 여기서부터 수정된 부분 🌟 ---
-        // 영상을 열 때마다 플레이어 영역을 초기화하고 iframe을 새로 생성합니다.
+        // 유튜브 플레이어 생성
         mVideoPlayer.innerHTML = '<iframe id="dynamicIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border:0;"></iframe>';
         const currentIframe = document.getElementById("dynamicIframe");
 
@@ -584,6 +664,7 @@
             mVideoPlayer.style.background = "#000";
             currentIframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
         } else if (isInstagram) {
+            // 인스타그램은 직접 임베드 불가 -> 경고 문구 및 링크 표시
             mVideoPlayer.style.display = "block";
             mVideoPlayer.style.background = "#1a1a1c";
             mVideoPlayer.innerHTML = `<div style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#aaa; text-align:center; padding:20px;">
@@ -594,7 +675,6 @@
         } else {
             mVideoPlayer.style.display = "none";
         }
-        // --- 🌟 여기까지 🌟 ---
 
         const modalContainer = modalOverlay.querySelector('.modal');
         const memoSection = document.querySelector('.memoList');
@@ -602,6 +682,7 @@
         const leftSection = document.querySelector('.modalLeft');
         const rightSection = document.querySelector('.modalRight');
 
+        // 쇼츠 모드 여부에 따라 메모 섹션 위치 변경
         if (isShorts) {
             modalContainer.classList.add('shorts-mode');
             leftSection.appendChild(memoSection);
@@ -612,45 +693,54 @@
             rightSection.appendChild(memoComposer);
         }
 
+        // 모달 열기
         modalOverlay.classList.add("open");
+        
+        // 좋아요/메모 데이터 비동기 로드 및 업데이트
         const data = await fetchInteractions(itemId);
         mLikeCnt.textContent = data.likes; 
         mCounts.textContent = `👍 ${data.likes} · 💬 ${data.memos.length}`;
         mList.innerHTML = data.memos.map(m => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px;"><strong style="color:#fff;">${escapeHTML(m.nickname)}</strong>: ${escapeHTML(m.memo)}</div>`).join("");
     }
 
-    // --- 🌟 closeModal 함수도 수정해 주세요 🌟 ---
+    // 모달 닫기 함수
     function closeModal() {
         modalOverlay.classList.remove("open");
-        // 모달을 닫을 때 백그라운드에서 소리가 나지 않도록 비디오 플레이어 영역을 완전히 비워줍니다.
+        // 영상 소리가 계속 나지 않도록 iframe 완전히 제거
         mVideoPlayer.innerHTML = ""; 
     }
 
+    // 모달 이벤트 리스너 등록
     mClose.onclick = closeModal;
     modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
 
+    // 모달 내 액션 버튼
     mPipBtn.onclick = () => { const ytId = getYoutubeID(mLink.href); if (ytId) window.open(`https://www.youtube.com/embed/${ytId}?autoplay=1`, 'pip', 'width=560,height=315'); };
     mShareBtn.onclick = () => { const url = window.location.origin + window.location.pathname + "?id=" + modalOverlay.dataset.itemid; navigator.clipboard.writeText(url); showToast("공유 링크 복사됨!"); };
     mCopyBtn.onclick = () => { navigator.clipboard.writeText(mLink.href); showToast("원본 링크 복사됨!"); };
     
+    // 메모 등록 로직
     mSend.onclick = async () => {
         const itemId = modalOverlay.dataset.itemid, nick = mNick.value.trim(), memo = mMemo.value.trim();
         if (!nick || !memo) return;
-        setNickname(nick);
+        setNickname(nick); // 입력한 닉네임 저장
         await postInteraction({ itemId, action: "memo", nickname: nick, memo, userId: getUserId() });
         mMemo.value = "";
-        interactionsCache.delete(itemId);
+        interactionsCache.delete(itemId); // 캐시 삭제 -> 새로 로드
+        // 현재 열려있는 항목을 다시 로드하여 메모 업데이트
         const item = allData.find(it => getItemId(it) === itemId);
         if (item) openModalForItem(item);
     };
 
+    // 초기화 함수: 구글 시트에서 데이터를 로드하고 초기 UI 구성
     async function init() {
         try {
             statsEl.textContent = "데이터 로딩 중...";
             const res = await fetch(SHEET_URL);
+            // URL 또는 제목이 없는 데이터는 필터링
             allData = (await res.json()).filter(x => x && (x[KEY.url] || x[KEY.title]));
             
-            // 🌟 모든 항목에 splitTags 적용하여 base 배열 생성 🌟
+            // 데이터 로드 성공 -> 베이스 리스트 및 UI 생성
             baseGenres = [...new Set(allData.flatMap(i => splitTags(i[KEY.genre])))].sort();
             baseMedias = [...new Set(allData.flatMap(i => splitTags(i[KEY.media])))].sort();
             baseFormats = [...new Set(allData.flatMap(i => splitTags(i[KEY.format])))].sort();
@@ -662,6 +752,7 @@
             
             renderLeftNav(); 
             render(true);
+            // URL 파라미터에 ID가 있으면 자동으로 모달 열기 (공유 시 유용)
             const params = new URLSearchParams(window.location.search);
             if(params.get('id')) openModalById(params.get('id'));
         } catch (e) { 
@@ -671,18 +762,23 @@
         }
     }
     
+    // 정렬 버튼 상태 업데이트 함수
     function updateSortButtons(activeBtn) {
         [sortDateBtn, sortUpdateBtn, sortLikesBtn].forEach(btn => btn.classList.remove("active"));
         activeBtn.classList.add("active");
     }
 
+    // 검색창 입력 이벤트 (디바운스 적용)
     searchEl.oninput = debounce(() => render(true), 300);
+    // 뷰 모드 토글
     viewAllBtn.onclick = () => { viewMode = "all"; viewAllBtn.classList.add("active"); viewDashBtn.classList.remove("active"); render(true); };
     viewDashBtn.onclick = () => { viewMode = "dash"; viewDashBtn.classList.add("active"); viewAllBtn.classList.remove("active"); render(true); };
     
+    // 초기화 버튼 로직: 검색, 필터, 정렬 상태 모두 초기화
     resetBtn.onclick = () => { 
         activeGenre.clear(); activeMedia.clear(); activeFormat.clear(); activeContents.clear(); 
         activeStages.clear(); activeMethod.clear(); activeCast.clear(); activeTone.clear(); 
+        activeCastRole = "전체"; // 추가: 출연자 대분류 상태도 초기화
         
         searchEl.value = ""; 
         showLikedOnly = false;
@@ -692,29 +788,36 @@
         render(true); 
     };
 
+    // 정렬 버튼 이벤트
     sortDateBtn.onclick = () => { sortMode = "date"; updateSortButtons(sortDateBtn); render(true); };
     sortUpdateBtn.onclick = () => { sortMode = "update"; updateSortButtons(sortUpdateBtn); render(true); };
     sortLikesBtn.onclick = () => { sortMode = "likes"; updateSortButtons(sortLikesBtn); render(true); };
 
+    // 좋아요만 보기 토글
     likedOnlyBtn.onclick = () => { 
         showLikedOnly = !showLikedOnly; 
         likedOnlyBtn.classList.toggle("active", showLikedOnly); 
         render(true); 
     };
 
+    // 필터 탭 클릭 이벤트
     document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => {
+        // 기존 활성화된 탭 및 칩 패널 제거
         document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
+        // 클릭한 탭 및 해당 칩 패널 활성화
         e.target.classList.add('active');
         document.getElementById(e.target.dataset.tab + "Chips").classList.add('active');
     });
 
+    // 무한 스크롤 로직 (전체 보기 그리드 모드에서만 작동)
     window.addEventListener("scroll", () => {
         if (viewMode === "all" && (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
             if (renderLimit < allData.length) { renderLimit += RENDER_CHUNK; render(false); }
         }
     });
 
+    // 애플리케이션 초기화 시작
     init();
-</script>
+    </script>
 </body>
 </html>
