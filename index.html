@@ -21,7 +21,6 @@
         }
         *{ box-sizing:border-box; outline: none; }
         
-        /* 스크롤바 스타일 정의 */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -37,7 +36,6 @@
         
         h1{ margin:0 0 12px 0; font-size:24px; letter-spacing:.2px; display:flex; align-items:center; gap:12px; color: #fff; }
         
-        /* 2-2. 유리 질감 상단 바 & 애니메이션 정의 */
         .topbarWrapper { 
             position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; 
             background: rgba(11, 11, 12, 0.6); 
@@ -60,7 +58,6 @@
         .btn:hover{ border-color: var(--line2); background: rgba(255,255,255,0.06); }
         .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
         
-        /* 1. <RF 업데이트> 버튼 스티키 & 고정 배치 */
         .admin-controls { margin-left: auto; display: flex; align-items: center; gap: 12px; }
         .stats{ font-size:13px; color: var(--muted); white-space:nowrap; }
         .update-btn { 
@@ -86,7 +83,6 @@
         .chipsPanel{ display:none; }
         .chipsPanel.active{ display:flex; }
         
-        /* 2-2. 칩 애니메이션 & 디자인 정의 */
         .chip{ 
             padding:7px 12px; border-radius:999px; border:1px solid var(--line); 
             background: rgba(255,255,255,0.03); color: var(--muted); cursor:pointer; 
@@ -98,7 +94,6 @@
 
         .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; margin-top: 14px; }
         
-        /* 2-1. 카드 디자인 고도화 (Neon Border & Glow) */
         .card{ 
             background: var(--panel-bg); border:1px solid var(--line); border-radius: var(--radius); 
             overflow:hidden; box-shadow: var(--shadow); transition: all 0.3s ease; position:relative; 
@@ -113,7 +108,6 @@
         .thumb{ width:100%; height:100%; object-fit:cover; display:block; transition: transform 0.5s ease; }
         .card:hover .thumb { transform: scale(1.08); }
         
-        /* 카드 내 미니 태그 스타일 */
         .card-tags { padding: 0 14px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: -8px; margin-bottom: 10px; }
         .mini-tag { font-size: 10px; color: var(--muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; }
 
@@ -136,76 +130,20 @@
         .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; overflow:hidden; box-shadow: var(--shadow); height: calc(100vh - 260px); display: flex; flex-direction: column; }
         .panelHeader{ padding:14px 16px; border-bottom:1px solid var(--line); background: rgba(0,0,0,0.1); }
         .panelHeader .title{ font-size:14px; font-weight:800; color: #fff; }
-        /* 1. 왼쪽 스크롤 패널 (부모) - 여기서 sticky 기준점이 잡힙니다 */
-.leftScroll { 
-    flex: 1; 
-    overflow-y: auto; 
-    padding: 12px; 
-    /* 패널 안에서 장르 제목이 돌아다닐 수 있도록 상대 위치 설정 */
-    position: relative; 
-}
-
-/* 2. 장르 그룹 박스 - overflow 설정을 완전히 끕니다 */
-.genreGroup { 
-    border: 1px solid var(--line); 
-    border-radius: 14px; 
-    margin-bottom: 8px; 
-    background: rgba(0,0,0,0.1); 
-    /* 중요: overflow가 hidden이면 sticky가 절대 안 됩니다 */
-    overflow: visible !important; 
-}
-
-/* 3. 장르 헤더 (핵심) - 스크롤 시 패널 최상단에 붙음 */
-.genreHead { 
-    width: 100%; 
-    border: 0; 
-    /* 고정 시 뒤가 안 비치게 패널과 같은 배경색을 강제로 지정 */
-    background: #0b0b0c !important; 
-    color: #fff; 
-    padding: 14px; 
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    gap: 10px; 
-    font-size: 13px; 
-    font-weight: 800; 
-    transition: 0.2s;
-
-    /* sticky 속성 강제 적용 */
-    position: -webkit-sticky !important;
-    position: sticky !important; 
-    top: -12px !important; /* leftScroll의 padding-top 값만큼 조절 */
-    z-index: 100 !important; /* 채널 리스트보다 무조건 위 */
-    
-    border-bottom: 1px solid var(--line);
-    border-radius: 14px 14px 0 0;
-}
-
-/* 마우스 올렸을 때 */
-.genreHead:hover { 
-    background: #1a1a1c !important; 
-}
-
-/* 장르가 열려있을 때(활성화) */
-.genreGroup.active { 
-    border-color: var(--line2); 
-}
-.genreGroup.active .genreHead {
-    color: var(--accent);
-}
-
-/* 채널 리스트 몸체 */
-.genreBody { 
-    padding: 8px 8px 12px 14px; 
-    border-top: 1px solid var(--line); 
-    display: none; 
-}
-.genreGroup.active .genreBody { 
-    display: block; 
-}
+        .leftScroll { flex: 1; overflow-y: auto; padding: 12px; position: relative; }
         
-        /* 2-3. 채널 아이콘(자동 생성) 디자인 정의 */
+        .genreGroup { border: 1px solid var(--line); border-radius: 14px; margin-bottom: 8px; background: rgba(0,0,0,0.1); overflow: visible !important; }
+        .genreHead { 
+            width: 100%; border: 0; background: #0b0b0c !important; color: #fff; padding: 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; font-weight: 800; transition: 0.2s;
+            position: -webkit-sticky !important; position: sticky !important; top: -12px !important; z-index: 100 !important; 
+            border-bottom: 1px solid var(--line); border-radius: 14px 14px 0 0;
+        }
+        .genreHead:hover { background: #1a1a1c !important; }
+        .genreGroup.active { border-color: var(--line2); }
+        .genreGroup.active .genreHead { color: var(--accent); }
+        .genreBody { padding: 8px 8px 12px 14px; border-top: 1px solid var(--line); display: none; }
+        .genreGroup.active .genreBody { display: block; }
+        
         .channelItem { 
             width:100%; border:1px solid transparent; background: transparent; color: var(--muted); 
             padding:9px 12px; border-radius:10px; cursor:pointer; display:flex; align-items:center; gap:10px; 
@@ -214,34 +152,22 @@
         .channelItem:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
         .channelItem.active { background: rgba(255, 71, 87, 0.1) !important; color: var(--accent) !important; font-weight: 800; }
         
-        /* 채널 아이콘 원형 프레임 */
         .channel-icon { 
-            width: 24px; height: 24px; border-radius: 50%; 
-            background: linear-gradient(135deg, var(--accent), #4b6cb7); 
-            display: flex; align-items: center; justify-content: center; 
-            color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; 
-            border: 1px solid rgba(255,255,255,0.1);
+            width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #4b6cb7); 
+            display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1);
         }
         .channelItem.active .channel-icon { box-shadow: 0 0 8px var(--accent-glow); border-color: var(--accent); }
 
         .rightWrap { flex: 1; overflow-y: auto; padding: 16px; }
         .list{ display:flex; flex-direction:column; gap:12px; }
-        .row{ 
-            display:grid; grid-template-columns: 160px 1fr; gap:14px; border:1px solid var(--line); 
-            background: rgba(255,255,255,0.02); border-radius:12px; overflow:hidden; cursor:pointer; 
-            transition: 0.2s; 
-        }
+        .row{ display:grid; grid-template-columns: 160px 1fr; gap:14px; border:1px solid var(--line); background: rgba(255,255,255,0.02); border-radius:12px; overflow:hidden; cursor:pointer; transition: 0.2s; }
         .row:hover { border-color: var(--line2); background: rgba(255,255,255,0.05); transform: translateX(2px); }
         .rowThumb{ width:100%; height:90px; background:#000; object-fit:cover; display:block; }
         .rowMeta{ padding:12px; display:flex; flex-direction:column; gap:6px; min-width:0; }
 
         .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.8); backdrop-filter: blur(8px); display:none; align-items:center; justify-content:center; padding:20px; z-index:9999; }
         .modalOverlay.open{ display:flex; }
-        .modal { 
-            width: min(1400px, 95vw); max-height: 90vh; overflow: hidden; border-radius: 20px; 
-            border: 1px solid var(--line2); background: #161618; box-shadow: 0 30px 80px rgba(0,0,0,0.8); 
-            display: grid; grid-template-columns: 350px 1fr; 
-        }
+        .modal { width: min(1400px, 95vw); max-height: 90vh; overflow: hidden; border-radius: 20px; border: 1px solid var(--line2); background: #161618; box-shadow: 0 30px 80px rgba(0,0,0,0.8); display: grid; grid-template-columns: 350px 1fr; }
         .modalLeft { border-right: 1px solid var(--line); padding: 24px; background: rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
         .modalThumb { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: contain; background: #000; border-radius: 12px; border: 1px solid var(--line); }
         .modalRight { padding: 24px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
@@ -274,86 +200,10 @@
             .modal.shorts-mode .modalRight { order: 2; background: #000; display: flex; align-items: center; justify-content: center; }
         }
    
-    /* 1. 보기 모드 토글 버튼 디자인 복구 */
-.viewToggle { 
-    display: inline-flex; 
-    border: 1px solid var(--line); 
-    background: rgba(255, 255, 255, 0.03); 
-    border-radius: 12px; 
-    overflow: hidden; 
-    padding: 3px;
-    gap: 4px;
-}
-.viewToggle button { 
-    border: 0; 
-    background: transparent; 
-    color: var(--muted); 
-    padding: 8px 14px; 
-    font-size: 13px; 
-    font-weight: 700; 
-    cursor: pointer; 
-    font-family: inherit; 
-    border-radius: 9px;
-    transition: 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.viewToggle button:hover {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.05);
-}
-.viewToggle button.active { 
-    background: var(--accent) !important; 
-    color: #fff !important; 
-    box-shadow: 0 4px 12px var(--accent-glow);
-}
-
-/* 2. 장르 그룹 및 상단 고정(Sticky) 헤더 스타일 */
-.genreGroup { 
-    border: 1px solid var(--line); 
-    border-radius: 14px; 
-    overflow: hidden; 
-    margin-bottom: 8px; 
-    background: rgba(0,0,0,0.1); 
-}
-.genreHead { 
-    width: 100%; 
-    border: 0; 
-    background: #1a1a1c; 
-    color: #fff; 
-    padding: 12px 14px; 
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between; 
-    gap: 10px; 
-    font-size: 13px; 
-    font-weight: 700; 
-    transition: 0.2s;
-    position: sticky; 
-    top: 0; 
-    z-index: 10; 
-    border-bottom: 1px solid var(--line);
-}
-.genreHead:hover { 
-    background: #252528; 
-}
-.genreBody { 
-    padding: 4px 8px 12px 14px; 
-    border-top: 1px solid var(--line); 
-    display: none; 
-}
-.genreGroup.active { 
-    border-color: var(--line2); 
-    background: rgba(255, 255, 255, 0.03); 
-}
-.genreGroup.active .genreHead {
-    color: var(--accent);
-}
-.genreGroup.active .genreBody { 
-    display: block; 
-}
+        .viewToggle { display: inline-flex; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); border-radius: 12px; overflow: hidden; padding: 3px; gap: 4px; }
+        .viewToggle button { border: 0; background: transparent; color: var(--muted); padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; border-radius: 9px; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .viewToggle button:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+        .viewToggle button.active { background: var(--accent) !important; color: #fff !important; box-shadow: 0 4px 12px var(--accent-glow); }
     </style>
 </head>
 <body>
@@ -381,17 +231,27 @@
             </div>
         </div>
         <div class="divider"></div>
+        
         <div class="filterTabs" id="filterTabs">
             <button class="tab active" data-tab="genre">장르</button>
             <button class="tab" data-tab="media">매체</button>
             <button class="tab" data-tab="format">포맷</button>
-            <button class="tab" data-tab="tag">TAG</button>
+            <button class="tab" data-tab="purpose">형식</button>
+            <button class="tab" data-tab="method">제작 방식</button>
+            <button class="tab" data-tab="cast">출연자</button>
+            <button class="tab" data-tab="tone">영상 톤</button>
+            <button class="tab" data-tab="content">콘텐츠</button>
         </div>
+        
         <div class="filterPanel">
             <div class="chips chipsPanel active" id="genreChips"></div>
             <div class="chips chipsPanel" id="mediaChips"></div>
             <div class="chips chipsPanel" id="formatChips"></div>
-            <div class="chips chipsPanel" id="tagChips"></div>
+            <div class="chips chipsPanel" id="purposeChips"></div>
+            <div class="chips chipsPanel" id="methodChips"></div>
+            <div class="chips chipsPanel" id="castChips"></div>
+            <div class="chips chipsPanel" id="toneChips"></div>
+            <div class="chips chipsPanel" id="contentChips"></div>
         </div>
     </div>
 
@@ -452,16 +312,23 @@
     <script>
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
-    const KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", tag: "TAG", date: "발행일" };
+    
+    // 🌟 KEY 객체에 purpose: "용도/유형"을 "형식"으로 수정 🌟
+    const KEY = { 
+        genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", 
+        content: "콘텐츠", method: "제작 방식", cast: "출연자", tone: "영상 톤", purpose: "형식", date: "발행일" 
+    };
 
-    let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseTags = [];
-    let activeGenre = null, activeMedia = null, activeFormat = null, activeTags = new Set();
+    let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], basePurposes = [], baseMethods = [], baseCasts = [], baseTones = [], baseContents = [];
+    let activeGenre = null, activeMedia = null, activeFormat = null, activePurpose = null, activeMethod = null, activeCast = null, activeTone = null, activeContents = new Set();
     let viewMode = "all", selectedChannel = null, showLikedOnly = false, sortMode = "date", renderLimit = 30;
     const RENDER_CHUNK = 30;
     const interactionsCache = new Map();
     const LS_NICK = "vra:nickname", LS_UID = "vra:userId", LS_LIKED = "vra:liked";
 
-    const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search"), resetBtn = document.getElementById("resetBtn"), viewAllBtn = document.getElementById("viewAllBtn"), viewDashBtn = document.getElementById("viewDashBtn"), genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), tagChipsEl = document.getElementById("tagChips"), leftNavEl = document.getElementById("leftNav"), rightTitleEl = document.getElementById("rightTitle"), rightListEl = document.getElementById("rightList"), modalOverlay = document.getElementById("modalOverlay"), mClose = document.getElementById("mClose"), mThumb = document.getElementById("mThumb"), mTitle = document.getElementById("mTitle"), mSub = document.getElementById("mSub"), mLink = document.getElementById("mLink"), mCopyBtn = document.getElementById("mCopyBtn"), mCounts = document.getElementById("mCounts"), mLikeBtn = document.getElementById("mLikeBtn"), mLikeCnt = document.getElementById("mLikeCnt"), mList = document.getElementById("mList"), mNick = document.getElementById("mNick"), mMemo = document.getElementById("mMemo"), mSend = document.getElementById("mSend"), mVideoPlayer = document.getElementById("mVideoPlayer"), mIframe = document.getElementById("mIframe"), mPipBtn = document.getElementById("mPipBtn"), mShareBtn = document.getElementById("mShareBtn");
+    const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search"), resetBtn = document.getElementById("resetBtn"), viewAllBtn = document.getElementById("viewAllBtn"), viewDashBtn = document.getElementById("viewDashBtn");
+    const genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), purposeChipsEl = document.getElementById("purposeChips"), methodChipsEl = document.getElementById("methodChips"), castChipsEl = document.getElementById("castChips"), toneChipsEl = document.getElementById("toneChips"), contentChipsEl = document.getElementById("contentChips");
+    const leftNavEl = document.getElementById("leftNav"), rightTitleEl = document.getElementById("rightTitle"), rightListEl = document.getElementById("rightList"), modalOverlay = document.getElementById("modalOverlay"), mClose = document.getElementById("mClose"), mThumb = document.getElementById("mThumb"), mTitle = document.getElementById("mTitle"), mSub = document.getElementById("mSub"), mLink = document.getElementById("mLink"), mCopyBtn = document.getElementById("mCopyBtn"), mCounts = document.getElementById("mCounts"), mLikeBtn = document.getElementById("mLikeBtn"), mLikeCnt = document.getElementById("mLikeCnt"), mList = document.getElementById("mList"), mNick = document.getElementById("mNick"), mMemo = document.getElementById("mMemo"), mSend = document.getElementById("mSend"), mVideoPlayer = document.getElementById("mVideoPlayer"), mIframe = document.getElementById("mIframe"), mPipBtn = document.getElementById("mPipBtn"), mShareBtn = document.getElementById("mShareBtn");
     
     const sortDateBtn = document.getElementById("sortDateBtn");
     const sortUpdateBtn = document.getElementById("sortUpdateBtn");
@@ -522,7 +389,28 @@
 
     function renderChipGroup(container, labelAll, baseList, countMap, activeState, onPick, isMulti = false) { container.innerHTML = ""; const isAllActive = isMulti ? activeState.size === 0 : activeState === null; const allChip = document.createElement("div"); allChip.className = "chip" + (isAllActive ? " active" : ""); allChip.textContent = labelAll; allChip.onclick = () => onPick(null); container.appendChild(allChip); baseList.forEach(val => { const isActive = isMulti ? activeState.has(val) : activeState === val; const chip = document.createElement("div"); chip.className = "chip" + (isActive ? " active" : ""); chip.innerHTML = `${escapeHTML(val)} <span class="count">${countMap.get(val)||0}</span>`; chip.onclick = () => onPick(val); container.appendChild(chip); }); }
     
-    function updateChipsUI(filtered) { const gMap = new Map(), mMap = new Map(), fMap = new Map(), tMap = new Map(); allData.forEach(it => { gMap.set(it[KEY.genre], (gMap.get(it[KEY.genre])||0)+1); mMap.set(it[KEY.media], (mMap.get(it[KEY.media])||0)+1); fMap.set(it[KEY.format], (fMap.get(it[KEY.format])||0)+1); }); filtered.forEach(it => splitTags(it[KEY.tag]).forEach(t => tMap.set(t, (tMap.get(t)||0)+1))); renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => { activeGenre = v; render(true); }); renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => { activeMedia = v; render(true); }); renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => { activeFormat = v; render(true); }); renderChipGroup(tagChipsEl, "All", baseTags, tMap, activeTags, (v) => { if (v === null) activeTags.clear(); else activeTags.has(v) ? activeTags.delete(v) : activeTags.add(v); render(true); }, true); }
+    function updateChipsUI(filtered) { 
+        const gMap = new Map(), mMap = new Map(), fMap = new Map(), pMap = new Map(), methMap = new Map(), cMap = new Map(), tnMap = new Map(), cntMap = new Map(); 
+        allData.forEach(it => { 
+            gMap.set(it[KEY.genre], (gMap.get(it[KEY.genre])||0)+1); 
+            mMap.set(it[KEY.media], (mMap.get(it[KEY.media])||0)+1); 
+            fMap.set(it[KEY.format], (fMap.get(it[KEY.format])||0)+1); 
+            pMap.set(it[KEY.purpose], (pMap.get(it[KEY.purpose])||0)+1); 
+            methMap.set(it[KEY.method], (methMap.get(it[KEY.method])||0)+1); 
+            cMap.set(it[KEY.cast], (cMap.get(it[KEY.cast])||0)+1); 
+            tnMap.set(it[KEY.tone], (tnMap.get(it[KEY.tone])||0)+1); 
+        }); 
+        filtered.forEach(it => splitTags(it[KEY.content]).forEach(t => cntMap.set(t, (cntMap.get(t)||0)+1))); 
+        
+        renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => { activeGenre = v; render(true); }); 
+        renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => { activeMedia = v; render(true); }); 
+        renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => { activeFormat = v; render(true); }); 
+        renderChipGroup(purposeChipsEl, "All", basePurposes, pMap, activePurpose, (v) => { activePurpose = v; render(true); }); 
+        renderChipGroup(methodChipsEl, "All", baseMethods, methMap, activeMethod, (v) => { activeMethod = v; render(true); }); 
+        renderChipGroup(castChipsEl, "All", baseCasts, cMap, activeCast, (v) => { activeCast = v; render(true); }); 
+        renderChipGroup(toneChipsEl, "All", baseTones, tnMap, activeTone, (v) => { activeTone = v; render(true); }); 
+        renderChipGroup(contentChipsEl, "All", baseContents, cntMap, activeContents, (v) => { if (v === null) activeContents.clear(); else activeContents.has(v) ? activeContents.delete(v) : activeContents.add(v); render(true); }, true); 
+    }
 
     function getChannelIcon(name) {
         const firstChar = name.trim().charAt(0).toUpperCase();
@@ -566,14 +454,18 @@
             const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true;
             const okMedia = activeMedia ? item[KEY.media] === activeMedia : true;
             const okFormat = activeFormat ? item[KEY.format] === activeFormat : true;
-            const okTag = activeTags.size === 0 ? true : [...activeTags].every(t => splitTags(item[KEY.tag]).includes(t));
+            const okPurpose = activePurpose ? item[KEY.purpose] === activePurpose : true;
+            const okMethod = activeMethod ? item[KEY.method] === activeMethod : true;
+            const okCast = activeCast ? item[KEY.cast] === activeCast : true;
+            const okTone = activeTone ? item[KEY.tone] === activeTone : true;
+            const okContent = activeContents.size === 0 ? true : [...activeContents].every(t => splitTags(item[KEY.content]).includes(t));
             
             let okLiked = true;
             if (showLikedOnly) {
                 const stat = interactionsCache.get(itemId);
                 okLiked = (stat && stat.likes > 0);
             }
-            return okSearch && okGenre && okMedia && okFormat && okTag && okLiked;
+            return okSearch && okGenre && okMedia && okFormat && okPurpose && okMethod && okCast && okTone && okContent && okLiked;
         });
 
         updateChipsUI(filtered);
@@ -599,7 +491,7 @@
             gridEl.innerHTML = sliced.map(it => {
                 const itemId = getItemId(it);
                 const isLikedState = isLiked(itemId);
-                const tagsHTML = splitTags(it[KEY.tag]).slice(0, 3).map(t => `<span class="mini-tag">#${escapeHTML(t)}</span>`).join("");
+                const tagsHTML = splitTags(it[KEY.content]).slice(0, 3).map(t => `<span class="mini-tag">#${escapeHTML(t)}</span>`).join("");
                 return `
                 <div class="card">
                     <div class="thumbWrap" onclick='openModalById("${itemId}")'>
@@ -726,7 +618,11 @@
             baseGenres = [...new Set(allData.map(i => (i[KEY.genre]||"").trim()).filter(Boolean))].sort();
             baseMedias = [...new Set(allData.map(i => (i[KEY.media]||"").trim()).filter(Boolean))].sort();
             baseFormats = [...new Set(allData.map(i => (i[KEY.format]||"").trim()).filter(Boolean))].sort();
-            baseTags = [...new Set(allData.flatMap(i => splitTags(i[KEY.tag])))].sort();
+            basePurposes = [...new Set(allData.map(i => (i[KEY.purpose]||"").trim()).filter(Boolean))].sort();
+            baseMethods = [...new Set(allData.map(i => (i[KEY.method]||"").trim()).filter(Boolean))].sort();
+            baseCasts = [...new Set(allData.map(i => (i[KEY.cast]||"").trim()).filter(Boolean))].sort();
+            baseTones = [...new Set(allData.map(i => (i[KEY.tone]||"").trim()).filter(Boolean))].sort();
+            baseContents = [...new Set(allData.flatMap(i => splitTags(i[KEY.content])))].sort();
             
             renderLeftNav(); 
             render(true);
@@ -749,8 +645,9 @@
     viewDashBtn.onclick = () => { viewMode = "dash"; viewDashBtn.classList.add("active"); viewAllBtn.classList.remove("active"); render(true); };
     
     resetBtn.onclick = () => { 
-        activeGenre = activeMedia = activeFormat = null; 
-        activeTags.clear(); 
+        activeGenre = activeMedia = activeFormat = activePurpose = activeMethod = activeCast = activeTone = null; 
+        activeContents.clear(); 
+        
         searchEl.value = ""; 
         showLikedOnly = false;
         sortMode = "date";
@@ -759,23 +656,9 @@
         render(true); 
     };
 
-    sortDateBtn.onclick = () => {
-        sortMode = "date";
-        updateSortButtons(sortDateBtn);
-        render(true);
-    };
-
-    sortUpdateBtn.onclick = () => {
-        sortMode = "update";
-        updateSortButtons(sortUpdateBtn);
-        render(true);
-    };
-
-    sortLikesBtn.onclick = () => {
-        sortMode = "likes";
-        updateSortButtons(sortLikesBtn);
-        render(true);
-    };
+    sortDateBtn.onclick = () => { sortMode = "date"; updateSortButtons(sortDateBtn); render(true); };
+    sortUpdateBtn.onclick = () => { sortMode = "update"; updateSortButtons(sortUpdateBtn); render(true); };
+    sortLikesBtn.onclick = () => { sortMode = "likes"; updateSortButtons(sortLikesBtn); render(true); };
 
     likedOnlyBtn.onclick = () => { 
         showLikedOnly = !showLikedOnly; 
