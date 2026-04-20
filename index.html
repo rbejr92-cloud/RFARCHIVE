@@ -81,7 +81,7 @@
         .filterPanel{ border:1px solid var(--line); background: rgba(0,0,0,0.1); border-radius:14px; padding:12px; }
         .chips{ display:flex; flex-wrap:wrap; gap:8px; }
         .chipsPanel{ display:none; }
-        .chipsPanel.active{ display:block; } /* 변경: 블록으로 변경하여 내부 행들 정렬 */
+        .chipsPanel.active{ display:flex; }
         
         .chip{ 
             padding:7px 12px; border-radius:999px; border:1px solid var(--line); 
@@ -199,7 +199,7 @@
             .modal.shorts-mode .modalLeft { order: 1; border-right: 1px solid var(--line); }
             .modal.shorts-mode .modalRight { order: 2; background: #000; display: flex; align-items: center; justify-content: center; }
         }
-    
+   
         .viewToggle { display: inline-flex; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); border-radius: 12px; overflow: hidden; padding: 3px; gap: 4px; }
         .viewToggle button { border: 0; background: transparent; color: var(--muted); padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; border-radius: 9px; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
         .viewToggle button:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
@@ -313,17 +313,15 @@
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
     
+    // 🌟 이미지에 맞게 KEY 매핑 변경 🌟
     const KEY = { 
         genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", 
         content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" 
     };
 
     let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseContents = [], baseStages = [], baseMethods = [], baseCasts = [], baseTones = [];
+    // 🌟 모든 카테고리를 Set으로 관리하여 다중 선택 지원 🌟
     let activeGenre = new Set(), activeMedia = new Set(), activeFormat = new Set(), activeContents = new Set(), activeStages = new Set(), activeMethod = new Set(), activeCast = new Set(), activeTone = new Set();
-    
-    // 추가된 변수
-    let activeCastRole = "전체"; 
-    
     let viewMode = "all", selectedChannel = null, showLikedOnly = false, sortMode = "date", renderLimit = 30;
     const RENDER_CHUNK = 30;
     const interactionsCache = new Map();
@@ -352,12 +350,6 @@
     function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
     function sortByDateDesc(data) { return [...data].sort((a, b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-'))); }
     
-    // 추가: 괄호안의 직업을 추출하는 함수
-    function getRole(tag) {
-        const match = tag.match(/\(([^)]+)\)/);
-        return match ? match[1] : "기타";
-    }
-
     function getYoutubeID(url) {
         try {
             const u = new URL(url);
@@ -414,6 +406,7 @@
         }); 
     }
     
+    // 🌟 모든 카테고리에 splitTags 적용 및 맵 업데이트 🌟
     function updateChipsUI(filtered) { 
         const gMap = new Map(), mMap = new Map(), fMap = new Map(), cntMap = new Map(), stgMap = new Map(), methMap = new Map(), cMap = new Map(), tnMap = new Map(); 
         
@@ -440,52 +433,8 @@
         renderChipGroup(contentChipsEl, "All", baseContents, cntMap, activeContents, (v) => toggleActive(activeContents, v)); 
         renderChipGroup(stageChipsEl, "All", baseStages, stgMap, activeStages, (v) => toggleActive(activeStages, v)); 
         renderChipGroup(methodChipsEl, "All", baseMethods, methMap, activeMethod, (v) => toggleActive(activeMethod, v)); 
+        renderChipGroup(castChipsEl, "All", baseCasts, cMap, activeCast, (v) => toggleActive(activeCast, v)); 
         renderChipGroup(toneChipsEl, "All", baseTones, tnMap, activeTone, (v) => toggleActive(activeTone, v)); 
-
-        // [수정된 출연자 로직]
-        const roles = ["전체", ...new Set(baseCasts.map(getRole))];
-        castChipsEl.innerHTML = ""; 
-
-        // 1. 직업군 필터 버튼 행 생성
-        const roleRow = document.createElement("div");
-        roleRow.className = "chips";
-        roleRow.style.marginBottom = "10px";
-        roleRow.style.paddingBottom = "10px";
-        roleRow.style.borderBottom = "1px solid var(--line)";
-        
-        roles.forEach(role => {
-            const btn = document.createElement("div");
-            btn.className = "chip" + (activeCastRole === role ? " active" : "");
-            btn.textContent = role;
-            btn.onclick = () => { activeCastRole = role; render(false); };
-            roleRow.appendChild(btn);
-        });
-        castChipsEl.appendChild(roleRow);
-
-        // 2. 필터링된 출연자 칩 생성
-        const castListContainer = document.createElement("div");
-        castListContainer.className = "chips";
-        
-        const filteredBaseCasts = activeCastRole === "전체" 
-            ? baseCasts 
-            : baseCasts.filter(c => getRole(c) === activeCastRole);
-
-        filteredBaseCasts.forEach(val => {
-            const isActive = activeCast.has(val);
-            const count = cMap.get(val) || 0;
-            // 0개라도 선택되어 있으면 보여줌
-            if(count === 0 && !isActive) return; 
-
-            const chip = document.createElement("div");
-            chip.className = "chip" + (isActive ? " active" : "");
-            chip.innerHTML = `${escapeHTML(val)} <span class="count">${count}</span>`;
-            chip.onclick = () => {
-                activeCast.has(val) ? activeCast.delete(val) : activeCast.add(val);
-                render(true);
-            };
-            castListContainer.appendChild(chip);
-        });
-        castChipsEl.appendChild(castListContainer);
     }
 
     function getChannelIcon(name) {
@@ -522,11 +471,13 @@
     async function render(resetPagination = false){
         if (resetPagination) renderLimit = RENDER_CHUNK;
         
+        // 🌟 다중 선택 필터링 로직 (AND 조건) 🌟
         const filtered = allData.filter(item => {
             const q = searchEl.value.toLowerCase();
             const itemId = getItemId(item);
             
             const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
+            
             const checkTags = (activeSet, key) => activeSet.size === 0 ? true : [...activeSet].every(t => splitTags(item[key]).includes(t));
 
             const okGenre = checkTags(activeGenre, KEY.genre);
@@ -609,7 +560,7 @@
         if (item) openModalForItem(item);
     }
 
-    async function openModalForItem(item){
+   async function openModalForItem(item){
         const itemId = getItemId(item); 
         modalOverlay.dataset.itemid = itemId;
         mTitle.textContent = item[KEY.title]; 
@@ -623,6 +574,8 @@
         const isInstagram = url.includes("instagram.com");
         const isShorts = url.includes("/shorts/");
 
+        // --- 🌟 여기서부터 수정된 부분 🌟 ---
+        // 영상을 열 때마다 플레이어 영역을 초기화하고 iframe을 새로 생성합니다.
         mVideoPlayer.innerHTML = '<iframe id="dynamicIframe" width="100%" height="100%" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="border:0;"></iframe>';
         const currentIframe = document.getElementById("dynamicIframe");
 
@@ -641,6 +594,7 @@
         } else {
             mVideoPlayer.style.display = "none";
         }
+        // --- 🌟 여기까지 🌟 ---
 
         const modalContainer = modalOverlay.querySelector('.modal');
         const memoSection = document.querySelector('.memoList');
@@ -665,8 +619,10 @@
         mList.innerHTML = data.memos.map(m => `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px;"><strong style="color:#fff;">${escapeHTML(m.nickname)}</strong>: ${escapeHTML(m.memo)}</div>`).join("");
     }
 
+    // --- 🌟 closeModal 함수도 수정해 주세요 🌟 ---
     function closeModal() {
         modalOverlay.classList.remove("open");
+        // 모달을 닫을 때 백그라운드에서 소리가 나지 않도록 비디오 플레이어 영역을 완전히 비워줍니다.
         mVideoPlayer.innerHTML = ""; 
     }
 
@@ -694,6 +650,7 @@
             const res = await fetch(SHEET_URL);
             allData = (await res.json()).filter(x => x && (x[KEY.url] || x[KEY.title]));
             
+            // 🌟 모든 항목에 splitTags 적용하여 base 배열 생성 🌟
             baseGenres = [...new Set(allData.flatMap(i => splitTags(i[KEY.genre])))].sort();
             baseMedias = [...new Set(allData.flatMap(i => splitTags(i[KEY.media])))].sort();
             baseFormats = [...new Set(allData.flatMap(i => splitTags(i[KEY.format])))].sort();
@@ -726,7 +683,6 @@
     resetBtn.onclick = () => { 
         activeGenre.clear(); activeMedia.clear(); activeFormat.clear(); activeContents.clear(); 
         activeStages.clear(); activeMethod.clear(); activeCast.clear(); activeTone.clear(); 
-        activeCastRole = "전체"; // 추가: 초기화 시 Role도 초기화
         
         searchEl.value = ""; 
         showLikedOnly = false;
@@ -759,6 +715,6 @@
     });
 
     init();
-    </script>
+</script>
 </body>
 </html>
