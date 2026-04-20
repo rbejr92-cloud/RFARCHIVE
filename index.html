@@ -237,8 +237,8 @@
             <button class="tab" data-tab="media">매체</button>
             <button class="tab" data-tab="format">포맷</button>
             <button class="tab" data-tab="content">컨텐츠</button>
+            <button class="tab" data-tab="stage">무대 연출</button>
             <button class="tab" data-tab="method">제작 방식</button>
-            <button class="tab" data-tab="purpose">형식</button>
             <button class="tab" data-tab="cast">출연자</button>
             <button class="tab" data-tab="tone">영상 톤</button>
         </div>
@@ -247,11 +247,11 @@
             <div class="chips chipsPanel active" id="genreChips"></div>
             <div class="chips chipsPanel" id="mediaChips"></div>
             <div class="chips chipsPanel" id="formatChips"></div>
-            <div class="chips chipsPanel" id="purposeChips"></div>
+            <div class="chips chipsPanel" id="contentChips"></div>
+            <div class="chips chipsPanel" id="stageChips"></div>
             <div class="chips chipsPanel" id="methodChips"></div>
             <div class="chips chipsPanel" id="castChips"></div>
             <div class="chips chipsPanel" id="toneChips"></div>
-            <div class="chips chipsPanel" id="contentChips"></div>
         </div>
     </div>
 
@@ -312,20 +312,23 @@
     <script>
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
+    
+    // 🌟 이미지에 맞게 KEY 매핑 변경 🌟
     const KEY = { 
         genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", 
-        content: "컨텐츠", method: "제작 방식", cast: "출연자", tone: "영상 톤", purpose: "형식", date: "발행일" 
+        content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" 
     };
 
-    let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], basePurposes = [], baseMethods = [], baseCasts = [], baseTones = [], baseContents = [];
-    let activeGenre = null, activeMedia = null, activeFormat = null, activePurpose = null, activeMethod = null, activeCast = null, activeTone = null, activeContents = new Set();
+    let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseContents = [], baseStages = [], baseMethods = [], baseCasts = [], baseTones = [];
+    // 🌟 모든 카테고리를 Set으로 관리하여 다중 선택 지원 🌟
+    let activeGenre = new Set(), activeMedia = new Set(), activeFormat = new Set(), activeContents = new Set(), activeStages = new Set(), activeMethod = new Set(), activeCast = new Set(), activeTone = new Set();
     let viewMode = "all", selectedChannel = null, showLikedOnly = false, sortMode = "date", renderLimit = 30;
     const RENDER_CHUNK = 30;
     const interactionsCache = new Map();
     const LS_NICK = "vra:nickname", LS_UID = "vra:userId", LS_LIKED = "vra:liked";
 
     const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search"), resetBtn = document.getElementById("resetBtn"), viewAllBtn = document.getElementById("viewAllBtn"), viewDashBtn = document.getElementById("viewDashBtn");
-    const genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), purposeChipsEl = document.getElementById("purposeChips"), methodChipsEl = document.getElementById("methodChips"), castChipsEl = document.getElementById("castChips"), toneChipsEl = document.getElementById("toneChips"), contentChipsEl = document.getElementById("contentChips");
+    const genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), contentChipsEl = document.getElementById("contentChips"), stageChipsEl = document.getElementById("stageChips"), methodChipsEl = document.getElementById("methodChips"), castChipsEl = document.getElementById("castChips"), toneChipsEl = document.getElementById("toneChips");
     const leftNavEl = document.getElementById("leftNav"), rightTitleEl = document.getElementById("rightTitle"), rightListEl = document.getElementById("rightList"), modalOverlay = document.getElementById("modalOverlay"), mClose = document.getElementById("mClose"), mThumb = document.getElementById("mThumb"), mTitle = document.getElementById("mTitle"), mSub = document.getElementById("mSub"), mLink = document.getElementById("mLink"), mCopyBtn = document.getElementById("mCopyBtn"), mCounts = document.getElementById("mCounts"), mLikeBtn = document.getElementById("mLikeBtn"), mLikeCnt = document.getElementById("mLikeCnt"), mList = document.getElementById("mList"), mNick = document.getElementById("mNick"), mMemo = document.getElementById("mMemo"), mSend = document.getElementById("mSend"), mVideoPlayer = document.getElementById("mVideoPlayer"), mIframe = document.getElementById("mIframe"), mPipBtn = document.getElementById("mPipBtn"), mShareBtn = document.getElementById("mShareBtn");
     
     const sortDateBtn = document.getElementById("sortDateBtn");
@@ -385,29 +388,53 @@
 
     function buildGenreChannelIndex(items){ const genreMap = new Map(); items.forEach(it => { const g = (it[KEY.genre] || "기타").trim(), c = (it[KEY.channel] || "미분류").trim(); if (!genreMap.has(g)) genreMap.set(g, new Map()); const cm = genreMap.get(g); cm.set(c, (cm.get(c) || 0) + 1); }); return [...genreMap.entries()].map(([g, cm]) => ({ g, total: [...cm.values()].reduce((a,b)=>a+b,0), channels: [...cm.entries()].map(([c, cnt]) => ({ c, cnt })).sort((a,b)=> a.c.localeCompare(b.c, "ko")) })).sort((a,b)=> b.total - a.total); }
 
-    function renderChipGroup(container, labelAll, baseList, countMap, activeState, onPick, isMulti = false) { container.innerHTML = ""; const isAllActive = isMulti ? activeState.size === 0 : activeState === null; const allChip = document.createElement("div"); allChip.className = "chip" + (isAllActive ? " active" : ""); allChip.textContent = labelAll; allChip.onclick = () => onPick(null); container.appendChild(allChip); baseList.forEach(val => { const isActive = isMulti ? activeState.has(val) : activeState === val; const chip = document.createElement("div"); chip.className = "chip" + (isActive ? " active" : ""); chip.innerHTML = `${escapeHTML(val)} <span class="count">${countMap.get(val)||0}</span>`; chip.onclick = () => onPick(val); container.appendChild(chip); }); }
-    
-    function updateChipsUI(filtered) { 
-        const gMap = new Map(), mMap = new Map(), fMap = new Map(), pMap = new Map(), methMap = new Map(), cMap = new Map(), tnMap = new Map(), cntMap = new Map(); 
-        allData.forEach(it => { 
-            gMap.set(it[KEY.genre], (gMap.get(it[KEY.genre])||0)+1); 
-            mMap.set(it[KEY.media], (mMap.get(it[KEY.media])||0)+1); 
-            fMap.set(it[KEY.format], (fMap.get(it[KEY.format])||0)+1); 
-            pMap.set(it[KEY.purpose], (pMap.get(it[KEY.purpose])||0)+1); 
-            methMap.set(it[KEY.method], (methMap.get(it[KEY.method])||0)+1); 
-            cMap.set(it[KEY.cast], (cMap.get(it[KEY.cast])||0)+1); 
-            tnMap.set(it[KEY.tone], (tnMap.get(it[KEY.tone])||0)+1); 
+    function renderChipGroup(container, labelAll, baseList, countMap, activeState, onPick) { 
+        container.innerHTML = ""; 
+        const isAllActive = activeState.size === 0; 
+        const allChip = document.createElement("div"); 
+        allChip.className = "chip" + (isAllActive ? " active" : ""); 
+        allChip.textContent = labelAll; 
+        allChip.onclick = () => onPick(null); 
+        container.appendChild(allChip); 
+        baseList.forEach(val => { 
+            const isActive = activeState.has(val); 
+            const chip = document.createElement("div"); 
+            chip.className = "chip" + (isActive ? " active" : ""); 
+            chip.innerHTML = `${escapeHTML(val)} <span class="count">${countMap.get(val)||0}</span>`; 
+            chip.onclick = () => onPick(val); 
+            container.appendChild(chip); 
         }); 
-        filtered.forEach(it => splitTags(it[KEY.content]).forEach(t => cntMap.set(t, (cntMap.get(t)||0)+1))); 
+    }
+    
+    // 🌟 모든 카테고리에 splitTags 적용 및 맵 업데이트 🌟
+    function updateChipsUI(filtered) { 
+        const gMap = new Map(), mMap = new Map(), fMap = new Map(), cntMap = new Map(), stgMap = new Map(), methMap = new Map(), cMap = new Map(), tnMap = new Map(); 
         
-        renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => { activeGenre = v; render(true); }); 
-        renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => { activeMedia = v; render(true); }); 
-        renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => { activeFormat = v; render(true); }); 
-        renderChipGroup(purposeChipsEl, "All", basePurposes, pMap, activePurpose, (v) => { activePurpose = v; render(true); }); 
-        renderChipGroup(methodChipsEl, "All", baseMethods, methMap, activeMethod, (v) => { activeMethod = v; render(true); }); 
-        renderChipGroup(castChipsEl, "All", baseCasts, cMap, activeCast, (v) => { activeCast = v; render(true); }); 
-        renderChipGroup(toneChipsEl, "All", baseTones, tnMap, activeTone, (v) => { activeTone = v; render(true); }); 
-        renderChipGroup(contentChipsEl, "All", baseContents, cntMap, activeContents, (v) => { if (v === null) activeContents.clear(); else activeContents.has(v) ? activeContents.delete(v) : activeContents.add(v); render(true); }, true); 
+        filtered.forEach(it => {
+            splitTags(it[KEY.genre]).forEach(t => gMap.set(t, (gMap.get(t)||0)+1));
+            splitTags(it[KEY.media]).forEach(t => mMap.set(t, (mMap.get(t)||0)+1));
+            splitTags(it[KEY.format]).forEach(t => fMap.set(t, (fMap.get(t)||0)+1));
+            splitTags(it[KEY.content]).forEach(t => cntMap.set(t, (cntMap.get(t)||0)+1));
+            splitTags(it[KEY.stage]).forEach(t => stgMap.set(t, (stgMap.get(t)||0)+1));
+            splitTags(it[KEY.method]).forEach(t => methMap.set(t, (methMap.get(t)||0)+1));
+            splitTags(it[KEY.cast]).forEach(t => cMap.set(t, (cMap.get(t)||0)+1));
+            splitTags(it[KEY.tone]).forEach(t => tnMap.set(t, (tnMap.get(t)||0)+1));
+        });
+        
+        const toggleActive = (stateSet, val) => {
+            if (val === null) stateSet.clear();
+            else stateSet.has(val) ? stateSet.delete(val) : stateSet.add(val);
+            render(true);
+        };
+
+        renderChipGroup(genreChipsEl, "All", baseGenres, gMap, activeGenre, (v) => toggleActive(activeGenre, v)); 
+        renderChipGroup(mediaChipsEl, "All", baseMedias, mMap, activeMedia, (v) => toggleActive(activeMedia, v)); 
+        renderChipGroup(formatChipsEl, "All", baseFormats, fMap, activeFormat, (v) => toggleActive(activeFormat, v)); 
+        renderChipGroup(contentChipsEl, "All", baseContents, cntMap, activeContents, (v) => toggleActive(activeContents, v)); 
+        renderChipGroup(stageChipsEl, "All", baseStages, stgMap, activeStages, (v) => toggleActive(activeStages, v)); 
+        renderChipGroup(methodChipsEl, "All", baseMethods, methMap, activeMethod, (v) => toggleActive(activeMethod, v)); 
+        renderChipGroup(castChipsEl, "All", baseCasts, cMap, activeCast, (v) => toggleActive(activeCast, v)); 
+        renderChipGroup(toneChipsEl, "All", baseTones, tnMap, activeTone, (v) => toggleActive(activeTone, v)); 
     }
 
     function getChannelIcon(name) {
@@ -444,26 +471,30 @@
     async function render(resetPagination = false){
         if (resetPagination) renderLimit = RENDER_CHUNK;
         
+        // 🌟 다중 선택 필터링 로직 (AND 조건) 🌟
         const filtered = allData.filter(item => {
             const q = searchEl.value.toLowerCase();
             const itemId = getItemId(item);
             
             const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
-            const okGenre = activeGenre ? item[KEY.genre] === activeGenre : true;
-            const okMedia = activeMedia ? item[KEY.media] === activeMedia : true;
-            const okFormat = activeFormat ? item[KEY.format] === activeFormat : true;
-            const okPurpose = activePurpose ? item[KEY.purpose] === activePurpose : true;
-            const okMethod = activeMethod ? item[KEY.method] === activeMethod : true;
-            const okCast = activeCast ? item[KEY.cast] === activeCast : true;
-            const okTone = activeTone ? item[KEY.tone] === activeTone : true;
-            const okContent = activeContents.size === 0 ? true : [...activeContents].every(t => splitTags(item[KEY.content]).includes(t));
+            
+            const checkTags = (activeSet, key) => activeSet.size === 0 ? true : [...activeSet].every(t => splitTags(item[key]).includes(t));
+
+            const okGenre = checkTags(activeGenre, KEY.genre);
+            const okMedia = checkTags(activeMedia, KEY.media);
+            const okFormat = checkTags(activeFormat, KEY.format);
+            const okContent = checkTags(activeContents, KEY.content);
+            const okStage = checkTags(activeStages, KEY.stage);
+            const okMethod = checkTags(activeMethod, KEY.method);
+            const okCast = checkTags(activeCast, KEY.cast);
+            const okTone = checkTags(activeTone, KEY.tone);
             
             let okLiked = true;
             if (showLikedOnly) {
                 const stat = interactionsCache.get(itemId);
                 okLiked = (stat && stat.likes > 0);
             }
-            return okSearch && okGenre && okMedia && okFormat && okPurpose && okMethod && okCast && okTone && okContent && okLiked;
+            return okSearch && okGenre && okMedia && okFormat && okContent && okStage && okMethod && okCast && okTone && okLiked;
         });
 
         updateChipsUI(filtered);
@@ -613,14 +644,15 @@
             const res = await fetch(SHEET_URL);
             allData = (await res.json()).filter(x => x && (x[KEY.url] || x[KEY.title]));
             
-            baseGenres = [...new Set(allData.map(i => (i[KEY.genre]||"").trim()).filter(Boolean))].sort();
-            baseMedias = [...new Set(allData.map(i => (i[KEY.media]||"").trim()).filter(Boolean))].sort();
-            baseFormats = [...new Set(allData.map(i => (i[KEY.format]||"").trim()).filter(Boolean))].sort();
-            basePurposes = [...new Set(allData.map(i => (i[KEY.purpose]||"").trim()).filter(Boolean))].sort();
-            baseMethods = [...new Set(allData.map(i => (i[KEY.method]||"").trim()).filter(Boolean))].sort();
-            baseCasts = [...new Set(allData.map(i => (i[KEY.cast]||"").trim()).filter(Boolean))].sort();
-            baseTones = [...new Set(allData.map(i => (i[KEY.tone]||"").trim()).filter(Boolean))].sort();
+            // 🌟 모든 항목에 splitTags 적용하여 base 배열 생성 🌟
+            baseGenres = [...new Set(allData.flatMap(i => splitTags(i[KEY.genre])))].sort();
+            baseMedias = [...new Set(allData.flatMap(i => splitTags(i[KEY.media])))].sort();
+            baseFormats = [...new Set(allData.flatMap(i => splitTags(i[KEY.format])))].sort();
             baseContents = [...new Set(allData.flatMap(i => splitTags(i[KEY.content])))].sort();
+            baseStages = [...new Set(allData.flatMap(i => splitTags(i[KEY.stage])))].sort();
+            baseMethods = [...new Set(allData.flatMap(i => splitTags(i[KEY.method])))].sort();
+            baseCasts = [...new Set(allData.flatMap(i => splitTags(i[KEY.cast])))].sort();
+            baseTones = [...new Set(allData.flatMap(i => splitTags(i[KEY.tone])))].sort();
             
             renderLeftNav(); 
             render(true);
@@ -643,8 +675,8 @@
     viewDashBtn.onclick = () => { viewMode = "dash"; viewDashBtn.classList.add("active"); viewAllBtn.classList.remove("active"); render(true); };
     
     resetBtn.onclick = () => { 
-        activeGenre = activeMedia = activeFormat = activePurpose = activeMethod = activeCast = activeTone = null; 
-        activeContents.clear(); 
+        activeGenre.clear(); activeMedia.clear(); activeFormat.clear(); activeContents.clear(); 
+        activeStages.clear(); activeMethod.clear(); activeCast.clear(); activeTone.clear(); 
         
         searchEl.value = ""; 
         showLikedOnly = false;
