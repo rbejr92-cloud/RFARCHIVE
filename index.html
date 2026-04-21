@@ -81,7 +81,10 @@
         .filterPanel{ border:1px solid var(--line); background: rgba(0,0,0,0.1); border-radius:14px; padding:12px; }
         .chips{ display:flex; flex-wrap:wrap; gap:8px; }
         .chipsPanel{ display:none; }
-        .chipsPanel.active{ display:flex; flex-direction: column; }
+        /* 가로 정렬 복구 */
+        .chipsPanel.active { display: flex; flex-wrap: wrap; flex-direction: row; }
+        /* 출연자 영역만 세로 정렬 */
+        #castChips.active { display: flex; flex-direction: column; }
         
         .chip{ 
             padding:7px 12px; border-radius:999px; border:1px solid var(--line); 
@@ -320,7 +323,6 @@
     let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseContents = [], baseStages = [], baseMethods = [], baseCasts = [], baseTones = [];
     let activeGenre = new Set(), activeMedia = new Set(), activeFormat = new Set(), activeContents = new Set(), activeStages = new Set(), activeMethod = new Set(), activeCast = new Set(), activeTone = new Set();
     
-    // 출연자 상태 관리
     let activeCastRole = "전체"; 
     
     let viewMode = "all", selectedChannel = null, showLikedOnly = false, sortMode = "date", renderLimit = 30;
@@ -343,19 +345,15 @@
     function isLiked(itemId){ return !!getLikedMap()[itemId]; }
     function setLikedState(itemId, liked){ const m = getLikedMap(); if (liked) m[itemId] = true; else delete m[itemId]; localStorage.setItem("vra:liked", JSON.stringify(m)); }
     function debounce(func, delay) { let timer; return function(...args) { clearTimeout(timer); timer = setTimeout(() => func.apply(this, args), delay); }; }
-    function showToast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 3000); }
     function sortByDateDesc(data) { return [...data].sort((a, b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-'))); }
     
-    // 출연자 그룹화 로직 (요청사항 반영)
     function getCastInfo(tag) {
         const match = tag.match(/^(.*?)\(([^)]+)\)$/);
         if (match) {
             let role = match[2];
-            // 1. 직원 그룹화
             if (['개발자', '마케터', '사업'].includes(role)) role = '직원';
             return { name: match[1], category: role };
         }
-        // 2. 괄호 없는 태그는 그 자체를 대분류로 사용
         return { name: tag, category: tag };
     }
 
@@ -381,7 +379,6 @@
     }
     
     function updateChipsUI(filtered) { 
-        // 기존 칩 계산 로직
         const gMap = new Set(), mMap = new Set(), fMap = new Set(), cntMap = new Set(), stgMap = new Set(), methMap = new Set(), tnMap = new Set();
         filtered.forEach(it => {
             splitTags(it[KEY.genre]).forEach(t => gMap.add(t));
@@ -402,9 +399,8 @@
         renderChipGroup(methodChipsEl, "All", baseMethods.filter(x=>methMap.has(x)), activeMethod, (v) => toggleActive(activeMethod, v));
         renderChipGroup(toneChipsEl, "All", baseTones.filter(x=>tnMap.has(x)), activeTone, (v) => toggleActive(activeTone, v));
 
-        // [출연자 로직 2단계 계층형]
         castChipsEl.innerHTML = "";
-        const castMap = new Map(); // Category -> Set(Name)
+        const castMap = new Map();
         baseCasts.forEach(tag => {
             const { name, category } = getCastInfo(tag);
             if (!castMap.has(category)) castMap.set(category, new Set());
@@ -412,8 +408,6 @@
         });
 
         const categories = ["전체", ...Array.from(castMap.keys()).sort()];
-        
-        // 1. 카테고리 행
         const catRow = document.createElement("div"); catRow.className = "chips"; catRow.style.marginBottom = "10px";
         categories.forEach(cat => {
             const btn = document.createElement("div"); btn.className = "chip" + (activeCastRole === cat ? " active" : ""); btn.textContent = cat;
@@ -422,7 +416,6 @@
         });
         castChipsEl.appendChild(catRow);
 
-        // 2. 세부 이름 행
         if (activeCastRole !== "전체") {
             const names = Array.from(castMap.get(activeCastRole) || []);
             const nameRow = document.createElement("div"); nameRow.className = "chips";
@@ -444,7 +437,6 @@
             const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
             const checkTags = (activeSet, key) => activeSet.size === 0 ? true : [...activeSet].every(t => splitTags(item[key]).includes(t));
             
-            // 출연자 필터 (2단계)
             let okCast = true;
             if (activeCastRole !== "전체") {
                 const itemTags = splitTags(item[KEY.cast]);
