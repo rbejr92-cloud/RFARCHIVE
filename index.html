@@ -68,7 +68,7 @@
     </style>
 </head>
 <body>
-    <div id="toast" style="position:fixed; bottom:-100px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:12px 24px; border-radius:99px; transition:0.4s; z-index:10000;"></div>
+    <div id="toast" style="position:fixed; bottom:-100px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:12px 24px; border-radius:99px; transition:0.4s; z-index:10000; font-weight: 700;"></div>
 
     <div class="topbarWrapper">
         <h1 onclick="location.reload()" style="cursor:pointer">🎬 Video Reference Archive</h1>
@@ -147,13 +147,13 @@
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
 
     let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40;
-    const RENDER_CHUNK = 30;
     const activeSets = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), cast: new Set(), tone: new Set() };
     const interactionsCache = new Map();
 
     function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(t => t.trim()); }
-    function fnv1a(s) { if(!s) return "0"; let h = 0x811c9dc5; for(let i=0; i<s.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16); }
+    function fnv1a(s) { if(!s) return "0"; let h = 0x811c9dc5; for(let i=0; i<s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16); }
     function getYTId(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
+    function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 2500); }
 
     function getCastInfo(tag) {
         const match = tag.match(/^(.*?)\(([^)]+)\)$/);
@@ -193,17 +193,16 @@
             let list = [...filtered];
             if (sortMode === "date") list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
             else if (sortMode === "likes") list.sort((a,b) => (interactionsCache.get(fnv1a(b[KEY.url]))?.likes || 0) - (interactionsCache.get(fnv1a(a[KEY.url]))?.likes || 0));
-            // 업데이트순(최신순)은 기본 reverse 상태 유지
             
             const sliced = list.slice(0, renderLimit);
-            document.getElementById("grid").innerHTML = sliced.map(it => `
+            document.getElementById("grid").innerHTML = sliced.length ? sliced.map(it => `
                 <div class="card" onclick="openModal('${fnv1a(it[KEY.url])}')">
                     <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/mqdefault.jpg"></div>
                     <div class="metaBox">
                         <div class="titleLine">${it[KEY.title]}</div>
                         <div style="font-size:11px; color:var(--muted); margin-top:8px">${it[KEY.channel]}</div>
                     </div>
-                </div>`).join("");
+                </div>`).join("") : '<div style="grid-column:1/-1; text-align:center; padding:50px;">결과가 없습니다.</div>';
         } else {
             document.getElementById("grid").style.display = "none";
             document.getElementById("dash").classList.add("active");
@@ -242,6 +241,7 @@
             const set = new Set();
             data.forEach(it => splitTags(it[KEY[f]]).forEach(t => set.add(t)));
             const el = document.getElementById(f + "Chips");
+            if (!el) return;
             const isAll = activeSets[f].size === 0;
             el.innerHTML = `<div class="chipsRow">
                 <div class="chip ${isAll?'active':''}" onclick="activeSets['${f}'].clear(); render(true)">All</div>
@@ -274,16 +274,62 @@
         const it = allData.find(x => fnv1a(x[KEY.url]) === id);
         if(!it) return;
         document.getElementById("modalOverlay").classList.add("open");
+        document.getElementById("modalOverlay").dataset.id = id;
         document.getElementById("modalLeft").innerHTML = `
             <img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
-            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px;">${it[KEY.title]}</div>
-            <div style="color:var(--muted); font-size:14px;">${it[KEY.channel]} · ${it[KEY.date]}</div>
-            <a href="${it[KEY.url]}" target="_blank" class="btn active" style="display:block; text-align:center; margin-top:20px; text-decoration:none;">🔗 원본 열기</a>
+            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px; line-height:1.4;">${it[KEY.title]}</div>
+            <div style="color:var(--muted); font-size:14px; margin-bottom:15px;">${it[KEY.channel]} · ${it[KEY.date]}</div>
+            <button class="btn" id="mLikeBtn" style="width:100%; margin-bottom:10px;">👍 좋아요</button>
+            <a href="${it[KEY.url]}" target="_blank" class="btn active" style="display:block; text-align:center; text-decoration:none;">🔗 원본 열기</a>
         `;
         document.getElementById("mPlayer").innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${getYTId(it[KEY.url])}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
+        
+        // 메모 및 좋아요 로드
+        await loadInteractions(id);
+
+        document.getElementById("mLikeBtn").onclick = () => toggleLike(id);
     }
 
-    document.getElementById("mClose").onclick = () => { document.getElementById("modalOverlay").classList.remove("open"); document.getElementById("mPlayer").innerHTML=""; };
+    async function loadInteractions(id) {
+        try {
+            const res = await fetch(API_URL + "?itemId=" + id);
+            const data = await res.json();
+            interactionsCache.set(id, data);
+            document.getElementById("mCounts").textContent = `👍 ${data.likes || 0} · 💬 ${data.memos?.length || 0}`;
+            document.getElementById("mMemoList").innerHTML = (data.memos || []).map(m => `
+                <div style="margin-bottom:8px; font-size:13px; border-bottom:1px solid var(--line); padding-bottom:5px;">
+                    <strong style="color:#fff;">${m.nickname}</strong>: ${m.memo}
+                </div>`).join("");
+        } catch(e) { console.error("데이터 로드 실패"); }
+    }
+
+    async function toggleLike(id) {
+        const nick = document.getElementById("mNick").value || "익명";
+        await fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "like", nickname: nick }) });
+        showToast("좋아요가 반영되었습니다!");
+        loadInteractions(id);
+    }
+
+    document.getElementById("mSend").onclick = async () => {
+        const id = document.getElementById("modalOverlay").dataset.id;
+        const nick = document.getElementById("mNick").value.trim();
+        const memo = document.getElementById("mMemo").value.trim();
+        if(!nick || !memo) return alert("닉네임과 메모를 입력하세요.");
+        
+        document.getElementById("mSend").disabled = true;
+        document.getElementById("mSend").textContent = "...";
+        
+        await fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "memo", nickname: nick, memo: memo }) });
+        
+        document.getElementById("mMemo").value = "";
+        document.getElementById("mSend").disabled = false;
+        document.getElementById("mSend").textContent = "등록";
+        showToast("메모가 등록되었습니다.");
+        loadInteractions(id);
+    };
+
+    function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); document.getElementById("mPlayer").innerHTML=""; }
+    document.getElementById("mClose").onclick = closeModal;
 
     async function init() {
         renderSkeleton();
@@ -300,32 +346,27 @@
         } catch (e) { document.getElementById("stats").textContent = "로드 실패"; }
     }
 
-    function updateSortUI(id) {
-        ["sortDateBtn", "sortUpdateBtn", "sortLikesBtn"].forEach(b => document.getElementById(b).classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-    }
-    document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; updateSortUI("sortDateBtn"); render(true); };
-    document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; updateSortUI("sortUpdateBtn"); render(true); };
-    document.getElementById("sortLikesBtn").onclick = () => { sortMode="likes"; updateSortUI("sortLikesBtn"); render(true); };
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && allData.length > 0 && viewMode === "all" && renderLimit < allData.length) {
+            renderLimit += 20; render(false);
+        }
+    }, { rootMargin: '200px' });
+    observer.observe(document.getElementById("scrollTrigger"));
 
-    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; document.getElementById("viewAllBtn").classList.add("active"); document.getElementById("viewDashBtn").classList.remove("active"); render(true); };
-    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; document.getElementById("viewDashBtn").classList.add("active"); document.getElementById("viewAllBtn").classList.remove("active"); render(true); };
+    // 버튼 이벤트
+    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; render(true); };
+    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; render(true); };
+    document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; render(true); };
+    document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; render(true); };
+    document.getElementById("sortLikesBtn").onclick = () => { sortMode="likes"; render(true); };
     document.getElementById("search").oninput = () => render(true);
     document.getElementById("resetBtn").onclick = () => location.reload();
-
+    
     document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => {
         document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
         e.target.classList.add('active');
         document.getElementById(e.target.dataset.tab + "Chips").classList.add('active');
     });
-
-    const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && allData.length > 0 && viewMode === "all" && renderLimit < allData.length) {
-            renderLimit += RENDER_CHUNK; 
-            render(false);
-        }
-    }, { rootMargin: '200px' });
-    observer.observe(document.getElementById("scrollTrigger"));
 
     init();
     </script>
