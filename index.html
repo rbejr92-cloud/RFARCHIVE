@@ -336,7 +336,9 @@
     const sortDateBtn = document.getElementById("sortDateBtn"), sortUpdateBtn = document.getElementById("sortUpdateBtn"), sortLikesBtn = document.getElementById("sortLikesBtn"), likedOnlyBtn = document.getElementById("likedOnlyBtn");
 
     function escapeHTML(str) { return String(str || "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
-    function splitTags(s) { return (s || "").split(/[ ,/]+/).filter(Boolean); }
+    function splitTags(s) {
+    return (s || "").split(/[,/]+/).filter(Boolean).map(item => item.trim());
+}
     function fnv1a(str){ let h = 0x811c9dc5; for (let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = (h + ((h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24))) >>> 0; } return h.toString(16).padStart(8,"0"); }
     function getItemId(item){ return fnv1a((item[KEY.url] || "").trim()); }
     function getNickname(){ return localStorage.getItem("vra:nickname") || ""; }
