@@ -32,7 +32,7 @@
         input[type="text"]:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
         
         .btn{ padding:10px 16px; border-radius:12px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; font-size:13px; font-weight:700; transition: 0.2s; }
-        .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
+        .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
         
         .filterTabs{ display:flex; flex-wrap:wrap; gap:8px; margin: 12px 0 10px 0; }
         .tab{ padding:8px 12px; border-radius:10px; border:1px solid transparent; background: transparent; color: var(--muted); font-size:13px; font-weight:700; cursor:pointer; }
@@ -46,8 +46,16 @@
         .chip{ padding:7px 12px; border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--muted); cursor:pointer; font-size:12px; transition: 0.2s; }
         .chip.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
 
+        /* 카드 내 인터랙션 바 */
+        .actionsBar{ margin-top:12px; display:flex; gap:8px; align-items:center; }
+        .actionBtn{ 
+            border:1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--muted); 
+            padding:6px 12px; border-radius:999px; font-size:11px; font-weight:700; cursor:pointer; 
+            display:inline-flex; align-items:center; gap:5px; transition: 0.2s; 
+        }
+
         @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-        .skeleton { height: 260px; border-radius: var(--radius); background: #1a1a1c; animation: pulse 1.5s infinite; }
+        .skeleton { height: 280px; border-radius: var(--radius); background: #1a1a1c; animation: pulse 1.5s infinite; }
         
         .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; margin-top: 14px; }
         .card{ background: var(--panel-bg); border:1px solid var(--line); border-radius: var(--radius); overflow:hidden; transition: 0.3s; cursor: pointer; }
@@ -57,7 +65,7 @@
         .metaBox{ padding:14px; border-top:1px solid var(--line); }
         .titleLine{ font-size:13px; color: rgba(234,234,234,.8); line-height:1.5; height: 2.9em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 
-        .dash{ display:none; grid-template-columns: 300px 1fr; gap:16px; margin-top: 14px; height: calc(100vh - 300px); min-height: 500px; }
+        .dash{ display:none; grid-template-columns: 300px 1fr; gap:16px; margin-top: 14px; height: calc(100vh - 320px); min-height: 500px; }
         .dash.active{ display:grid; }
         .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; display: flex; flex-direction: column; overflow: hidden; height: 100%; }
         .panelHeader{ padding:15px; border-bottom:1px solid var(--line); font-weight:800; font-size:14px; background:rgba(255,255,255,0.03); }
@@ -132,8 +140,8 @@
                 <div id="mPlayer" style="aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden; border:1px solid var(--line2);"></div>
                 <div id="mMemoList" style="flex:1; overflow-y:auto; border:1px solid var(--line); border-radius:12px; padding:12px; background:rgba(0,0,0,0.1);"></div>
                 <div style="display:flex; gap:8px;">
-                    <input id="mNick" type="text" placeholder="닉네임" style="width:80px; padding:10px; border-radius:8px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
-                    <input id="mMemo" type="text" placeholder="메모 입력..." style="flex:1; padding:10px; border-radius:8px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
+                    <input id="mNick" type="text" placeholder="닉네임" style="width:80px; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
+                    <input id="mMemo" type="text" placeholder="메모 입력..." style="flex:1; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
                     <button id="mSend" class="btn active">등록</button>
                 </div>
             </div>
@@ -165,21 +173,52 @@
         return { name: tag, category: tag };
     }
 
+    // [추가] 좋아요/메모 데이터 실시간 로드 및 업데이트 함수
+    async function fetchInteractions(itemId) {
+        if (interactionsCache.has(itemId)) return interactionsCache.get(itemId);
+        try {
+            const res = await fetch(API_URL + "?itemId=" + itemId);
+            const data = await res.json();
+            interactionsCache.set(itemId, data);
+            return data;
+        } catch { return { likes: 0, memos: [] }; }
+    }
+
+    function updateCardCounters(itemId, data) {
+        const lEl = document.getElementById(`like-${itemId}`);
+        const mEl = document.getElementById(`memo-${itemId}`);
+        if(lEl) lEl.textContent = data.likes || 0;
+        if(mEl) mEl.textContent = data.memos?.length || 0;
+    }
+
+    async function hydrateCounters(ids) {
+        for (const id of ids) {
+            const data = await fetchInteractions(id);
+            updateCardCounters(id, data);
+        }
+    }
+
     function renderSkeleton() { document.getElementById("grid").innerHTML = Array(12).fill('<div class="skeleton"></div>').join(""); }
 
+    function updateToggleState(type, activeId) {
+        let targets = (type === 'view') ? ["viewAllBtn", "viewDashBtn"] : ["sortDateBtn", "sortUpdateBtn", "sortLikesBtn"];
+        targets.forEach(id => document.getElementById(id)?.classList.toggle("active", id === activeId));
+    }
+
     async function render(reset = false) {
-        if (reset) renderLimit = 40;
-        const q = document.getElementById("search").value.toLowerCase();
+        if (reset) {
+            renderLimit = 40;
+            if(viewMode === "all") renderSkeleton();
+        }
         
+        const q = document.getElementById("search").value.toLowerCase();
         const filtered = allData.filter(it => {
             const okSearch = q ? (it[KEY.title]||"").toLowerCase().includes(q) : true;
-            const checkTags = (key) => activeSets[key].size === 0 || [...activeSets[key]].every(t => splitTags(it[KEY[key]]).includes(t));
-            
+            const checkTags = (k) => activeSets[k].size === 0 || [...activeSets[k]].every(t => splitTags(it[KEY[k]]).includes(t));
             let okCast = true;
             const itemCasts = splitTags(it[KEY.cast]);
             if (activeCastRole !== "전체") okCast = itemCasts.some(t => getCastInfo(t).category === activeCastRole);
             if (activeSets.cast.size > 0) okCast = okCast && [...activeSets.cast].every(name => itemCasts.some(t => getCastInfo(t).name === name));
-
             return okSearch && checkTags("genre") && checkTags("media") && checkTags("format") && checkTags("content") && checkTags("stage") && checkTags("method") && checkTags("tone") && okCast;
         });
 
@@ -191,18 +230,37 @@
             document.getElementById("dash").classList.remove("active");
             
             let list = [...filtered];
+            
+            // [정렬 로직 수정] 인기순 정렬 시 캐시된 좋아요 데이터 활용
             if (sortMode === "date") list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
-            else if (sortMode === "likes") list.sort((a,b) => (interactionsCache.get(fnv1a(b[KEY.url]))?.likes || 0) - (interactionsCache.get(fnv1a(a[KEY.url]))?.likes || 0));
+            else if (sortMode === "likes") {
+                list.sort((a,b) => {
+                    const likesA = interactionsCache.get(fnv1a(a[KEY.url]))?.likes || 0;
+                    const likesB = interactionsCache.get(fnv1a(b[KEY.url]))?.likes || 0;
+                    return likesB - likesA;
+                });
+            }
             
             const sliced = list.slice(0, renderLimit);
-            document.getElementById("grid").innerHTML = sliced.length ? sliced.map(it => `
-                <div class="card" onclick="openModal('${fnv1a(it[KEY.url])}')">
+            document.getElementById("grid").innerHTML = sliced.map(it => {
+                const itemId = fnv1a(it[KEY.url]);
+                return `
+                <div class="card" onclick="openModal('${itemId}')">
                     <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/mqdefault.jpg"></div>
                     <div class="metaBox">
-                        <div class="titleLine">${it[KEY.title]}</div>
+                        <div class="titleLine" title="${it[KEY.title]}">${it[KEY.title]}</div>
                         <div style="font-size:11px; color:var(--muted); margin-top:8px">${it[KEY.channel]}</div>
+                        <div class="actionsBar">
+                            <span class="actionBtn">👍 <span id="like-${itemId}">0</span></span>
+                            <span class="actionBtn">💬 <span id="memo-${itemId}">0</span></span>
+                        </div>
                     </div>
-                </div>`).join("") : '<div style="grid-column:1/-1; text-align:center; padding:50px;">결과가 없습니다.</div>';
+                </div>`;
+            }).join("");
+
+            // 데이터 비동기 로딩 시작
+            hydrateCounters(sliced.map(it => fnv1a(it[KEY.url])));
+
         } else {
             document.getElementById("grid").style.display = "none";
             document.getElementById("dash").classList.add("active");
@@ -214,29 +272,19 @@
         const channels = [...new Set(data.map(it => it[KEY.channel]))].filter(Boolean).sort();
         const nav = document.getElementById("leftNav");
         nav.innerHTML = channels.map(c => `<button class="btn ${selectedChannel===c?'active':''}" style="width:100%; margin-bottom:6px; text-align:left; display:block;">📺 ${c}</button>`).join("");
-        
-        nav.querySelectorAll('button').forEach((btn, idx) => {
-            btn.onclick = () => { selectedChannel = channels[idx]; render(); };
-        });
+        nav.querySelectorAll('button').forEach((btn, idx) => btn.onclick = () => { selectedChannel = channels[idx]; render(); });
 
         const rightList = document.getElementById("rightList");
         if (selectedChannel) {
             document.getElementById("rightTitle").textContent = selectedChannel;
             const list = data.filter(it => it[KEY.channel] === selectedChannel);
-            rightList.innerHTML = list.map(it => `
-                <div style="display:flex; gap:15px; padding:12px; border-bottom:1px solid var(--line); cursor:pointer;" onclick="openModal('${fnv1a(it[KEY.url])}')">
-                    <img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/default.jpg" style="width:100px; border-radius:8px;">
-                    <div><div style="font-weight:bold; margin-bottom:5px;">${it[KEY.title]}</div><div style="font-size:12px; color:var(--muted);">${it[KEY.date]}</div></div>
-                </div>`).join("");
-        } else {
-            rightList.innerHTML = `<div style="padding:100px; text-align:center; color:var(--muted);">채널을 선택하세요.</div>`;
-        }
+            rightList.innerHTML = list.map(it => `<div style="display:flex; gap:15px; padding:12px; border-bottom:1px solid var(--line); cursor:pointer;" onclick="openModal('${fnv1a(it[KEY.url])}')"><img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/default.jpg" style="width:100px; border-radius:8px;"><div><div style="font-weight:bold; margin-bottom:5px;">${it[KEY.title]}</div><div style="font-size:12px; color:var(--muted);">${it[KEY.date]}</div></div></div>`).join("");
+        } else { rightList.innerHTML = `<div style="padding:100px; text-align:center; color:var(--muted);">채널을 선택하세요.</div>`; }
     }
 
     function updateChips(data) {
         const fields = ["genre", "media", "format", "content", "stage", "method", "tone"];
         const castMap = new Map();
-
         fields.forEach(f => {
             const set = new Set();
             data.forEach(it => splitTags(it[KEY[f]]).forEach(t => set.add(t)));
@@ -248,24 +296,14 @@
                 ${[...set].sort().map(v => `<div class="chip ${activeSets[f].has(v)?'active':''}" onclick="toggleFilter('${f}', '${v}')">${v}</div>`).join("")}
             </div>`;
         });
-
-        data.forEach(it => {
-            splitTags(it[KEY.cast]).forEach(t => {
-                const info = getCastInfo(t);
-                if(!castMap.has(info.category)) castMap.set(info.category, new Set());
-                castMap.get(info.category).add(info.name);
-            });
-        });
-
+        data.forEach(it => splitTags(it[KEY.cast]).forEach(t => {
+            const info = getCastInfo(t);
+            if(!castMap.has(info.category)) castMap.set(info.category, new Set());
+            castMap.get(info.category).add(info.name);
+        }));
         const castEl = document.getElementById("castChips");
-        castEl.innerHTML = `<div class="chipsRow" style="border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:5px;">
-            ${["전체", ...[...castMap.keys()].sort()].map(c => `<div class="chip ${activeCastRole===c?'active':''}" onclick="activeCastRole='${c}'; activeSets.cast.clear(); render(false)">${c}</div>`).join("")}
-        </div>`;
-        if(activeCastRole !== "전체" && castMap.has(activeCastRole)) {
-            castEl.innerHTML += `<div class="chipsRow">
-                ${[...castMap.get(activeCastRole)].sort().map(n => `<div class="chip ${activeSets.cast.has(n)?'active':''}" onclick="toggleFilter('cast', '${n}')">${n}</div>`).join("")}
-            </div>`;
-        }
+        castEl.innerHTML = `<div class="chipsRow" style="border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:5px;">${["전체", ...[...castMap.keys()].sort()].map(c => `<div class="chip ${activeCastRole===c?'active':''}" onclick="activeCastRole='${c}'; activeSets.cast.clear(); render(false)">${c}</div>`).join("")}</div>`;
+        if(activeCastRole !== "전체" && castMap.has(activeCastRole)) castEl.innerHTML += `<div class="chipsRow">${[...castMap.get(activeCastRole)].sort().map(n => `<div class="chip ${activeSets.cast.has(n)?'active':''}" onclick="toggleFilter('cast', '${n}')">${n}</div>`).join("")}</div>`;
     }
 
     function toggleFilter(k, v) { activeSets[k].has(v) ? activeSets[k].delete(v) : activeSets[k].add(v); render(true); }
@@ -277,36 +315,29 @@
         document.getElementById("modalOverlay").dataset.id = id;
         document.getElementById("modalLeft").innerHTML = `
             <img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
-            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px; line-height:1.4;">${it[KEY.title]}</div>
-            <div style="color:var(--muted); font-size:14px; margin-bottom:15px;">${it[KEY.channel]} · ${it[KEY.date]}</div>
-            <button class="btn" id="mLikeBtn" style="width:100%; margin-bottom:10px;">👍 좋아요</button>
-            <a href="${it[KEY.url]}" target="_blank" class="btn active" style="display:block; text-align:center; text-decoration:none;">🔗 원본 열기</a>
+            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px;">${it[KEY.title]}</div>
+            <div style="color:var(--muted); font-size:13px; margin-bottom:15px;">${it[KEY.channel]} · ${it[KEY.date]}</div>
+            <button class="btn active" id="mLikeBtn" style="width:100%; margin-bottom:10px;">👍 좋아요 누르기</button>
+            <a href="${it[KEY.url]}" target="_blank" class="btn" style="display:block; text-align:center; text-decoration:none; background: rgba(255,255,255,0.05);">🔗 원본 열기</a>
         `;
         document.getElementById("mPlayer").innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${getYTId(it[KEY.url])}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
         
-        // 메모 및 좋아요 로드
         await loadInteractions(id);
-
         document.getElementById("mLikeBtn").onclick = () => toggleLike(id);
     }
 
     async function loadInteractions(id) {
-        try {
-            const res = await fetch(API_URL + "?itemId=" + id);
-            const data = await res.json();
-            interactionsCache.set(id, data);
-            document.getElementById("mCounts").textContent = `👍 ${data.likes || 0} · 💬 ${data.memos?.length || 0}`;
-            document.getElementById("mMemoList").innerHTML = (data.memos || []).map(m => `
-                <div style="margin-bottom:8px; font-size:13px; border-bottom:1px solid var(--line); padding-bottom:5px;">
-                    <strong style="color:#fff;">${m.nickname}</strong>: ${m.memo}
-                </div>`).join("");
-        } catch(e) { console.error("데이터 로드 실패"); }
+        const data = await fetchInteractions(id);
+        document.getElementById("mCounts").textContent = `👍 ${data.likes || 0} · 💬 ${data.memos?.length || 0}`;
+        document.getElementById("mMemoList").innerHTML = (data.memos || []).map(m => `<div style="margin-bottom:8px; font-size:13px; border-bottom:1px solid var(--line); padding-bottom:5px;"><strong style="color:#fff;">${m.nickname}</strong>: ${m.memo}</div>`).join("");
+        updateCardCounters(id, data);
     }
 
     async function toggleLike(id) {
         const nick = document.getElementById("mNick").value || "익명";
         await fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "like", nickname: nick }) });
-        showToast("좋아요가 반영되었습니다!");
+        interactionsCache.delete(id); 
+        showToast("좋아요를 눌렀습니다!");
         loadInteractions(id);
     }
 
@@ -315,15 +346,9 @@
         const nick = document.getElementById("mNick").value.trim();
         const memo = document.getElementById("mMemo").value.trim();
         if(!nick || !memo) return alert("닉네임과 메모를 입력하세요.");
-        
-        document.getElementById("mSend").disabled = true;
-        document.getElementById("mSend").textContent = "...";
-        
         await fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "memo", nickname: nick, memo: memo }) });
-        
         document.getElementById("mMemo").value = "";
-        document.getElementById("mSend").disabled = false;
-        document.getElementById("mSend").textContent = "등록";
+        interactionsCache.delete(id);
         showToast("메모가 등록되었습니다.");
         loadInteractions(id);
     };
@@ -346,27 +371,27 @@
         } catch (e) { document.getElementById("stats").textContent = "로드 실패"; }
     }
 
-    const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && allData.length > 0 && viewMode === "all" && renderLimit < allData.length) {
-            renderLimit += 20; render(false);
-        }
-    }, { rootMargin: '200px' });
-    observer.observe(document.getElementById("scrollTrigger"));
-
-    // 버튼 이벤트
-    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; render(true); };
-    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; render(true); };
-    document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; render(true); };
-    document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; render(true); };
-    document.getElementById("sortLikesBtn").onclick = () => { sortMode="likes"; render(true); };
+    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; updateToggleState('view', 'viewAllBtn'); render(true); };
+    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; updateToggleState('view', 'viewDashBtn'); render(true); };
+    document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; updateToggleState('sort', 'sortDateBtn'); render(true); };
+    document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; updateToggleState('sort', 'sortUpdateBtn'); render(true); };
+    document.getElementById("sortLikesBtn").onclick = () => { sortMode="likes"; updateToggleState('sort', 'sortLikesBtn'); render(true); };
+    
     document.getElementById("search").oninput = () => render(true);
     document.getElementById("resetBtn").onclick = () => location.reload();
-    
+
     document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => {
         document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
         e.target.classList.add('active');
         document.getElementById(e.target.dataset.tab + "Chips").classList.add('active');
     });
+
+    const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && allData.length > 0 && viewMode === "all" && renderLimit < allData.length) {
+            renderLimit += 30; render(false);
+        }
+    }, { rootMargin: '200px' });
+    observer.observe(document.getElementById("scrollTrigger"));
 
     init();
     </script>
