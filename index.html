@@ -115,8 +115,9 @@
         </div>
     </div>
 
-    <div class="grid" id="grid"></div>
-    <div id="scrollTrigger" style="height: 100px; width: 100%;"></div>
+    <div class="grid" id="grid">
+    </div>
+<div id="scrollTrigger" style="height: 10px; width: 100%;"></div>
 
     <div class="dash" id="dash">
         <div class="panel">
@@ -215,23 +216,29 @@
         const filtered = allData.filter(it => {
             const okSearch = q ? (it[KEY.title]||"").toLowerCase().includes(q) : true;
             const checkTags = (k) => activeSets[k].size === 0 || [...activeSets[k]].every(t => splitTags(it[KEY[k]]).includes(t));
+            
             let okCast = true;
             const itemCasts = splitTags(it[KEY.cast]);
             if (activeCastRole !== "전체") okCast = itemCasts.some(t => getCastInfo(t).category === activeCastRole);
             if (activeSets.cast.size > 0) okCast = okCast && [...activeSets.cast].every(name => itemCasts.some(t => getCastInfo(t).name === name));
+
             return okSearch && checkTags("genre") && checkTags("media") && checkTags("format") && checkTags("content") && checkTags("stage") && checkTags("method") && checkTags("tone") && okCast;
         });
 
         document.getElementById("stats").textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
         updateChips(filtered);
 
+        const gridEl = document.getElementById("grid");
+        const dashEl = document.getElementById("dash");
+        const scrollTrigger = document.getElementById("scrollTrigger");
+
         if (viewMode === "all") {
-            document.getElementById("grid").style.display = "grid";
-            document.getElementById("dash").classList.remove("active");
-            
+            // [전체 보기 모드]
+            gridEl.style.display = "grid";
+            dashEl.classList.remove("active");
+            if(scrollTrigger) scrollTrigger.style.display = "block"; // 감지기 켜기 (공백 허용)
+
             let list = [...filtered];
-            
-            // [정렬 로직 수정] 인기순 정렬 시 캐시된 좋아요 데이터 활용
             if (sortMode === "date") list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
             else if (sortMode === "likes") {
                 list.sort((a,b) => {
@@ -242,7 +249,7 @@
             }
             
             const sliced = list.slice(0, renderLimit);
-            document.getElementById("grid").innerHTML = sliced.map(it => {
+            gridEl.innerHTML = sliced.map(it => {
                 const itemId = fnv1a(it[KEY.url]);
                 return `
                 <div class="card" onclick="openModal('${itemId}')">
@@ -258,12 +265,14 @@
                 </div>`;
             }).join("");
 
-            // 데이터 비동기 로딩 시작
             hydrateCounters(sliced.map(it => fnv1a(it[KEY.url])));
 
         } else {
-            document.getElementById("grid").style.display = "none";
-            document.getElementById("dash").classList.add("active");
+            // [채널별 보기 모드]
+            gridEl.style.display = "none";
+            dashEl.classList.add("active");
+            if(scrollTrigger) scrollTrigger.style.display = "none"; // 감지기 끄기 (공백 제거 핵심!)
+            
             renderDash(filtered);
         }
     }
