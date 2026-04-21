@@ -53,7 +53,7 @@
         .btn{ 
             padding:10px 16px; border-radius:12px; border:1px solid var(--line); 
             background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; 
-            font-size:13px; font-weight:700; white-space:nowrap; transition: 0.2s; 
+            font-size:13px; font-weight:700; white-space:nowrap; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px;
         }
         .btn:hover{ border-color: var(--line2); background: rgba(255,255,255,0.06); }
         .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
@@ -89,54 +89,51 @@
         }
         .chip.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
 
-        /* 스켈레톤 스타일 */
-        @keyframes skeleton-loading { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-        .skeleton { 
-            height: 280px; border-radius: var(--radius); 
-            background: linear-gradient(90deg, #1a1a1c 25%, #252528 50%, #1a1a1c 75%);
-            background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;
-        }
+        @keyframes skeleton-pulse { 0% { background-color: #1a1a1c; } 50% { background-color: #252528; } 100% { background-color: #1a1a1c; } }
+        .skeleton { height: 260px; border-radius: var(--radius); animation: skeleton-pulse 1.5s infinite ease-in-out; }
 
         .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; margin-top: 14px; }
         .card{ 
             background: var(--panel-bg); border:1px solid var(--line); border-radius: var(--radius); 
-            overflow:hidden; box-shadow: var(--shadow); transition: all 0.3s ease; 
+            overflow:hidden; box-shadow: var(--shadow); transition: all 0.3s ease; cursor: pointer;
         }
-        .thumbWrap{ width:100%; background:#000; overflow:hidden; cursor:pointer; aspect-ratio: 16/9; }
+        .card:hover { transform: translateY(-4px); border-color: var(--accent); }
+        .thumbWrap{ width:100%; background:#000; overflow:hidden; aspect-ratio: 16/9; }
         .thumb{ width:100%; height:100%; object-fit:cover; display:block; transition: 0.5s; }
         .metaBox{ padding:14px; border-top:1px solid var(--line); }
-        .titleLine{ font-size:13px; color: rgba(234,234,234,.8); line-height:1.5; margin-bottom: 12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height: 2.9em; }
+        .titleLine{ font-size:13px; color: rgba(234,234,234,.8); line-height:1.5; margin-bottom: 8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height: 2.9em; }
         
-        .dash{ display:none; grid-template-columns: 320px 1fr; gap:16px; margin-top: 14px; align-items:start; height: calc(100vh - 280px); }
+        .dash{ display:none; grid-template-columns: 320px 1fr; gap:16px; margin-top: 14px; align-items:start; height: calc(100vh - 280px); min-height: 450px; }
         .dash.active{ display:grid; }
         .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; overflow:hidden; display: flex; flex-direction: column; height: 100%; }
         .leftScroll { flex: 1; overflow-y: auto; padding: 12px; }
         .rightWrap { flex: 1; overflow-y: auto; padding: 16px; }
 
-        .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.8); backdrop-filter: blur(8px); display:none; align-items:center; justify-content:center; z-index:9999; }
+        .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.85); backdrop-filter: blur(10px); display:none; align-items:center; justify-content:center; z-index:9999; }
         .modalOverlay.open{ display:flex; }
-        .modal { width: min(1200px, 95vw); max-height: 90vh; background: #161618; border-radius: 20px; display: grid; grid-template-columns: 350px 1fr; overflow: hidden; }
-        .modalLeft { padding: 24px; border-right: 1px solid var(--line); overflow-y: auto; }
+        .modal { width: min(1200px, 95vw); max-height: 90vh; background: #161618; border-radius: 24px; display: grid; grid-template-columns: 350px 1fr; overflow: hidden; border: 1px solid var(--line2); }
+        .modalLeft { padding: 24px; border-right: 1px solid var(--line); overflow-y: auto; background: rgba(0,0,0,0.2); }
         .modalRight { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
     </style>
 </head>
 <body>
-    <div id="toast" style="position:fixed; bottom:-100px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:12px 24px; border-radius:99px; transition:0.4s; z-index:10000;"></div>
+    <div id="toast" style="position:fixed; bottom:-100px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:12px 24px; border-radius:99px; transition:0.4s; z-index:10000; font-weight:bold;"></div>
 
     <div class="topbarWrapper">
         <h1>🎬 Video Reference Archive</h1>
         <div class="topbar">
             <input id="search" type="text" placeholder="제목 검색..." />
-            <div class="viewToggle">
-                <button id="viewAllBtn" class="active">🟦 전체 보기</button>
-                <button id="viewDashBtn">📺 채널별 보기</button>
+            <div class="btn-group" style="display: flex; gap: 6px;">
+                <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
+                <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
             </div>
+            <div style="width:1px; height:24px; background:var(--line2); margin:0 5px;"></div>
             <button class="btn active" id="sortDateBtn">📅 발행일순</button>
             <button class="btn" id="sortUpdateBtn">🆕 업데이트순</button>
             <button class="btn" id="sortLikesBtn">🔥 인기순</button>
             <button class="btn" id="resetBtn">초기화</button>
             <div class="admin-controls">
-                <div class="stats" id="stats">로딩 중...</div>
+                <div class="stats" id="stats">데이터 로드 중...</div>
                 <a href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="update-btn">📊 업데이트</a>
             </div>
         </div>
@@ -144,35 +141,27 @@
         <div class="filterTabs" id="filterTabs">
             <button class="tab active" data-tab="genre">장르</button>
             <button class="tab" data-tab="media">매체</button>
-            <button class="tab" data-tab="format">포맷</button>
-            <button class="tab" data-tab="content">컨텐츠</button>
-            <button class="tab" data-tab="stage">무대 연출</button>
-            <button class="tab" data-tab="method">제작 방식</button>
             <button class="tab" data-tab="cast">출연자</button>
             <button class="tab" data-tab="tone">영상 톤</button>
         </div>
         <div class="filterPanel">
             <div class="chips chipsPanel active" id="genreChips"></div>
             <div class="chips chipsPanel" id="mediaChips"></div>
-            <div class="chips chipsPanel" id="formatChips"></div>
-            <div class="chips chipsPanel" id="contentChips"></div>
-            <div class="chips chipsPanel" id="stageChips"></div>
-            <div class="chips chipsPanel" id="methodChips"></div>
             <div class="chips chipsPanel" id="castChips"></div>
             <div class="chips chipsPanel" id="toneChips"></div>
         </div>
     </div>
 
     <div class="grid" id="grid"></div>
-    <div id="scrollTrigger" style="height: 50px;"></div>
+    <div id="scrollTrigger" style="height: 20px;"></div>
 
     <div class="dash" id="dash">
         <div class="panel">
-            <div class="panelHeader" style="padding:15px; border-bottom:1px solid var(--line); font-weight:bold;">장르 → 채널</div>
+            <div style="padding:15px; border-bottom:1px solid var(--line); font-weight:800; font-size:14px; background:rgba(255,255,255,0.03);">채널 목록</div>
             <div class="leftScroll" id="leftNav"></div>
         </div>
         <div class="panel">
-            <div class="panelHeader" id="rightTitle" style="padding:15px; border-bottom:1px solid var(--line); font-weight:bold;">채널 콘텐츠</div>
+            <div id="rightTitle" style="padding:15px; border-bottom:1px solid var(--line); font-weight:800; font-size:14px; background:rgba(255,255,255,0.03);">채널 콘텐츠</div>
             <div class="rightWrap" id="rightList"></div>
         </div>
     </div>
@@ -181,17 +170,17 @@
         <div class="modal">
             <div class="modalLeft" id="modalLeft"></div>
             <div class="modalRight">
-                <div class="modalHead" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <span id="mCounts" style="font-size:13px; color:var(--muted);"></span>
-                    <button id="mClose" style="background:none; border:none; color:#fff; cursor:pointer; font-size:20px;">✕</button>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div id="mCounts" style="font-size:13px; color:var(--muted); font-weight:bold;"></div>
+                    <button id="mClose" style="background:none; border:none; color:#fff; cursor:pointer; font-size:24px; padding:0;">✕</button>
                 </div>
-                <div id="mVideoPlayer" style="aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden;">
+                <div id="mVideoPlayer" style="aspect-ratio:16/9; background:#000; border-radius:16px; overflow:hidden; border:1px solid var(--line2);">
                     <iframe id="mIframe" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
                 </div>
-                <div id="mMemoList" style="flex:1; overflow-y:auto; border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:10px;"></div>
-                <div class="memoComposer" style="display:flex; gap:8px; margin-top:10px;">
-                    <input id="mNick" type="text" placeholder="닉" style="width:60px; padding:8px; border-radius:8px; background:#222; border:1px solid var(--line); color:#fff;">
-                    <input id="mMemo" type="text" placeholder="메모 입력" style="flex:1; padding:8px; border-radius:8px; background:#222; border:1px solid var(--line); color:#fff;">
+                <div id="mMemoList" style="flex:1; overflow-y:auto; border:1px solid var(--line); border-radius:12px; padding:12px; background:rgba(0,0,0,0.1);"></div>
+                <div style="display:flex; gap:8px;">
+                    <input id="mNick" type="text" placeholder="닉네임" style="width:80px; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
+                    <input id="mMemo" type="text" placeholder="메모를 입력하세요..." style="flex:1; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
                     <button id="mSend" class="btn active">등록</button>
                 </div>
             </div>
@@ -200,27 +189,18 @@
 
     <script>
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
-    const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
     
-    const KEY = { 
-        genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷",
-        content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" 
-    };
+    // 데이터 키 매핑 (자동 찾기용)
+    let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", cast: "출연자", tone: "영상 톤", date: "발행일" };
 
-    let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseContents = [], baseStages = [], baseMethods = [], baseCasts = [], baseTones = [];
-    let activeGenre = new Set(), activeMedia = new Set(), activeFormat = new Set(), activeContents = new Set(), activeStages = new Set(), activeMethod = new Set(), activeCast = new Set(), activeTone = new Set();
+    let allData = [], baseGenres = [], baseMedias = [], baseCasts = [], baseTones = [];
+    let activeGenre = new Set(), activeMedia = new Set(), activeCast = new Set(), activeTone = new Set();
     let activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 20;
     const RENDER_CHUNK = 20;
-    const interactionsCache = new Map();
 
-    const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search");
-    const genreChipsEl = document.getElementById("genreChips"), mediaChipsEl = document.getElementById("mediaChips"), formatChipsEl = document.getElementById("formatChips"), contentChipsEl = document.getElementById("contentChips"), stageChipsEl = document.getElementById("stageChips"), methodChipsEl = document.getElementById("methodChips"), castChipsEl = document.getElementById("castChips"), toneChipsEl = document.getElementById("toneChips");
+    const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats");
 
-    function escapeHTML(str) { return String(str || "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
     function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(item => item.trim()); }
-    function fnv1a(str) { let h = 0x811c9dc5; for(let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8,"0"); }
-    function getYoutubeID(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split(/[?#]/)[0]; return u.searchParams.get("v"); } catch { return ""; } }
-
     function getCastInfo(tag) {
         const match = tag.match(/^(.*?)\(([^)]+)\)$/);
         if (match) {
@@ -230,124 +210,87 @@
         }
         return { name: tag, category: tag };
     }
-
-    function renderSkeleton() {
-        gridEl.innerHTML = Array(8).fill(0).map(() => `<div class="skeleton"></div>`).join("");
-    }
+    function fnv1a(str) { let h = 0x811c9dc5; for(let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8,"0"); }
+    function getYoutubeID(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split(/[?#]/)[0]; return u.searchParams.get("v"); } catch { return ""; } }
+    function renderSkeleton() { gridEl.innerHTML = Array(8).fill(0).map(() => `<div class="skeleton"></div>`).join(""); }
 
     const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && allData.length > 0 && viewMode === "all") {
-            if (renderLimit < allData.length) {
-                renderLimit += RENDER_CHUNK;
-                render(false);
-            }
+            if (renderLimit < allData.length) { renderLimit += RENDER_CHUNK; render(false); }
         }
     }, { threshold: 0.1 });
     observer.observe(document.getElementById("scrollTrigger"));
 
+    // 컬럼명 자동 매칭 (대소문자 오차 방지)
+    function autoMatchKeys(firstRow) {
+        const rowKeys = Object.keys(firstRow);
+        Object.keys(KEY).forEach(k => {
+            const found = rowKeys.find(rk => rk.toLowerCase() === KEY[k].toLowerCase());
+            if (found) KEY[k] = found;
+        });
+    }
+
     async function render(resetPagination = false) {
-        if (resetPagination) {
-            renderLimit = RENDER_CHUNK;
-            if (viewMode === "all") renderSkeleton();
-        }
+        if (resetPagination) { renderLimit = RENDER_CHUNK; if (viewMode === "all") renderSkeleton(); }
         
+        const q = document.getElementById("search").value.toLowerCase();
         const filtered = allData.filter(item => {
-            const q = searchEl.value.toLowerCase();
             const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
             const checkTags = (activeSet, key) => activeSet.size === 0 ? true : [...activeSet].every(t => splitTags(item[key]).includes(t));
-            
             let okCast = true;
             if (activeCastRole !== "전체") okCast = splitTags(item[KEY.cast]).some(t => getCastInfo(t).category === activeCastRole);
             if (activeCast.size > 0) okCast = okCast && [...activeCast].every(name => splitTags(item[KEY.cast]).some(t => getCastInfo(t).name === name));
-            
-            return okSearch && checkTags(activeGenre, KEY.genre) && checkTags(activeMedia, KEY.media) && checkTags(activeFormat, KEY.format) && checkTags(activeContents, KEY.content) && checkTags(activeStages, KEY.stage) && checkTags(activeMethod, KEY.method) && okCast && checkTags(activeTone, KEY.tone);
+            return okSearch && checkTags(activeGenre, KEY.genre) && checkTags(activeMedia, KEY.media) && okCast && checkTags(activeTone, KEY.tone);
         });
 
         updateChipsUI(filtered);
         statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
 
         if (viewMode === "all") {
-            gridEl.style.display = "grid"; dashEl.style.display = "none";
+            gridEl.style.display = "grid"; dashEl.classList.remove("active");
             let list = [...filtered];
-            if (sortMode === "date") list.sort((a,b) => new Date(b[KEY.date].replace(/\./g,'-')) - new Date(a[KEY.date].replace(/\./g,'-')));
-            
+            if (sortMode === "date") list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
             const sliced = list.slice(0, renderLimit);
             gridEl.innerHTML = sliced.map(it => {
-                const itemId = fnv1a(it[KEY.url]);
-                return `
-                <div class="card" onclick='openModalById("${itemId}")'>
-                    <div class="thumbWrap">
-                        <img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/mqdefault.jpg">
-                    </div>
-                    <div class="metaBox">
-                        <div class="titleLine">${escapeHTML(it[KEY.title])}</div>
-                        <div style="font-size:11px; color:var(--muted);">${escapeHTML(it[KEY.channel])}</div>
-                    </div>
-                </div>`;
+                const itemId = fnv1a(it[KEY.url] || "");
+                return `<div class="card" onclick='openModalById("${itemId}")'><div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/mqdefault.jpg"></div><div class="metaBox"><div class="titleLine">${it[KEY.title]}</div><div style="font-size:11px; color:var(--muted);">${it[KEY.channel]}</div></div></div>`;
             }).join("");
         } else {
-            gridEl.style.display = "none"; dashEl.style.display = "grid";
+            gridEl.style.display = "none"; dashEl.classList.add("active");
             renderLeftNav(filtered);
-            if (!selectedChannel) {
-                document.getElementById("rightList").innerHTML = `<div style="padding:40px; text-align:center; color:var(--muted);">채널을 선택해주세요</div>`;
-                return;
-            }
+            const rightList = document.getElementById("rightList");
+            if (!selectedChannel) { rightList.innerHTML = `<div style="padding:100px; text-align:center; color:var(--muted);">채널을 선택하세요</div>`; return; }
             document.getElementById("rightTitle").textContent = selectedChannel;
             const list = filtered.filter(it => it[KEY.channel] === selectedChannel);
-            document.getElementById("rightList").innerHTML = list.map(it => `
-                <div class="row" style="display:flex; gap:15px; padding:12px; border-bottom:1px solid var(--line); cursor:pointer;" onclick='openModalById("${fnv1a(it[KEY.url])}")'>
-                    <img src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/default.jpg" style="width:100px; border-radius:8px;">
-                    <div>
-                        <div style="font-weight:bold; margin-bottom:5px;">${escapeHTML(it[KEY.title])}</div>
-                        <div style="font-size:12px; color:var(--muted);">${it[KEY.date]}</div>
-                    </div>
-                </div>
-            `).join("");
+            rightList.innerHTML = list.map(it => `<div style="display:flex; gap:15px; padding:12px; border-bottom:1px solid var(--line); cursor:pointer;" onclick='openModalById("${fnv1a(it[KEY.url])}")'><img src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/default.jpg" style="width:100px; border-radius:8px;"><div><div style="font-weight:bold; margin-bottom:5px;">${it[KEY.title]}</div><div style="font-size:12px; color:var(--muted);">${it[KEY.date]}</div></div></div>`).join("");
         }
     }
 
     function renderLeftNav(filtered) {
         const nav = document.getElementById("leftNav");
-        const channels = [...new Set(filtered.map(it => it[KEY.channel]))].sort();
-        nav.innerHTML = channels.map(c => `
-            <div class="btn ${selectedChannel === c ? 'active' : ''}" style="width:100%; margin-bottom:5px; text-align:left; display:block;" onclick="selectChannel('${c}')">
-                📺 ${escapeHTML(c)}
-            </div>
-        `).join("");
+        const channels = [...new Set(filtered.map(it => it[KEY.channel]))].filter(Boolean).sort();
+        nav.innerHTML = channels.map(c => `<button class="btn ${selectedChannel === c ? 'active' : ''}" style="width:100%; margin-bottom:6px; text-align:left; display:block;" onclick="selectedChannel='${c}'; render(false);">${c}</button>`).join("");
     }
 
-    function selectChannel(c) { selectedChannel = c; render(false); }
-
     function updateChipsUI(filtered) {
-        const maps = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), tone: new Set() };
-        filtered.forEach(it => { Object.keys(maps).forEach(k => splitTags(it[KEY[k]]).forEach(t => maps[k].add(t))); });
+        const map = { genre: new Set(), media: new Set(), tone: new Set() };
+        filtered.forEach(it => { Object.keys(map).forEach(k => splitTags(it[KEY[k]]).forEach(t => map[k].add(t))); });
         
-        const toggle = (set, val) => { if(!val) set.clear(); else set.has(val) ? set.delete(val) : set.add(val); render(true); };
-        
-        const renderGroup = (el, base, active, key) => {
-            el.innerHTML = `<div class="chip ${active.size===0?'active':''}" onclick="active${key}.clear();render(true)">All</div>` + 
-                base.filter(x=>maps[key.toLowerCase()].has(x)).map(v => `<div class="chip ${active.has(v)?'active':''}" onclick="active${key}.has('${v}')?active${key}.delete('${v}'):active${key}.add('${v}');render(true)">${v}</div>`).join("");
+        const renderGrp = (el, base, active, k) => {
+            el.innerHTML = `<div class="chip ${active.size===0?'active':''}" onclick="active${k}.clear();render(true)">All</div>` + 
+                base.filter(x=>map[k.toLowerCase()].has(x)).map(v => `<div class="chip ${active.has(v)?'active':''}" onclick="active${k}.has('${v}')?active${k}.delete('${v}'):active${k}.add('${v}');render(true)">${v}</div>`).join("");
         };
+        renderGrp(document.getElementById("genreChips"), baseGenres, activeGenre, "Genre");
+        renderGrp(document.getElementById("mediaChips"), baseMedias, activeMedia, "Media");
+        renderGrp(document.getElementById("toneChips"), baseTones, activeTone, "Tone");
 
-        renderGroup(genreChipsEl, baseGenres, activeGenre, "Genre");
-        renderGroup(mediaChipsEl, baseMedias, activeMedia, "Media");
-        renderGroup(formatChipsEl, baseFormats, activeFormat, "Format");
-        renderGroup(contentChipsEl, baseContents, activeContents, "Contents");
-        renderGroup(stageChipsEl, baseStages, activeStages, "Stages");
-        renderGroup(methodChipsEl, baseMethods, activeMethod, "Method");
-        renderGroup(toneChipsEl, baseTones, activeTone, "Tone");
-
-        // Cast UI (2단)
+        // Cast UI
+        const castChipsEl = document.getElementById("castChips");
         castChipsEl.innerHTML = "";
         const castMap = new Map();
-        baseCasts.forEach(tag => {
-            const { name, category } = getCastInfo(tag);
-            if (!castMap.has(category)) castMap.set(category, new Set());
-            castMap.get(category).add(name);
-        });
-        const cats = ["전체", ...Array.from(castMap.keys()).sort()];
+        baseCasts.forEach(tag => { const { name, category } = getCastInfo(tag); if (!castMap.has(category)) castMap.set(category, new Set()); castMap.get(category).add(name); });
         const catRow = document.createElement("div"); catRow.className="chips";
-        cats.forEach(c => {
+        ["전체", ...Array.from(castMap.keys()).sort()].forEach(c => {
             const b = document.createElement("div"); b.className=`chip ${activeCastRole===c?'active':''}`; b.textContent=c;
             b.onclick=()=>{activeCastRole=c; activeCast.clear(); render(false);}; catRow.appendChild(b);
         });
@@ -363,12 +306,12 @@
     }
 
     async function openModalById(id) {
-        const item = allData.find(it => fnv1a(it[KEY.url]) === id);
+        const item = allData.find(it => fnv1a(it[KEY.url] || "") === id);
         if(!item) return;
         document.getElementById("modalOverlay").classList.add("open");
         document.getElementById("modalLeft").innerHTML = `
-            <img src="https://img.youtube.com/vi/${getYoutubeID(item[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px;">
-            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px;">${item[KEY.title]}</div>
+            <img src="https://img.youtube.com/vi/${getYoutubeID(item[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
+            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px; line-height:1.4;">${item[KEY.title]}</div>
             <div style="color:var(--muted); font-size:14px;">${item[KEY.channel]} · ${item[KEY.date]}</div>
             <a href="${item[KEY.url]}" target="_blank" class="update-btn" style="display:block; text-align:center; margin-top:20px; text-decoration:none;">🔗 원본 열기</a>
         `;
@@ -382,20 +325,22 @@
         try {
             renderSkeleton();
             const res = await fetch(SHEET_URL);
-            allData = (await res.json()).filter(x => x[KEY.url]);
-            const getBase = (k) => [...new Set(allData.flatMap(i => splitTags(i[KEY[k]])))].sort();
-            baseGenres = getBase("genre"); baseMedias = getBase("media"); baseFormats = getBase("format");
-            baseContents = getBase("content"); baseStages = getBase("stage"); baseMethods = getBase("method");
+            const data = await res.json();
+            if(!data || data.length === 0) throw new Error("No data");
+            allData = data.filter(x => x[Object.keys(x)[0]]); // 첫번째 컬럼이 있는 행만
+            autoMatchKeys(allData[0]);
+            
+            const getBase = (k) => [...new Set(allData.flatMap(i => splitTags(i[KEY[k]])))].filter(Boolean).sort();
+            baseGenres = getBase("genre"); baseMedias = getBase("media");
             baseCasts = getBase("cast"); baseTones = getBase("tone");
             render(true);
-        } catch (e) { statsEl.textContent = "로드 실패"; }
+        } catch (e) { statsEl.textContent = "로드 실패: " + e.message; }
     }
 
-    searchEl.oninput = debounce(() => render(true), 300);
-    document.getElementById("viewAllBtn").onclick = (e) => { viewMode="all"; document.getElementById("viewAllBtn").classList.add("active"); document.getElementById("viewDashBtn").classList.remove("active"); render(true); };
-    document.getElementById("viewDashBtn").onclick = (e) => { viewMode="dash"; document.getElementById("viewDashBtn").classList.add("active"); document.getElementById("viewAllBtn").classList.remove("active"); render(true); };
+    document.getElementById("search").oninput = () => render(true);
+    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; document.getElementById("viewAllBtn").classList.add("active"); document.getElementById("viewDashBtn").classList.remove("active"); render(true); };
+    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; document.getElementById("viewDashBtn").classList.add("active"); document.getElementById("viewAllBtn").classList.remove("active"); render(true); };
     document.getElementById("resetBtn").onclick = () => { location.reload(); };
-    
     document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => {
         document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
         e.target.classList.add('active');
