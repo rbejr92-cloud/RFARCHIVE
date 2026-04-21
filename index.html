@@ -105,7 +105,7 @@
         .thumbWrap{ width:100%; background:#000; overflow:hidden; aspect-ratio: 16/9; }
         .thumb{ width:100%; height:100%; object-fit:cover; display:block; transition: 0.5s; }
         .metaBox{ padding:14px; border-top:1px solid var(--line); }
-        .titleLine{ font-size:13px; color: rgba(234,234,234,.8); line-height:1.5; margin-bottom: 12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height: 2.9em; }
+        .titleLine{ font-size:13px; color: rgba(234,234,234,.8); line-height:1.5; margin-bottom: 8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height: 2.9em; }
         
         .dash{ display:none; grid-template-columns: 320px 1fr; gap:16px; margin-top: 14px; align-items:start; height: calc(100vh - 280px); min-height: 450px; }
         .dash.active{ display:grid; }
@@ -136,7 +136,7 @@
             <button class="btn" id="sortLikesBtn">🔥 인기순</button>
             <button class="btn" id="resetBtn">초기화</button>
             <div class="admin-controls">
-                <div class="stats" id="stats">데이터 로드 중...</div>
+                <div class="stats" id="stats">시트 불러오는 중...</div>
                 <a href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="update-btn">📊 업데이트</a>
             </div>
         </div>
@@ -200,7 +200,6 @@
 
     <script>
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
-    const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
     
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
 
@@ -213,6 +212,7 @@
     const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search");
 
     function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(item => item.trim()); }
+    
     function getCastInfo(tag) {
         const match = tag.match(/^(.*?)\(([^)]+)\)$/);
         if (match) {
@@ -222,8 +222,26 @@
         }
         return { name: tag, category: tag };
     }
-    function fnv1a(str) { let h = 0x811c9dc5; for(let i=0; i<str.length; i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16).padStart(8,"0"); }
-    function getYoutubeID(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split(/[?#]/)[0]; return u.searchParams.get("v"); } catch { return ""; } }
+
+    function fnv1a(str) { 
+        if(!str) return "00000000";
+        let h = 0x811c9dc5; 
+        for(let i=0; i<str.length; i++){ 
+            h ^= str.charCodeAt(i); 
+            h = Math.imul(h, 0x01000193); 
+        } 
+        return (h >>> 0).toString(16).padStart(8,"0"); 
+    }
+
+    function getYoutubeID(url) { 
+        try { 
+            const u = new URL(url); 
+            if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; 
+            if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split(/[?#]/)[0]; 
+            return u.searchParams.get("v"); 
+        } catch { return ""; } 
+    }
+
     function renderSkeleton() { gridEl.innerHTML = Array(8).fill(0).map(() => `<div class="skeleton"></div>`).join(""); }
 
     const observer = new IntersectionObserver((entries) => {
@@ -233,11 +251,11 @@
     }, { threshold: 0.1 });
     observer.observe(document.getElementById("scrollTrigger"));
 
-    // 컬럼명 자동 매칭
     function autoMatchKeys(firstRow) {
+        if(!firstRow) return;
         const rowKeys = Object.keys(firstRow);
         Object.keys(KEY).forEach(k => {
-            const found = rowKeys.find(rk => rk.toLowerCase() === KEY[k].toLowerCase());
+            const found = rowKeys.find(rk => rk.toLowerCase().trim() === KEY[k].toLowerCase());
             if (found) KEY[k] = found;
         });
     }
@@ -261,43 +279,55 @@
         if (viewMode === "all") {
             gridEl.style.display = "grid"; dashEl.classList.remove("active");
             let list = [...filtered];
-            // 정렬 로직 추가
-            if (sortMode === "date") list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
-            else if (sortMode === "likes") list.sort((a,b) => (interactionsCache.get(fnv1a(b[KEY.url]))?.likes || 0) - (interactionsCache.get(fnv1a(a[KEY.url]))?.likes || 0));
-            // 'update'는 시트의 원래 순서(최신순 역순) 유지
+            
+            if (sortMode === "date") {
+                list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
+            } else if (sortMode === "likes") {
+                list.sort((a,b) => (interactionsCache.get(fnv1a(b[KEY.url]))?.likes || 0) - (interactionsCache.get(fnv1a(a[KEY.url]))?.likes || 0));
+            } 
+            // sortMode === 'update'일 때는 초기 시트 로드 순서(역순)를 따름
 
             const sliced = list.slice(0, renderLimit);
-            gridEl.innerHTML = sliced.map(it => {
-                const itemId = fnv1a(it[KEY.url] || "");
-                return `<div class="card" onclick='openModalById("${itemId}")'><div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/mqdefault.jpg"></div><div class="metaBox"><div class="titleLine">${it[KEY.title]}</div><div style="font-size:11px; color:var(--muted);">${it[KEY.channel]}</div></div></div>`;
-            }).join("");
+            if(sliced.length === 0) {
+                gridEl.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px; color:var(--muted);">검색 결과가 없습니다.</div>`;
+            } else {
+                gridEl.innerHTML = sliced.map(it => {
+                    const itemId = fnv1a(it[KEY.url]);
+                    return `<div class="card" onclick='openModalById("${itemId}")'>
+                        <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/mqdefault.jpg"></div>
+                        <div class="metaBox"><div class="titleLine">${escapeHTML(it[KEY.title])}</div><div style="font-size:11px; color:var(--muted);">${escapeHTML(it[KEY.channel])}</div></div>
+                    </div>`;
+                }).join("");
+            }
         } else {
             gridEl.style.display = "none"; dashEl.classList.add("active");
             renderLeftNav(filtered);
             const rightList = document.getElementById("rightList");
-            if (!selectedChannel) { rightList.innerHTML = `<div style="padding:100px; text-align:center; color:var(--muted);">왼쪽에서 채널을 선택해 주세요.</div>`; return; }
+            if (!selectedChannel) { 
+                rightList.innerHTML = `<div style="padding:100px; text-align:center; color:var(--muted); font-size:14px;">왼쪽 목록에서 채널을 선택해 주세요.</div>`; 
+                return; 
+            }
             document.getElementById("rightTitle").textContent = selectedChannel;
             const list = filtered.filter(it => it[KEY.channel] === selectedChannel);
-            rightList.innerHTML = list.map(it => `<div style="display:flex; gap:15px; padding:12px; border-bottom:1px solid var(--line); cursor:pointer;" onclick='openModalById("${fnv1a(it[KEY.url])}")'><img src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/default.jpg" style="width:100px; border-radius:8px;"><div><div style="font-weight:bold; margin-bottom:5px;">${it[KEY.title]}</div><div style="font-size:12px; color:var(--muted);">${it[KEY.date]}</div></div></div>`).join("");
+            rightList.innerHTML = list.map(it => `
+                <div style="display:flex; gap:15px; padding:12px; border-bottom:1px solid var(--line); cursor:pointer;" onclick='openModalById("${fnv1a(it[KEY.url])}")'>
+                    <img src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/default.jpg" style="width:100px; border-radius:8px;">
+                    <div><div style="font-weight:bold; margin-bottom:5px;">${escapeHTML(it[KEY.title])}</div><div style="font-size:12px; color:var(--muted);">${it[KEY.date]}</div></div>
+                </div>`).join("");
         }
     }
 
     function renderLeftNav(filtered) {
         const nav = document.getElementById("leftNav");
         const channels = [...new Set(filtered.map(it => it[KEY.channel]))].filter(Boolean).sort();
-        nav.innerHTML = channels.map(c => {
-            const btn = document.createElement("button");
-            btn.className = `btn ${selectedChannel === c ? 'active' : ''}`;
-            btn.style.width = "100%"; btn.style.marginBottom = "6px"; btn.style.textAlign = "left"; btn.style.display = "block";
-            btn.textContent = `📺 ${c}`;
-            btn.onclick = () => { selectedChannel = c; render(false); };
-            return btn.outerHTML; // outerHTML을 쓰면 onclick이 날아가므로 수동 바인딩 권장하나 여기서는 간단히 처리
-        }).join("");
-
-        // onclick 바인딩 버그 방지를 위해 다시 돌며 바인딩
-        const btns = nav.querySelectorAll('.btn');
-        channels.forEach((c, i) => {
-            btns[i].onclick = () => { selectedChannel = c; render(false); };
+        nav.innerHTML = "";
+        channels.forEach(c => {
+            const b = document.createElement("button");
+            b.className = `btn ${selectedChannel === c ? 'active' : ''}`;
+            b.style.width = "100%"; b.style.marginBottom = "6px"; b.style.textAlign = "left"; b.style.display = "block";
+            b.textContent = `📺 ${c}`;
+            b.onclick = () => { selectedChannel = c; render(false); };
+            nav.appendChild(b);
         });
     }
 
@@ -306,8 +336,7 @@
         filtered.forEach(it => { Object.keys(maps).forEach(k => splitTags(it[KEY[k]]).forEach(t => maps[k].add(t))); });
         
         const renderGrp = (el, base, active, k) => {
-            const isAll = active.size === 0;
-            el.innerHTML = `<div class="chip ${isAll?'active':''}" id="all-${k}">All</div>` + 
+            el.innerHTML = `<div class="chip ${active.size===0?'active':''}" id="all-${k}">All</div>` + 
                 base.filter(x => maps[k.toLowerCase()].has(x)).map(v => `<div class="chip ${active.has(v)?'active':''}" data-val="${v}">${v}</div>`).join("");
             
             el.querySelector(`#all-${k}`).onclick = () => { active.clear(); render(true); };
@@ -324,7 +353,6 @@
         renderGrp(methodChipsEl, baseMethods, activeMethod, "Method");
         renderGrp(toneChipsEl, baseTones, activeTone, "Tone");
 
-        // 출연자
         castChipsEl.innerHTML = "";
         const castMap = new Map();
         baseCasts.forEach(tag => { const { name, category } = getCastInfo(tag); if (!castMap.has(category)) castMap.set(category, new Set()); castMap.get(category).add(name); });
@@ -335,7 +363,7 @@
             b.onclick=()=>{activeCastRole=c; activeCast.clear(); render(false);}; catRow.appendChild(b);
         });
         castChipsEl.appendChild(catRow);
-        if(activeCastRole!=="전체"){
+        if(activeCastRole!=="전체" && castMap.has(activeCastRole)){
             const subRow = document.createElement("div"); subRow.className="chips"; subRow.style.marginTop="8px";
             Array.from(castMap.get(activeCastRole)).forEach(n => {
                 const b = document.createElement("div"); b.className=`chip ${activeCast.has(n)?'active':''}`; b.textContent=n;
@@ -346,13 +374,13 @@
     }
 
     async function openModalById(id) {
-        const item = allData.find(it => fnv1a(it[KEY.url] || "") === id);
+        const item = allData.find(it => fnv1a(it[KEY.url]) === id);
         if(!item) return;
         document.getElementById("modalOverlay").classList.add("open");
         document.getElementById("modalLeft").innerHTML = `
             <img src="https://img.youtube.com/vi/${getYoutubeID(item[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
-            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px; line-height:1.4;">${item[KEY.title]}</div>
-            <div style="color:var(--muted); font-size:14px;">${item[KEY.channel]} · ${item[KEY.date]}</div>
+            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px; line-height:1.4;">${escapeHTML(item[KEY.title])}</div>
+            <div style="color:var(--muted); font-size:14px;">${escapeHTML(item[KEY.channel])} · ${item[KEY.date]}</div>
             <a href="${item[KEY.url]}" target="_blank" class="update-btn" style="display:block; text-align:center; margin-top:20px; text-decoration:none;">🔗 원본 열기</a>
         `;
         const ytId = getYoutubeID(item[KEY.url]);
@@ -366,15 +394,23 @@
             renderSkeleton();
             const res = await fetch(SHEET_URL);
             const data = await res.json();
-            allData = data.filter(x => x[Object.keys(x)[0]]).reverse(); // 기본 최신순(시트 역순)
+            if(!data || data.length === 0) throw new Error("시트 데이터가 비어있습니다.");
+            
+            // 데이터 전처리
+            allData = data.filter(x => x && (x['URL'] || x['url'] || x['TITLE'] || x['title'])).reverse();
             autoMatchKeys(allData[0]);
             
             const getBase = (k) => [...new Set(allData.flatMap(i => splitTags(i[KEY[k]])))].filter(Boolean).sort();
             baseGenres = getBase("genre"); baseMedias = getBase("media"); baseFormats = getBase("format");
             baseContents = getBase("content"); baseStages = getBase("stage"); baseMethods = getBase("method");
             baseCasts = getBase("cast"); baseTones = getBase("tone");
+            
             render(true);
-        } catch (e) { statsEl.textContent = "로드 실패: " + e.message; }
+        } catch (e) { 
+            console.error(e);
+            statsEl.textContent = "로드 실패: " + e.message; 
+            gridEl.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px; color:var(--accent);">데이터 로딩 중 오류가 발생했습니다. 구글 시트의 공개 설정을 확인해 보세요.</div>`;
+        }
     }
 
     function updateSortBtns(activeBtn) {
@@ -391,6 +427,7 @@
     document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; document.getElementById("viewAllBtn").classList.add("active"); document.getElementById("viewDashBtn").classList.remove("active"); render(true); };
     document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; document.getElementById("viewDashBtn").classList.add("active"); document.getElementById("viewAllBtn").classList.remove("active"); render(true); };
     document.getElementById("resetBtn").onclick = () => { location.reload(); };
+    
     document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => {
         document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
         e.target.classList.add('active');
