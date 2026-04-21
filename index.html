@@ -7,432 +7,256 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         :root{ 
-            --bg:#0b0b0c; 
-            --panel-bg: rgba(20, 20, 22, 0.85);
-            --text:#eaeaea; 
-            --muted:rgba(234,234,234,.6); 
-            --line:rgba(255,255,255,0.08); 
-            --line2:rgba(255,255,255,0.15); 
-            --accent:#ff4757; 
-            --accent-glow: rgba(255, 71, 87, 0.3);
-            --shadow: 0 14px 40px rgba(0,0,0,.5); 
-            --radius:16px; 
-            --glass: blur(16px) saturate(180%);
+            --bg:#0b0b0c; --panel-bg: rgba(20, 20, 22, 0.85); --text:#eaeaea; 
+            --muted:rgba(234,234,234,.6); --line:rgba(255,255,255,0.08); 
+            --line2:rgba(255,255,255,0.15); --accent:#ff4757; 
+            --accent-glow: rgba(255, 71, 87, 0.3); --shadow: 0 14px 40px rgba(0,0,0,.5); 
+            --radius:16px; --glass: blur(16px) saturate(180%);
         }
         *{ box-sizing:border-box; outline: none; }
-        
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-
         body{ 
-            margin:0; padding:22px; 
-            background: radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%), radial-gradient(1000px 600px at 90% 10%, rgba(43,143,163,.08), transparent 55%), var(--bg); 
-            color:var(--text); 
-            font-family: "Pretendard", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; 
-            overflow-x: hidden;
+            margin:0; padding:22px; color:var(--text); 
+            background: radial-gradient(1200px 600px at 10% 0%, rgba(255,71,87,.08), transparent 55%), var(--bg); 
+            font-family: "Pretendard", system-ui; overflow-x: hidden;
         }
-        
-        h1{ margin:0 0 12px 0; font-size:24px; letter-spacing:.2px; display:flex; align-items:center; gap:12px; color: #fff; }
-        
-        .topbarWrapper { 
-            position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; 
-            background: rgba(11, 11, 12, 0.6); 
-            backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass); 
-            z-index: 100; border-bottom: 1px solid var(--line); 
-        }
+        .topbarWrapper { position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; background: rgba(11, 11, 12, 0.6); backdrop-filter: var(--glass); z-index: 100; border-bottom: 1px solid var(--line); }
         .topbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-        
-        input[type="text"]{ 
-            padding:12px 16px; width:320px; max-width:100%; border-radius:14px; border:1px solid var(--line); 
-            background: rgba(0,0,0,0.2); color:var(--text); font-size: 14px; transition: 0.2s;
-        }
-        input[type="text"]:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-        
-        .btn{ 
-            padding:10px 16px; border-radius:12px; border:1px solid var(--line); 
-            background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; 
-            font-size:13px; font-weight:700; white-space:nowrap; transition: 0.2s; 
-        }
-        .btn:hover{ border-color: var(--line2); background: rgba(255,255,255,0.06); }
+        input[type="text"]{ padding:12px 16px; width:300px; border-radius:14px; border:1px solid var(--line); background: rgba(0,0,0,0.2); color:var(--text); }
+        .btn{ padding:10px 16px; border-radius:12px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; font-size:13px; font-weight:700; transition: 0.2s; }
         .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
-        
-        .admin-controls { margin-left: auto; display: flex; align-items: center; gap: 12px; }
-        .stats{ font-size:13px; color: var(--muted); white-space:nowrap; }
-        .update-btn { 
-            background: rgba(255,71,87,0.15); border: 1px solid var(--accent); color: var(--accent); 
-            padding: 10px 18px; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 13px; 
-            transition: 0.2s; box-shadow: 0 4px 12px var(--accent-glow); 
-        }
-
-        .divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); margin: 12px 0; }
-        
-        .filterTabs{ display:flex; flex-wrap:wrap; gap:8px; margin: 8px 0 10px 0; }
-        .tab{ 
-            padding:8px 12px; border-radius:10px; border:1px solid transparent; 
-            background: transparent; color: var(--muted); font-size:13px; font-weight:700; cursor:pointer; 
-            transition: 0.2s; 
-        }
-        .tab.active{ border-color: var(--line2); background: rgba(255,255,255,0.08); color: #fff; }
-        
-        .filterPanel{ border:1px solid var(--line); background: rgba(0,0,0,0.1); border-radius:14px; padding:12px; }
-        .chips{ display:flex; flex-wrap:wrap; gap:8px; }
-        .chipsPanel{ display:none; }
-        .chipsPanel.active { display: flex; flex-wrap: wrap; flex-direction: row; }
-        #castChips.active { display: flex; flex-direction: column; }
-        
-        .chip{ 
-            padding:7px 12px; border-radius:999px; border:1px solid var(--line); 
-            background: rgba(255,255,255,0.03); color: var(--muted); cursor:pointer; 
-            font-size:12px; font-weight: 600; transition: all 0.3s ease; 
-        }
-        .chip.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-
-        @keyframes skeleton-loading { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-        .skeleton { 
-            height: 280px; border-radius: var(--radius); 
-            background: linear-gradient(90deg, #1a1a1c 25%, #252528 50%, #1a1a1c 75%);
-            background-size: 200% 100%; animation: skeleton-loading 1.5s infinite;
-        }
-
-        .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:20px; margin-top: 14px; }
-        .card{ 
-            background: var(--panel-bg); border:1px solid var(--line); border-radius: var(--radius); 
-            overflow:hidden; box-shadow: var(--shadow); transition: all 0.3s ease; cursor: pointer;
-        }
-        .card:hover { transform: translateY(-4px); border-color: var(--accent); }
-        .thumbWrap{ width:100%; background:#000; overflow:hidden; aspect-ratio: 16/9; }
-        .thumb{ width:100%; height:100%; object-fit:cover; display:block; transition: 0.5s; }
+        .filterPanel{ border:1px solid var(--line); background: rgba(0,0,0,0.1); border-radius:14px; padding:12px; margin-top:10px; }
+        .chipsPanel{ display:none; flex-wrap:wrap; gap:8px; }
+        .chipsPanel.active{ display:flex; }
+        .chip{ padding:7px 12px; border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--muted); cursor:pointer; font-size:12px; }
+        .chip.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        .skeleton { height: 250px; border-radius: var(--radius); background: #1a1a1c; animation: pulse 1.5s infinite; }
+        .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px; margin-top: 14px; }
+        .card{ background: var(--panel-bg); border:1px solid var(--line); border-radius: var(--radius); overflow:hidden; transition: 0.3s; cursor: pointer; }
+        .card:hover{ border-color: var(--accent); transform: translateY(-4px); }
+        .thumbWrap{ width:100%; aspect-ratio: 16/9; background:#000; overflow:hidden; }
+        .thumb{ width:100%; height:100%; object-fit:cover; }
         .metaBox{ padding:14px; border-top:1px solid var(--line); }
-        .titleLine{ font-size:13px; color: rgba(234,234,234,.8); line-height:1.5; margin-bottom: 8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; height: 2.9em; }
-        
-        .dash{ display:none; grid-template-columns: 320px 1fr; gap:16px; margin-top: 14px; align-items:start; height: calc(100vh - 280px); min-height: 450px; }
+        .dash{ display:none; grid-template-columns: 280px 1fr; gap:16px; margin-top: 14px; height: calc(100vh - 300px); }
         .dash.active{ display:grid; }
-        .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; overflow:hidden; display: flex; flex-direction: column; height: 100%; }
-        .leftScroll { flex: 1; overflow-y: auto; padding: 12px; }
-        .rightWrap { flex: 1; overflow-y: auto; padding: 16px; }
-
-        .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.85); backdrop-filter: blur(10px); display:none; align-items:center; justify-content:center; z-index:9999; }
+        .panel{ border:1px solid var(--line); background: var(--panel-bg); border-radius:16px; display: flex; flex-direction: column; overflow: hidden; }
+        .modalOverlay{ position:fixed; inset:0; background: rgba(0,0,0,.85); backdrop-filter: blur(8px); display:none; align-items:center; justify-content:center; z-index:9999; }
         .modalOverlay.open{ display:flex; }
-        .modal { width: min(1200px, 95vw); max-height: 90vh; background: #161618; border-radius: 20px; display: grid; grid-template-columns: 350px 1fr; overflow: hidden; border: 1px solid var(--line2); }
-        .modalLeft { padding: 24px; border-right: 1px solid var(--line); overflow-y: auto; background: rgba(0,0,0,0.2); }
-        .modalRight { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+        .modal { width: min(1200px, 95vw); max-height: 90vh; background: #161618; border-radius: 20px; display: grid; grid-template-columns: 320px 1fr; overflow: hidden; }
     </style>
 </head>
 <body>
-    <div id="toast" style="position:fixed; bottom:-100px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:12px 24px; border-radius:99px; transition:0.4s; z-index:10000; font-weight:bold;"></div>
-
     <div class="topbarWrapper">
-        <h1>🎬 Video Reference Archive</h1>
+        <h1 onclick="location.reload()" style="cursor:pointer">🎬 Video Reference Archive</h1>
         <div class="topbar">
             <input id="search" type="text" placeholder="제목 검색..." />
-            <div class="viewToggle">
-                <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
-                <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
-            </div>
-            <button class="btn active" id="sortDateBtn">📅 발행일순</button>
-            <button class="btn" id="sortUpdateBtn">🆕 업데이트순</button>
-            <button class="btn" id="sortLikesBtn">🔥 인기순</button>
-            <button class="btn" id="resetBtn">초기화</button>
-            <div class="admin-controls">
-                <div class="stats" id="stats">시트 불러오는 중...</div>
-                <a href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="update-btn">📊 업데이트</a>
-            </div>
+            <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
+            <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
+            <button id="sortDateBtn" class="btn active">📅 발행일순</button>
+            <button id="sortUpdateBtn" class="btn">🆕 업데이트순</button>
+            <button id="resetBtn" class="btn">초기화</button>
+            <div style="margin-left:auto; font-size:12px; color:var(--muted)" id="stats">시트 확인 중...</div>
         </div>
-        <div class="divider"></div>
-        <div class="filterTabs" id="filterTabs">
+        <div class="filterTabs" style="margin-top:12px; display:flex; gap:10px;">
             <button class="tab active" data-tab="genre">장르</button>
             <button class="tab" data-tab="media">매체</button>
-            <button class="tab" data-tab="format">포맷</button>
-            <button class="tab" data-tab="content">컨텐츠</button>
-            <button class="tab" data-tab="stage">무대 연출</button>
-            <button class="tab" data-tab="method">제작 방식</button>
             <button class="tab" data-tab="cast">출연자</button>
-            <button class="tab" data-tab="tone">영상 톤</button>
         </div>
         <div class="filterPanel">
-            <div class="chips chipsPanel active" id="genreChips"></div>
-            <div class="chips chipsPanel" id="mediaChips"></div>
-            <div class="chips chipsPanel" id="formatChips"></div>
-            <div class="chips chipsPanel" id="contentChips"></div>
-            <div class="chips chipsPanel" id="stageChips"></div>
-            <div class="chips chipsPanel" id="methodChips"></div>
-            <div class="chips chipsPanel" id="castChips"></div>
-            <div class="chips chipsPanel" id="toneChips"></div>
+            <div class="chipsPanel active" id="genreChips"></div>
+            <div class="chipsPanel" id="mediaChips"></div>
+            <div class="chipsPanel" id="castChips"></div>
         </div>
     </div>
 
     <div class="grid" id="grid"></div>
-    <div id="scrollTrigger" style="height: 50px;"></div>
+    <div id="scrollTrigger" style="height: 20px;"></div>
 
     <div class="dash" id="dash">
-        <div class="panel">
-            <div style="padding:15px; border-bottom:1px solid var(--line); font-weight:800; font-size:14px; background:rgba(255,255,255,0.03);">장르 → 채널</div>
-            <div class="leftScroll" id="leftNav"></div>
-        </div>
-        <div class="panel">
-            <div id="rightTitle" style="padding:15px; border-bottom:1px solid var(--line); font-weight:800; font-size:14px; background:rgba(255,255,255,0.03);">채널 콘텐츠</div>
-            <div class="rightWrap" id="rightList"></div>
-        </div>
+        <div class="panel"><div id="leftNav" style="padding:10px; overflow-y:auto;"></div></div>
+        <div class="panel"><div id="rightList" style="padding:15px; overflow-y:auto;"></div></div>
     </div>
 
     <div class="modalOverlay" id="modalOverlay">
         <div class="modal">
-            <div class="modalLeft" id="modalLeft"></div>
-            <div class="modalRight">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div id="mCounts" style="font-size:13px; color:var(--muted); font-weight:bold;"></div>
-                    <button id="mClose" style="background:none; border:none; color:#fff; cursor:pointer; font-size:24px; padding:0;">✕</button>
+            <div id="modalLeft" style="padding:20px; border-right:1px solid var(--line); overflow-y:auto;"></div>
+            <div style="padding:20px; display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between">
+                    <span id="mTitle" style="font-weight:bold"></span>
+                    <button onclick="closeModal()" style="background:none; border:none; color:#fff; cursor:pointer">✕</button>
                 </div>
-                <div id="mVideoPlayer" style="aspect-ratio:16/9; background:#000; border-radius:16px; overflow:hidden; border:1px solid var(--line2);">
-                    <iframe id="mIframe" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
-                </div>
-                <div id="mMemoList" style="flex:1; overflow-y:auto; border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:10px; background:rgba(0,0,0,0.1);"></div>
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <input id="mNick" type="text" placeholder="닉" style="width:60px; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
-                    <input id="mMemo" type="text" placeholder="메모 입력" style="flex:1; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
-                    <button id="mSend" class="btn active">등록</button>
-                </div>
+                <div id="mPlayer" style="aspect-ratio:16/9; background:#000; border-radius:12px; overflow:hidden"></div>
             </div>
         </div>
     </div>
 
     <script>
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
+    let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", cast: "출연자", date: "발행일" };
+    let allData = [], activeGenre = new Set(), activeMedia = new Set(), activeCast = new Set();
+    let viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 20, activeCastRole = "전체";
+
+    function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(t => t.trim()); }
+    function fnv1a(s) { let h = 0x811c9dc5; for(let i=0; i<s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16); }
+    function getYTId(url) { try { const u = new URL(url); return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
     
-    let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
+    function renderSkeleton() { document.getElementById("grid").innerHTML = Array(8).fill('<div class="skeleton"></div>').join(""); }
 
-    let allData = [], baseGenres = [], baseMedias = [], baseFormats = [], baseContents = [], baseStages = [], baseMethods = [], baseCasts = [], baseTones = [];
-    let activeGenre = new Set(), activeMedia = new Set(), activeFormat = new Set(), activeContents = new Set(), activeStages = new Set(), activeMethod = new Set(), activeCast = new Set(), activeTone = new Set();
-    let activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 20;
-    const RENDER_CHUNK = 20;
-    const interactionsCache = new Map();
+    async function render(reset = false) {
+        if (reset) renderLimit = 20;
+        const q = document.getElementById("search").value.toLowerCase();
+        
+        const filtered = allData.filter(it => {
+            const okSearch = q ? (it[KEY.title]||"").toLowerCase().includes(q) : true;
+            const hasTags = (set, k) => set.size === 0 || [...set].every(t => splitTags(it[KEY[k]]).includes(t));
+            
+            let okCast = true;
+            if (activeCastRole !== "전체") {
+                okCast = splitTags(it[KEY.cast]).some(t => t.includes(`(${activeCastRole})`) || t === activeCastRole);
+            }
+            if (activeCast.size > 0) {
+                okCast = okCast && [...activeCast].every(name => (it[KEY.cast]||"").includes(name));
+            }
+            return okSearch && hasTags(activeGenre, "genre") && hasTags(activeMedia, "media") && okCast;
+        });
 
-    const gridEl = document.getElementById("grid"), dashEl = document.getElementById("dash"), statsEl = document.getElementById("stats"), searchEl = document.getElementById("search");
+        document.getElementById("stats").textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
+        updateChips(filtered);
 
-    function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(item => item.trim()); }
-    
-    function getCastInfo(tag) {
-        const match = tag.match(/^(.*?)\(([^)]+)\)$/);
-        if (match) {
-            let role = match[2];
-            if (['개발자', '마케터', '사업'].includes(role)) role = '직원';
-            return { name: match[1], category: role };
+        if (viewMode === "all") {
+            document.getElementById("grid").style.display = "grid";
+            document.getElementById("dash").classList.remove("active");
+            let list = [...filtered];
+            if (sortMode === "date") list.sort((a,b) => new Date(b[KEY.date]) - new Date(a[KEY.date]));
+            
+            const sliced = list.slice(0, renderLimit);
+            document.getElementById("grid").innerHTML = sliced.map(it => `
+                <div class="card" onclick="openModal('${fnv1a(it[KEY.url])}')">
+                    <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/mqdefault.jpg"></div>
+                    <div class="metaBox">
+                        <div style="font-size:13px; font-weight:bold; height:2.8em; overflow:hidden">${it[KEY.title]}</div>
+                        <div style="font-size:11px; color:var(--muted); margin-top:8px">${it[KEY.channel]}</div>
+                    </div>
+                </div>`).join("");
+        } else {
+            document.getElementById("grid").style.display = "none";
+            document.getElementById("dash").classList.add("active");
+            renderDash(filtered);
         }
-        return { name: tag, category: tag };
     }
 
-    function fnv1a(str) { 
-        if(!str) return "00000000";
-        let h = 0x811c9dc5; 
-        for(let i=0; i<str.length; i++){ 
-            h ^= str.charCodeAt(i); 
-            h = Math.imul(h, 0x01000193); 
-        } 
-        return (h >>> 0).toString(16).padStart(8,"0"); 
+    function renderDash(data) {
+        const channels = [...new Set(data.map(it => it[KEY.channel]))].sort();
+        document.getElementById("leftNav").innerHTML = channels.map(c => `
+            <button class="btn ${selectedChannel===c?'active':''}" style="width:100%; margin-bottom:5px; text-align:left" onclick="selectChannel('${c}')">📺 ${c}</button>
+        `).join("");
+        
+        if (selectedChannel) {
+            const list = data.filter(it => it[KEY.channel] === selectedChannel);
+            document.getElementById("rightList").innerHTML = list.map(it => `
+                <div style="padding:10px; border-bottom:1px solid var(--line); cursor:pointer" onclick="openModal('${fnv1a(it[KEY.url])}')">
+                    <strong>${it[KEY.title]}</strong><br><small>${it[KEY.date]}</small>
+                </div>`).join("");
+        } else {
+            document.getElementById("rightList").innerHTML = "채널을 선택하세요.";
+        }
     }
 
-    function getYoutubeID(url) { 
-        try { 
-            const u = new URL(url); 
-            if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; 
-            if (u.hostname.includes("youtu.be")) return u.pathname.slice(1).split(/[?#]/)[0]; 
-            return u.searchParams.get("v"); 
-        } catch { return ""; } 
+    function selectChannel(c) { selectedChannel = c; render(); }
+
+    function updateChips(data) {
+        const gSet = new Set(), mSet = new Set(), cMap = new Map();
+        data.forEach(it => {
+            splitTags(it[KEY.genre]).forEach(t => gSet.add(t));
+            splitTags(it[KEY.media]).forEach(t => mSet.add(t));
+            splitTags(it[KEY.cast]).forEach(t => {
+                const name = t.split('(')[0];
+                const role = t.includes('(') ? t.split('(')[1].replace(')', '') : '기타';
+                const finalRole = ['개발자','마케터','사업'].includes(role) ? '직원' : role;
+                if(!cMap.has(finalRole)) cMap.set(finalRole, new Set());
+                cMap.get(finalRole).add(name);
+            });
+        });
+
+        const draw = (el, set, active, k) => {
+            el.innerHTML = `<div class="chip ${active.size===0?'active':''}" onclick="resetFilter('${k}')">All</div>` + 
+                [...set].sort().map(v => `<div class="chip ${active.has(v)?'active':''}" onclick="toggleFilter('${k}', '${v}')">${v}</div>`).join("");
+        };
+        draw(document.getElementById("genreChips"), gSet, activeGenre, "genre");
+        draw(document.getElementById("mediaChips"), mSet, activeMedia, "media");
+
+        // 출연자 2단
+        const castEl = document.getElementById("castChips");
+        castEl.innerHTML = `<div style="display:flex; gap:5px; margin-bottom:10px">` + 
+            ["전체", ...[...cMap.keys()].sort()].map(r => `<div class="chip ${activeCastRole===r?'active':''}" onclick="activeCastRole='${r}';render(true)">${r}</div>`).join("") + `</div>`;
+        if(activeCastRole !== "전체" && cMap.has(activeCastRole)) {
+            castEl.innerHTML += `<div style="display:flex; gap:5px; flex-wrap:wrap">` + 
+                [...cMap.get(activeCastRole)].sort().map(n => `<div class="chip ${activeCast.has(n)?'active':''}" onclick="toggleFilter('cast', '${n}')">${n}</div>`).join("") + `</div>`;
+        }
     }
 
-    function renderSkeleton() { gridEl.innerHTML = Array(8).fill(0).map(() => `<div class="skeleton"></div>`).join(""); }
+    function toggleFilter(k, v) {
+        const s = k === 'genre' ? activeGenre : k === 'media' ? activeMedia : activeCast;
+        s.has(v) ? s.delete(v) : s.add(v); render(true);
+    }
+    function resetFilter(k) {
+        if(k==='genre') activeGenre.clear(); else if(k==='media') activeMedia.clear(); else activeCast.clear();
+        render(true);
+    }
+
+    function openModal(id) {
+        const it = allData.find(x => fnv1a(x[KEY.url]) === id);
+        if(!it) return;
+        document.getElementById("modalOverlay").classList.add("open");
+        document.getElementById("mTitle").textContent = it[KEY.title];
+        document.getElementById("modalLeft").innerHTML = `<img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:10px">
+            <p>${it[KEY.channel]}</p><p>${it[KEY.date]}</p><a href="${it[KEY.url]}" target="_blank" class="btn">원본 보기</a>`;
+        document.getElementById("mPlayer").innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${getYTId(it[KEY.url])}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
+    }
+    function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); document.getElementById("mPlayer").innerHTML=""; }
+
+    async function init() {
+        renderSkeleton();
+        try {
+            const res = await fetch(SHEET_URL);
+            const data = await res.json();
+            if(!Array.isArray(data)) throw new Error("배열 아님");
+            allData = data.filter(x => x[Object.keys(x)[0]]).reverse();
+            const first = allData[0];
+            Object.keys(KEY).forEach(k => {
+                const found = Object.keys(first).find(rk => rk.toLowerCase().trim() === KEY[k].toLowerCase());
+                if(found) KEY[k] = found;
+            });
+            render();
+        } catch (e) { document.getElementById("stats").textContent = "오류: " + e.message; }
+    }
+
+    document.getElementById("search").oninput = () => render(true);
+    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; updateBtns("viewAllBtn"); render(true); };
+    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; updateBtns("viewDashBtn"); render(true); };
+    document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; updateBtns("sortDateBtn"); render(true); };
+    document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; updateBtns("sortUpdateBtn"); render(true); };
+    document.getElementById("resetBtn").onclick = () => location.reload();
+    
+    function updateBtns(id) {
+        const isView = id.includes("view");
+        if(isView) ["viewAllBtn", "viewDashBtn"].forEach(b => document.getElementById(b).classList.remove("active"));
+        else ["sortDateBtn", "sortUpdateBtn"].forEach(b => document.getElementById(b).classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+    }
+
+    document.querySelectorAll(".tab").forEach(t => t.onclick = (e) => {
+        document.querySelectorAll(".tab, .chipsPanel").forEach(el => el.classList.remove("active"));
+        e.target.classList.add("active");
+        document.getElementById(e.target.dataset.tab + "Chips").classList.add("active");
+    });
 
     const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && allData.length > 0 && viewMode === "all") {
-            if (renderLimit < allData.length) { renderLimit += RENDER_CHUNK; render(false); }
+            if (renderLimit < allData.length) { renderLimit += 20; render(false); }
         }
-    }, { threshold: 0.1 });
-    observer.observe(document.getElementById("scrollTrigger"));
-
-    function autoMatchKeys(firstRow) {
-        if(!firstRow) return;
-        const rowKeys = Object.keys(firstRow);
-        Object.keys(KEY).forEach(k => {
-            const found = rowKeys.find(rk => rk.toLowerCase().trim() === KEY[k].toLowerCase());
-            if (found) KEY[k] = found;
-        });
-    }
-
-    async function render(resetPagination = false) {
-        if (resetPagination) { renderLimit = RENDER_CHUNK; if (viewMode === "all") renderSkeleton(); }
-        
-        const q = searchEl.value.toLowerCase();
-        const filtered = allData.filter(item => {
-            const okSearch = q ? (item[KEY.title]||"").toLowerCase().includes(q) : true;
-            const checkTags = (activeSet, key) => activeSet.size === 0 ? true : [...activeSet].every(t => splitTags(item[key]).includes(t));
-            let okCast = true;
-            if (activeCastRole !== "전체") okCast = splitTags(item[KEY.cast]).some(t => getCastInfo(t).category === activeCastRole);
-            if (activeCast.size > 0) okCast = okCast && [...activeCast].every(name => splitTags(item[KEY.cast]).some(t => getCastInfo(t).name === name));
-            return okSearch && checkTags(activeGenre, KEY.genre) && checkTags(activeMedia, KEY.media) && checkTags(activeFormat, KEY.format) && checkTags(activeContents, KEY.content) && checkTags(activeStages, KEY.stage) && checkTags(activeMethod, KEY.method) && okCast && checkTags(activeTone, KEY.tone);
-        });
-
-        updateChipsUI(filtered);
-        statsEl.textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
-
-        if (viewMode === "all") {
-            gridEl.style.display = "grid"; dashEl.classList.remove("active");
-            let list = [...filtered];
-            
-            if (sortMode === "date") {
-                list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
-            } else if (sortMode === "likes") {
-                list.sort((a,b) => (interactionsCache.get(fnv1a(b[KEY.url]))?.likes || 0) - (interactionsCache.get(fnv1a(a[KEY.url]))?.likes || 0));
-            } 
-            // sortMode === 'update'일 때는 초기 시트 로드 순서(역순)를 따름
-
-            const sliced = list.slice(0, renderLimit);
-            if(sliced.length === 0) {
-                gridEl.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px; color:var(--muted);">검색 결과가 없습니다.</div>`;
-            } else {
-                gridEl.innerHTML = sliced.map(it => {
-                    const itemId = fnv1a(it[KEY.url]);
-                    return `<div class="card" onclick='openModalById("${itemId}")'>
-                        <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/mqdefault.jpg"></div>
-                        <div class="metaBox"><div class="titleLine">${escapeHTML(it[KEY.title])}</div><div style="font-size:11px; color:var(--muted);">${escapeHTML(it[KEY.channel])}</div></div>
-                    </div>`;
-                }).join("");
-            }
-        } else {
-            gridEl.style.display = "none"; dashEl.classList.add("active");
-            renderLeftNav(filtered);
-            const rightList = document.getElementById("rightList");
-            if (!selectedChannel) { 
-                rightList.innerHTML = `<div style="padding:100px; text-align:center; color:var(--muted); font-size:14px;">왼쪽 목록에서 채널을 선택해 주세요.</div>`; 
-                return; 
-            }
-            document.getElementById("rightTitle").textContent = selectedChannel;
-            const list = filtered.filter(it => it[KEY.channel] === selectedChannel);
-            rightList.innerHTML = list.map(it => `
-                <div style="display:flex; gap:15px; padding:12px; border-bottom:1px solid var(--line); cursor:pointer;" onclick='openModalById("${fnv1a(it[KEY.url])}")'>
-                    <img src="https://img.youtube.com/vi/${getYoutubeID(it[KEY.url])}/default.jpg" style="width:100px; border-radius:8px;">
-                    <div><div style="font-weight:bold; margin-bottom:5px;">${escapeHTML(it[KEY.title])}</div><div style="font-size:12px; color:var(--muted);">${it[KEY.date]}</div></div>
-                </div>`).join("");
-        }
-    }
-
-    function renderLeftNav(filtered) {
-        const nav = document.getElementById("leftNav");
-        const channels = [...new Set(filtered.map(it => it[KEY.channel]))].filter(Boolean).sort();
-        nav.innerHTML = "";
-        channels.forEach(c => {
-            const b = document.createElement("button");
-            b.className = `btn ${selectedChannel === c ? 'active' : ''}`;
-            b.style.width = "100%"; b.style.marginBottom = "6px"; b.style.textAlign = "left"; b.style.display = "block";
-            b.textContent = `📺 ${c}`;
-            b.onclick = () => { selectedChannel = c; render(false); };
-            nav.appendChild(b);
-        });
-    }
-
-    function updateChipsUI(filtered) {
-        const maps = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), tone: new Set() };
-        filtered.forEach(it => { Object.keys(maps).forEach(k => splitTags(it[KEY[k]]).forEach(t => maps[k].add(t))); });
-        
-        const renderGrp = (el, base, active, k) => {
-            el.innerHTML = `<div class="chip ${active.size===0?'active':''}" id="all-${k}">All</div>` + 
-                base.filter(x => maps[k.toLowerCase()].has(x)).map(v => `<div class="chip ${active.has(v)?'active':''}" data-val="${v}">${v}</div>`).join("");
-            
-            el.querySelector(`#all-${k}`).onclick = () => { active.clear(); render(true); };
-            el.querySelectorAll('.chip:not([id^="all"])').forEach(chip => {
-                chip.onclick = () => { const v = chip.dataset.val; active.has(v) ? active.delete(v) : active.add(v); render(true); };
-            });
-        };
-
-        renderGrp(genreChipsEl, baseGenres, activeGenre, "Genre");
-        renderGrp(mediaChipsEl, baseMedias, activeMedia, "Media");
-        renderGrp(formatChipsEl, baseFormats, activeFormat, "Format");
-        renderGrp(contentChipsEl, baseContents, activeContents, "Contents");
-        renderGrp(stageChipsEl, baseStages, activeStages, "Stages");
-        renderGrp(methodChipsEl, baseMethods, activeMethod, "Method");
-        renderGrp(toneChipsEl, baseTones, activeTone, "Tone");
-
-        castChipsEl.innerHTML = "";
-        const castMap = new Map();
-        baseCasts.forEach(tag => { const { name, category } = getCastInfo(tag); if (!castMap.has(category)) castMap.set(category, new Set()); castMap.get(category).add(name); });
-        const cats = ["전체", ...Array.from(castMap.keys()).sort()];
-        const catRow = document.createElement("div"); catRow.className="chips";
-        cats.forEach(c => {
-            const b = document.createElement("div"); b.className=`chip ${activeCastRole===c?'active':''}`; b.textContent=c;
-            b.onclick=()=>{activeCastRole=c; activeCast.clear(); render(false);}; catRow.appendChild(b);
-        });
-        castChipsEl.appendChild(catRow);
-        if(activeCastRole!=="전체" && castMap.has(activeCastRole)){
-            const subRow = document.createElement("div"); subRow.className="chips"; subRow.style.marginTop="8px";
-            Array.from(castMap.get(activeCastRole)).forEach(n => {
-                const b = document.createElement("div"); b.className=`chip ${activeCast.has(n)?'active':''}`; b.textContent=n;
-                b.onclick=()=>{activeCast.has(n)?activeCast.delete(n):activeCast.add(n); render(true);}; subRow.appendChild(b);
-            });
-            castChipsEl.appendChild(subRow);
-        }
-    }
-
-    async function openModalById(id) {
-        const item = allData.find(it => fnv1a(it[KEY.url]) === id);
-        if(!item) return;
-        document.getElementById("modalOverlay").classList.add("open");
-        document.getElementById("modalLeft").innerHTML = `
-            <img src="https://img.youtube.com/vi/${getYoutubeID(item[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
-            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px; line-height:1.4;">${escapeHTML(item[KEY.title])}</div>
-            <div style="color:var(--muted); font-size:14px;">${escapeHTML(item[KEY.channel])} · ${item[KEY.date]}</div>
-            <a href="${item[KEY.url]}" target="_blank" class="update-btn" style="display:block; text-align:center; margin-top:20px; text-decoration:none;">🔗 원본 열기</a>
-        `;
-        const ytId = getYoutubeID(item[KEY.url]);
-        document.getElementById("mIframe").src = ytId ? `https://www.youtube.com/embed/${ytId}?autoplay=1` : "";
-    }
-
-    document.getElementById("mClose").onclick = () => { document.getElementById("modalOverlay").classList.remove("open"); document.getElementById("mIframe").src=""; };
-
-    async function init() {
-        try {
-            renderSkeleton();
-            const res = await fetch(SHEET_URL);
-            const data = await res.json();
-            if(!data || data.length === 0) throw new Error("시트 데이터가 비어있습니다.");
-            
-            // 데이터 전처리
-            allData = data.filter(x => x && (x['URL'] || x['url'] || x['TITLE'] || x['title'])).reverse();
-            autoMatchKeys(allData[0]);
-            
-            const getBase = (k) => [...new Set(allData.flatMap(i => splitTags(i[KEY[k]])))].filter(Boolean).sort();
-            baseGenres = getBase("genre"); baseMedias = getBase("media"); baseFormats = getBase("format");
-            baseContents = getBase("content"); baseStages = getBase("stage"); baseMethods = getBase("method");
-            baseCasts = getBase("cast"); baseTones = getBase("tone");
-            
-            render(true);
-        } catch (e) { 
-            console.error(e);
-            statsEl.textContent = "로드 실패: " + e.message; 
-            gridEl.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:100px; color:var(--accent);">데이터 로딩 중 오류가 발생했습니다. 구글 시트의 공개 설정을 확인해 보세요.</div>`;
-        }
-    }
-
-    function updateSortBtns(activeBtn) {
-        [sortDateBtn, sortUpdateBtn, sortLikesBtn].forEach(b => b.classList.remove('active'));
-        activeBtn.classList.add('active');
-    }
-
-    const sortDateBtn = document.getElementById("sortDateBtn"), sortUpdateBtn = document.getElementById("sortUpdateBtn"), sortLikesBtn = document.getElementById("sortLikesBtn");
-    sortDateBtn.onclick = () => { sortMode = "date"; updateSortBtns(sortDateBtn); render(true); };
-    sortUpdateBtn.onclick = () => { sortMode = "update"; updateSortBtns(sortUpdateBtn); render(true); };
-    sortLikesBtn.onclick = () => { sortMode = "likes"; updateSortBtns(sortLikesBtn); render(true); };
-
-    searchEl.oninput = () => render(true);
-    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; document.getElementById("viewAllBtn").classList.add("active"); document.getElementById("viewDashBtn").classList.remove("active"); render(true); };
-    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; document.getElementById("viewDashBtn").classList.add("active"); document.getElementById("viewAllBtn").classList.remove("active"); render(true); };
-    document.getElementById("resetBtn").onclick = () => { location.reload(); };
-    
-    document.querySelectorAll('.tab').forEach(t => t.onclick = (e) => {
-        document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
-        e.target.classList.add('active');
-        document.getElementById(e.target.dataset.tab + "Chips").classList.add('active');
     });
+    observer.observe(document.getElementById("scrollTrigger"));
 
     init();
     </script>
