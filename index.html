@@ -33,7 +33,6 @@
         
         .btn{ padding:10px 16px; border-radius:12px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; font-size:13px; font-weight:700; transition: 0.2s; }
         .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-        .btn:disabled{ opacity: 0.5; cursor: not-allowed; }
         
         .filterTabs{ display:flex; flex-wrap:wrap; gap:8px; margin: 12px 0 10px 0; }
         .tab{ padding:8px 12px; border-radius:10px; border:1px solid transparent; background: transparent; color: var(--muted); font-size:13px; font-weight:700; cursor:pointer; }
@@ -47,7 +46,6 @@
         .chip{ padding:7px 12px; border-radius:999px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--muted); cursor:pointer; font-size:12px; transition: 0.2s; }
         .chip.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
 
-        /* 카드 내 인터랙션 바 */
         .actionsBar{ margin-top:12px; display:flex; gap:8px; align-items:center; }
         .actionBtn{ 
             border:1px solid var(--line); background: rgba(255,255,255,0.03); color: var(--muted); 
@@ -152,13 +150,19 @@
     </div>
 
     <script>
+    // 1. 기존 아카이브 탭
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
+    // 2. 추가: 인터랙션(댓글/좋아요) 탭을 통째로 불러오기 위한 URL
+    const INTERACTIONS_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/INTERACTIONS";
+    // 데이터 쓰기용 API
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
     
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
 
     let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40, filterOnlyMemos = false;
     const activeSets = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), cast: new Set(), tone: new Set() };
+    
+    // 데이터를 시트에서 한 번에 가져와서 메모리에 담아둘 변수
     const interactionsCache = new Map();
 
     function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(t => t.trim()); }
@@ -176,54 +180,11 @@
         return { name: tag, category: tag };
     }
 
-    async function fetchInteractions(itemId) {
-        if (interactionsCache.has(itemId)) return interactionsCache.get(itemId);
-        try {
-            const res = await fetch(API_URL + "?itemId=" + itemId);
-            if (!res.ok) throw new Error("Network response was not ok");
-            const data = await res.json();
-            interactionsCache.set(itemId, data);
-            return data;
-        } catch (e) { 
-            // 구글 서버 에러 시 기본값 반환 (앱이 뻗지 않도록)
-            return { likes: 0, memos: [] }; 
-        }
-    }
-
-    // [최적화 & 진행률 추가] 캐시에 없는 데이터를 분할 요청하여 과부하 방지
-    async function ensureAllInteractionsLoaded(btnEl) {
-        const missingIds = allData.map(it => fnv1a(it[KEY.url])).filter(id => !interactionsCache.has(id));
-        if (missingIds.length === 0) return;
-        
-        showToast(`총 ${missingIds.length}개의 최신 반응(댓글/좋아요)을 불러옵니다... ⏳`);
-        
-        const batchSize = 10; // 구글 서버가 차단하지 않게 한 번에 10개씩만 요청
-        let loadedCount = 0;
-
-        for (let i = 0; i < missingIds.length; i += batchSize) {
-            const batch = missingIds.slice(i, i + batchSize);
-            await Promise.all(batch.map(id => fetchInteractions(id)));
-            
-            loadedCount += batch.length;
-            if(btnEl) btnEl.textContent = `⏳ 동기화 중 (${Math.min(loadedCount, missingIds.length)}/${missingIds.length})`;
-            
-            // 과부하 방지를 위해 0.3초 대기 후 다음 묶음 요청
-            await new Promise(res => setTimeout(res, 300));
-        }
-    }
-
     function updateCardCounters(itemId, data) {
         const lEl = document.getElementById(`like-${itemId}`);
         const mEl = document.getElementById(`memo-${itemId}`);
         if(lEl) lEl.textContent = data.likes || 0;
         if(mEl) mEl.textContent = data.memos?.length || 0;
-    }
-
-    async function hydrateCounters(ids) {
-        for (const id of ids) {
-            const data = await fetchInteractions(id);
-            updateCardCounters(id, data);
-        }
     }
 
     function renderSkeleton() { document.getElementById("grid").innerHTML = Array(12).fill('<div class="skeleton"></div>').join(""); }
@@ -233,7 +194,7 @@
         targets.forEach(id => document.getElementById(id)?.classList.toggle("active", id === activeId));
     }
 
-    async function render(reset = false) {
+    function render(reset = false) {
         if (reset) {
             renderLimit = 40;
             if(viewMode === "all") renderSkeleton();
@@ -244,8 +205,9 @@
             const itemId = fnv1a(it[KEY.url]);
             const okSearch = q ? (it[KEY.title]||"").toLowerCase().includes(q) : true;
             
-            // 캐시 데이터 기반으로 댓글 유무 필터링
-            const okMemos = filterOnlyMemos ? (interactionsCache.get(itemId)?.memos?.length > 0) : true;
+            // 캐시 데이터 기반으로 댓글 유무 0.1초만에 필터링
+            const itData = interactionsCache.get(itemId) || { memos: [] };
+            const okMemos = filterOnlyMemos ? (itData.memos.length > 0) : true;
             
             const checkTags = (k) => activeSets[k].size === 0 || [...activeSets[k]].every(t => splitTags(it[KEY[k]]).includes(t));
             
@@ -273,15 +235,16 @@
             if (sortMode === "date") list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
             else if (sortMode === "likes") {
                 list.sort((a,b) => {
-                    const likesA = interactionsCache.get(fnv1a(a[KEY.url]))?.likes || 0;
-                    const likesB = interactionsCache.get(fnv1a(b[KEY.url]))?.likes || 0;
-                    return likesB - likesA;
+                    const likesA = (interactionsCache.get(fnv1a(a[KEY.url])) || {}).likes || 0;
+                    const likesB = (interactionsCache.get(fnv1a(b[KEY.url])) || {}).likes || 0;
+                    return likesB - likesA; // 인기순 즉각 정렬!
                 });
             }
             
             const sliced = list.slice(0, renderLimit);
             gridEl.innerHTML = sliced.map(it => {
                 const itemId = fnv1a(it[KEY.url]);
+                const itemData = interactionsCache.get(itemId) || { likes: 0, memos: [] }; // 데이터를 그릴때 바로 꺼내서 삽입
                 return `
                 <div class="card" onclick="openModal('${itemId}')">
                     <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/mqdefault.jpg"></div>
@@ -289,14 +252,12 @@
                         <div class="titleLine" title="${it[KEY.title]}">${it[KEY.title]}</div>
                         <div style="font-size:11px; color:var(--muted); margin-top:8px">${it[KEY.channel]}</div>
                         <div class="actionsBar">
-                            <span class="actionBtn">👍 <span id="like-${itemId}">0</span></span>
-                            <span class="actionBtn">💬 <span id="memo-${itemId}">0</span></span>
+                            <span class="actionBtn">👍 <span id="like-${itemId}">${itemData.likes}</span></span>
+                            <span class="actionBtn">💬 <span id="memo-${itemId}">${itemData.memos.length}</span></span>
                         </div>
                     </div>
                 </div>`;
             }).join("");
-
-            hydrateCounters(sliced.map(it => fnv1a(it[KEY.url])));
 
         } else {
             gridEl.style.display = "none";
@@ -347,7 +308,7 @@
 
     function toggleFilter(k, v) { activeSets[k].has(v) ? activeSets[k].delete(v) : activeSets[k].add(v); render(true); }
 
-    async function openModal(id) {
+    function openModal(id) {
         const it = allData.find(x => fnv1a(x[KEY.url]) === id);
         if(!it) return;
         document.getElementById("modalOverlay").classList.add("open");
@@ -361,100 +322,104 @@
         `;
         document.getElementById("mPlayer").innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${getYTId(it[KEY.url])}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
         
-        await loadInteractions(id);
+        loadInteractions(id); // 화면 표시
         document.getElementById("mLikeBtn").onclick = () => toggleLike(id);
     }
 
-    async function loadInteractions(id) {
-        const data = await fetchInteractions(id);
+    // 서버 요청 없이 내부 캐시에서 바로 꺼내서 보여줌
+    function loadInteractions(id) {
+        const data = interactionsCache.get(id) || { likes: 0, memos: [] };
         document.getElementById("mCounts").textContent = `👍 ${data.likes || 0} · 💬 ${data.memos?.length || 0}`;
         document.getElementById("mMemoList").innerHTML = (data.memos || []).map(m => `<div style="margin-bottom:8px; font-size:13px; border-bottom:1px solid var(--line); padding-bottom:5px;"><strong style="color:#fff;">${m.nickname}</strong>: ${m.memo}</div>`).join("");
         updateCardCounters(id, data);
     }
 
-    async function toggleLike(id) {
+    function toggleLike(id) {
         const nick = document.getElementById("mNick").value || "익명";
-        await fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "like", nickname: nick }) });
-        interactionsCache.delete(id); 
+        
+        // 1. 화면 즉시 반영 (낙관적 업데이트)
+        if(!interactionsCache.has(id)) interactionsCache.set(id, {likes:0, memos:[]});
+        interactionsCache.get(id).likes++;
+        loadInteractions(id); 
         showToast("좋아요를 눌렀습니다!");
-        loadInteractions(id);
+
+        // 2. 뒤에서 조용히 구글 서버로 데이터 전송
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "like", nickname: nick }) });
     }
 
-    document.getElementById("mSend").onclick = async () => {
+    document.getElementById("mSend").onclick = () => {
         const id = document.getElementById("modalOverlay").dataset.id;
-        const nick = document.getElementById("mNick").value.trim();
+        const nick = document.getElementById("mNick").value.trim() || "익명";
         const memo = document.getElementById("mMemo").value.trim();
-        if(!nick || !memo) return alert("닉네임과 메모를 입력하세요.");
-        await fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "memo", nickname: nick, memo: memo }) });
+        if(!memo) return alert("메모를 입력하세요.");
+        
+        // 1. 화면 즉시 반영
+        if(!interactionsCache.has(id)) interactionsCache.set(id, {likes:0, memos:[]});
+        interactionsCache.get(id).memos.push({ nickname: nick, memo: memo });
         document.getElementById("mMemo").value = "";
-        interactionsCache.delete(id);
-        showToast("메모가 등록되었습니다.");
         loadInteractions(id);
+        showToast("메모가 등록되었습니다.");
+
+        // 2. 뒤에서 조용히 구글 서버로 전송
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "memo", nickname: nick, memo: memo }) });
     };
 
     function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); document.getElementById("mPlayer").innerHTML=""; }
     document.getElementById("mClose").onclick = closeModal;
 
+    // [핵심 변경] 사이트를 켤 때 게시물 시트 + 댓글 시트를 동시에 싹 다 불러옴
     async function init() {
         renderSkeleton();
         try {
-            const res = await fetch(SHEET_URL);
-            const data = await res.json();
-            allData = data.filter(x => x[Object.keys(x)[0]]).reverse();
+            // 두 개의 시트를 동시에 가져와서 시간 단축
+            const [archiveRes, interactRes] = await Promise.all([
+                fetch(SHEET_URL),
+                fetch(INTERACTIONS_URL).catch(() => ({ json: () => [] })) // 실패해도 에러 안나게 처리
+            ]);
+
+            const rawData = await archiveRes.json();
+            const interactData = await interactRes.json();
+
+            // 가져온 댓글/좋아요 시트 데이터를 사용하기 좋게 캐시에 정리
+            interactionsCache.clear();
+            if (Array.isArray(interactData)) {
+                interactData.forEach(row => {
+                    const id = row.itemId;
+                    if (!id) return;
+                    if (!interactionsCache.has(id)) interactionsCache.set(id, { likes: 0, memos: [] });
+                    
+                    const cache = interactionsCache.get(id);
+                    if (row.action === 'like') cache.likes++;
+                    if (row.action === 'memo') cache.memos.push({ nickname: row.nickname || '익명', memo: row.memo });
+                });
+            }
+
+            allData = rawData.filter(x => x[Object.keys(x)[0]]).reverse();
             const first = allData[0];
             Object.keys(KEY).forEach(k => {
                 const found = Object.keys(first).find(rk => rk.trim().toLowerCase() === KEY[k].toLowerCase());
                 if(found) KEY[k] = found;
             });
             render();
-        } catch (e) { document.getElementById("stats").textContent = "로드 실패"; }
+        } catch (e) { document.getElementById("stats").textContent = "로드 실패"; console.error(e); }
     }
 
+    // 버튼 동작들 (기다림 없이 즉각 작동)
     document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; updateToggleState('view', 'viewAllBtn'); render(true); };
     document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; updateToggleState('view', 'viewDashBtn'); render(true); };
     document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; updateToggleState('sort', 'sortDateBtn'); render(true); };
     document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; updateToggleState('sort', 'sortUpdateBtn'); render(true); };
     
-    // [개선] 인기순 버튼: 진행률 표시 및 에러 처리 추가
-    document.getElementById("sortLikesBtn").onclick = async (e) => { 
-        const btn = e.target;
-        btn.disabled = true;
-        
-        try {
-            await ensureAllInteractionsLoaded(btn);
-            sortMode="likes"; 
-            updateToggleState('sort', 'sortLikesBtn'); 
-        } catch (error) {
-            showToast("데이터를 불러오는 중 문제가 발생했습니다.");
-        } finally {
-            btn.textContent = "🔥 인기순";
-            btn.disabled = false;
-            render(true); 
-        }
+    document.getElementById("sortLikesBtn").onclick = () => { 
+        sortMode="likes"; 
+        updateToggleState('sort', 'sortLikesBtn'); 
+        render(true); 
     };
     
-    // [개선] 댓글 리뷰 필터: 진행률 표시 및 에러 처리 추가
-    document.getElementById("filterMemosBtn").onclick = async (e) => { 
-        const btn = e.target;
-        
-        if (!filterOnlyMemos) {
-            btn.disabled = true;
-            try {
-                await ensureAllInteractionsLoaded(btn);
-                filterOnlyMemos = true;
-                btn.classList.add("active");
-            } catch (error) {
-                showToast("데이터를 불러오는 중 문제가 발생했습니다.");
-            } finally {
-                btn.textContent = "💬 댓글 리뷰";
-                btn.disabled = false;
-                render(true); 
-            }
-        } else {
-            filterOnlyMemos = false;
-            btn.classList.remove("active");
-            render(true);
-        }
+    document.getElementById("filterMemosBtn").onclick = (e) => { 
+        filterOnlyMemos = !filterOnlyMemos;
+        e.target.classList.toggle("active", filterOnlyMemos);
+        render(true); 
     };
 
     document.getElementById("search").oninput = () => render(true);
