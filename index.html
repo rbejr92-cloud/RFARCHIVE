@@ -26,13 +26,22 @@
         
         h1{ margin:0 0 12px 0; font-size:24px; display:flex; align-items:center; gap:12px; color: #fff; }
         .topbarWrapper { position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; background: rgba(11, 11, 12, 0.6); backdrop-filter: var(--glass); z-index: 100; border-bottom: 1px solid var(--line); }
-        .topbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
         
-        input[type="text"]{ padding:12px 16px; width:320px; border-radius:14px; border:1px solid var(--line); background: rgba(0,0,0,0.2); color:var(--text); transition: 0.2s; }
+        /* 버튼 그룹 레이아웃 개선 */
+        .topbar{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+        .btn-group { display:flex; gap:8px; align-items:center; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 14px; border: 1px solid var(--line); }
+        .btn-group.sort-group { border-color: transparent; background: transparent; padding: 0; }
+        
+        input[type="text"]{ padding:12px 16px; width:280px; border-radius:14px; border:1px solid var(--line); background: rgba(0,0,0,0.2); color:var(--text); transition: 0.2s; }
         input[type="text"]:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
         
-        .btn{ padding:10px 16px; border-radius:12px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; font-size:13px; font-weight:700; transition: 0.2s; }
-        .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .btn{ padding:10px 16px; border-radius:10px; border:1px solid transparent; background: transparent; color:var(--text); cursor:pointer; font-size:13px; font-weight:700; transition: 0.2s; }
+        .btn:hover { background: rgba(255,255,255,0.05); }
+        .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); }
+        
+        /* 정렬 버튼 스타일 별도 지정 */
+        .sort-btn { padding:10px 16px; border-radius:12px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; font-size:13px; font-weight:700; transition: 0.2s; }
+        .sort-btn.active { border-color: var(--line2); background: rgba(255,255,255,0.1); color: #fff; }
         
         .filterTabs{ display:flex; flex-wrap:wrap; gap:8px; margin: 12px 0 10px 0; }
         .tab{ padding:8px 12px; border-radius:10px; border:1px solid transparent; background: transparent; color: var(--muted); font-size:13px; font-weight:700; cursor:pointer; }
@@ -81,14 +90,22 @@
         <h1 onclick="location.reload()" style="cursor:pointer">🎬 Video Reference Archive</h1>
         <div class="topbar">
             <input id="search" type="text" placeholder="제목 검색..." />
-            <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
-            <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
+            
+            <div class="btn-group">
+                <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
+                <button id="viewMemosBtn" class="btn">💬 댓글 리뷰</button>
+                <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
+            </div>
+            
             <div style="width:1px; height:20px; background:var(--line2); margin:0 5px;"></div>
-            <button id="sortDateBtn" class="btn active">📅 발행일순</button>
-            <button id="sortUpdateBtn" class="btn">🆕 업데이트순</button>
-            <button id="sortLikesBtn" class="btn">🔥 인기순</button>
-            <button id="filterMemosBtn" class="btn">💬 댓글 리뷰</button>
-            <button id="resetBtn" class="btn">초기화</button>
+            
+            <div id="sortGroup" class="btn-group sort-group">
+                <button id="sortDateBtn" class="sort-btn active">📅 발행일순</button>
+                <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
+                <button id="sortLikesBtn" class="sort-btn">🔥 인기순</button>
+            </div>
+            
+            <button id="resetBtn" class="sort-btn">초기화</button>
             <div style="margin-left:auto; font-size:12px; color:var(--muted)" id="stats">데이터 로드 중...</div>
         </div>
 
@@ -143,26 +160,21 @@
                 <div style="display:flex; gap:8px;">
                     <input id="mNick" type="text" placeholder="닉네임" style="width:80px; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
                     <input id="mMemo" type="text" placeholder="메모 입력..." style="flex:1; padding:10px; border-radius:10px; background:#222; border:1px solid var(--line); color:#fff; font-size:13px;">
-                    <button id="mSend" class="btn active">등록</button>
+                    <button id="mSend" class="sort-btn active">등록</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-    // 1. 기존 아카이브 탭
     const SHEET_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/ARCHIVE";
-    // 2. 추가: 인터랙션(댓글/좋아요) 탭을 통째로 불러오기 위한 URL
     const INTERACTIONS_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/INTERACTIONS";
-    // 데이터 쓰기용 API
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
     
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
 
     let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40, filterOnlyMemos = false;
     const activeSets = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), cast: new Set(), tone: new Set() };
-    
-    // 데이터를 시트에서 한 번에 가져와서 메모리에 담아둘 변수
     const interactionsCache = new Map();
 
     function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(t => t.trim()); }
@@ -190,7 +202,7 @@
     function renderSkeleton() { document.getElementById("grid").innerHTML = Array(12).fill('<div class="skeleton"></div>').join(""); }
 
     function updateToggleState(type, activeId) {
-        let targets = (type === 'view') ? ["viewAllBtn", "viewDashBtn"] : ["sortDateBtn", "sortUpdateBtn", "sortLikesBtn"];
+        let targets = (type === 'view') ? ["viewAllBtn", "viewMemosBtn", "viewDashBtn"] : ["sortDateBtn", "sortUpdateBtn", "sortLikesBtn"];
         targets.forEach(id => document.getElementById(id)?.classList.toggle("active", id === activeId));
     }
 
@@ -205,7 +217,6 @@
             const itemId = fnv1a(it[KEY.url]);
             const okSearch = q ? (it[KEY.title]||"").toLowerCase().includes(q) : true;
             
-            // 캐시 데이터 기반으로 댓글 유무 0.1초만에 필터링
             const itData = interactionsCache.get(itemId) || { memos: [] };
             const okMemos = filterOnlyMemos ? (itData.memos.length > 0) : true;
             
@@ -237,14 +248,14 @@
                 list.sort((a,b) => {
                     const likesA = (interactionsCache.get(fnv1a(a[KEY.url])) || {}).likes || 0;
                     const likesB = (interactionsCache.get(fnv1a(b[KEY.url])) || {}).likes || 0;
-                    return likesB - likesA; // 인기순 즉각 정렬!
+                    return likesB - likesA; 
                 });
             }
             
             const sliced = list.slice(0, renderLimit);
             gridEl.innerHTML = sliced.map(it => {
                 const itemId = fnv1a(it[KEY.url]);
-                const itemData = interactionsCache.get(itemId) || { likes: 0, memos: [] }; // 데이터를 그릴때 바로 꺼내서 삽입
+                const itemData = interactionsCache.get(itemId) || { likes: 0, memos: [] }; 
                 return `
                 <div class="card" onclick="openModal('${itemId}')">
                     <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/mqdefault.jpg"></div>
@@ -317,16 +328,15 @@
             <img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
             <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px;">${it[KEY.title]}</div>
             <div style="color:var(--muted); font-size:13px; margin-bottom:15px;">${it[KEY.channel]} · ${it[KEY.date]}</div>
-            <button class="btn active" id="mLikeBtn" style="width:100%; margin-bottom:10px;">👍 좋아요 누르기</button>
-            <a href="${it[KEY.url]}" target="_blank" class="btn" style="display:block; text-align:center; text-decoration:none; background: rgba(255,255,255,0.05);">🔗 원본 열기</a>
+            <button class="sort-btn active" id="mLikeBtn" style="width:100%; margin-bottom:10px;">👍 좋아요 누르기</button>
+            <a href="${it[KEY.url]}" target="_blank" class="sort-btn" style="display:block; text-align:center; text-decoration:none; background: rgba(255,255,255,0.05);">🔗 원본 열기</a>
         `;
         document.getElementById("mPlayer").innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${getYTId(it[KEY.url])}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
         
-        loadInteractions(id); // 화면 표시
+        loadInteractions(id);
         document.getElementById("mLikeBtn").onclick = () => toggleLike(id);
     }
 
-    // 서버 요청 없이 내부 캐시에서 바로 꺼내서 보여줌
     function loadInteractions(id) {
         const data = interactionsCache.get(id) || { likes: 0, memos: [] };
         document.getElementById("mCounts").textContent = `👍 ${data.likes || 0} · 💬 ${data.memos?.length || 0}`;
@@ -337,13 +347,11 @@
     function toggleLike(id) {
         const nick = document.getElementById("mNick").value || "익명";
         
-        // 1. 화면 즉시 반영 (낙관적 업데이트)
         if(!interactionsCache.has(id)) interactionsCache.set(id, {likes:0, memos:[]});
         interactionsCache.get(id).likes++;
         loadInteractions(id); 
         showToast("좋아요를 눌렀습니다!");
 
-        // 2. 뒤에서 조용히 구글 서버로 데이터 전송
         fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "like", nickname: nick }) });
     }
 
@@ -353,34 +361,29 @@
         const memo = document.getElementById("mMemo").value.trim();
         if(!memo) return alert("메모를 입력하세요.");
         
-        // 1. 화면 즉시 반영
         if(!interactionsCache.has(id)) interactionsCache.set(id, {likes:0, memos:[]});
         interactionsCache.get(id).memos.push({ nickname: nick, memo: memo });
         document.getElementById("mMemo").value = "";
         loadInteractions(id);
         showToast("메모가 등록되었습니다.");
 
-        // 2. 뒤에서 조용히 구글 서버로 전송
         fetch(API_URL, { method: "POST", body: JSON.stringify({ itemId: id, action: "memo", nickname: nick, memo: memo }) });
     };
 
     function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); document.getElementById("mPlayer").innerHTML=""; }
     document.getElementById("mClose").onclick = closeModal;
 
-    // [핵심 변경] 사이트를 켤 때 게시물 시트 + 댓글 시트를 동시에 싹 다 불러옴
     async function init() {
         renderSkeleton();
         try {
-            // 두 개의 시트를 동시에 가져와서 시간 단축
             const [archiveRes, interactRes] = await Promise.all([
                 fetch(SHEET_URL),
-                fetch(INTERACTIONS_URL).catch(() => ({ json: () => [] })) // 실패해도 에러 안나게 처리
+                fetch(INTERACTIONS_URL).catch(() => ({ json: () => [] }))
             ]);
 
             const rawData = await archiveRes.json();
             const interactData = await interactRes.json();
 
-            // 가져온 댓글/좋아요 시트 데이터를 사용하기 좋게 캐시에 정리
             interactionsCache.clear();
             if (Array.isArray(interactData)) {
                 interactData.forEach(row => {
@@ -404,23 +407,39 @@
         } catch (e) { document.getElementById("stats").textContent = "로드 실패"; console.error(e); }
     }
 
-    // 버튼 동작들 (기다림 없이 즉각 작동)
-    document.getElementById("viewAllBtn").onclick = () => { viewMode="all"; updateToggleState('view', 'viewAllBtn'); render(true); };
-    document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; updateToggleState('view', 'viewDashBtn'); render(true); };
+    // --- 탭 및 정렬 토글 로직 변경 ---
+    const sortGroup = document.getElementById("sortGroup");
+
+    // [전체 보기 탭]
+    document.getElementById("viewAllBtn").onclick = () => { 
+        viewMode = "all"; 
+        filterOnlyMemos = false; 
+        updateToggleState('view', 'viewAllBtn'); 
+        sortGroup.style.display = "flex"; // 정렬 옵션 보이기
+        render(true); 
+    };
+    
+    // [댓글 리뷰 탭]
+    document.getElementById("viewMemosBtn").onclick = () => { 
+        viewMode = "all"; // 레이아웃은 전체보기(Grid)와 동일하게 렌더링
+        filterOnlyMemos = true; 
+        updateToggleState('view', 'viewMemosBtn'); 
+        sortGroup.style.display = "flex"; // 정렬 옵션 보이기
+        render(true); 
+    };
+
+    // [채널별 보기 탭]
+    document.getElementById("viewDashBtn").onclick = () => { 
+        viewMode = "dash"; 
+        updateToggleState('view', 'viewDashBtn'); 
+        sortGroup.style.display = "none"; // 채널별 보기일 때는 정렬 옵션 숨기기
+        render(true); 
+    };
+
+    // 정렬 버튼
     document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; updateToggleState('sort', 'sortDateBtn'); render(true); };
     document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; updateToggleState('sort', 'sortUpdateBtn'); render(true); };
-    
-    document.getElementById("sortLikesBtn").onclick = () => { 
-        sortMode="likes"; 
-        updateToggleState('sort', 'sortLikesBtn'); 
-        render(true); 
-    };
-    
-    document.getElementById("filterMemosBtn").onclick = (e) => { 
-        filterOnlyMemos = !filterOnlyMemos;
-        e.target.classList.toggle("active", filterOnlyMemos);
-        render(true); 
-    };
+    document.getElementById("sortLikesBtn").onclick = () => { sortMode="likes"; updateToggleState('sort', 'sortLikesBtn'); render(true); };
 
     document.getElementById("search").oninput = () => render(true);
     document.getElementById("resetBtn").onclick = () => location.reload();
