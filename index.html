@@ -33,6 +33,7 @@
         
         .btn{ padding:10px 16px; border-radius:12px; border:1px solid var(--line); background: rgba(255,255,255,0.03); color:var(--text); cursor:pointer; font-size:13px; font-weight:700; transition: 0.2s; }
         .btn.active{ border-color: var(--accent); background: rgba(255,71,87,0.1); color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+        .btn:disabled{ opacity: 0.5; cursor: not-allowed; }
         
         .filterTabs{ display:flex; flex-wrap:wrap; gap:8px; margin: 12px 0 10px 0; }
         .tab{ padding:8px 12px; border-radius:10px; border:1px solid transparent; background: transparent; color: var(--muted); font-size:13px; font-weight:700; cursor:pointer; }
@@ -118,7 +119,7 @@
 
     <div class="grid" id="grid">
     </div>
-<div id="scrollTrigger" style="height: 10px; width: 100%;"></div>
+    <div id="scrollTrigger" style="height: 10px; width: 100%;"></div>
 
     <div class="dash" id="dash">
         <div class="panel">
@@ -156,7 +157,6 @@
     
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
 
-    // filterOnlyMemos 변수 추가
     let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40, filterOnlyMemos = false;
     const activeSets = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), cast: new Set(), tone: new Set() };
     const interactionsCache = new Map();
@@ -164,7 +164,7 @@
     function splitTags(s) { return (s || "").split(/[,/]+/).filter(Boolean).map(t => t.trim()); }
     function fnv1a(s) { if(!s) return "0"; let h = 0x811c9dc5; for(let i=0; i<s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16); }
     function getYTId(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
-    function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 2500); }
+    function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 3000); }
 
     function getCastInfo(tag) {
         const match = tag.match(/^(.*?)\(([^)]+)\)$/);
@@ -184,6 +184,19 @@
             interactionsCache.set(itemId, data);
             return data;
         } catch { return { likes: 0, memos: [] }; }
+    }
+
+    // [핵심 추가] 캐시에 없는 데이터를 서버에서 한 번에 쓸어오는 함수
+    async function ensureAllInteractionsLoaded() {
+        const missingIds = allData.map(it => fnv1a(it[KEY.url])).filter(id => !interactionsCache.has(id));
+        if(missingIds.length === 0) return;
+        
+        showToast("전체 서버 데이터를 동기화 중입니다. 잠시만 기다려주세요! ⏳");
+        
+        // 구글 앱스 스크립트(GAS) 동시 요청 제한에 걸리지 않도록 15개씩 묶어서 처리합니다.
+        for (let i = 0; i < missingIds.length; i += 15) {
+            await Promise.all(missingIds.slice(i, i + 15).map(id => fetchInteractions(id)));
+        }
     }
 
     function updateCardCounters(itemId, data) {
@@ -218,7 +231,7 @@
             const itemId = fnv1a(it[KEY.url]);
             const okSearch = q ? (it[KEY.title]||"").toLowerCase().includes(q) : true;
             
-            // 댓글 달린 게시물 필터링
+            // 캐시 데이터 기반으로 댓글 유무 필터링
             const okMemos = filterOnlyMemos ? (interactionsCache.get(itemId)?.memos?.length > 0) : true;
             
             const checkTags = (k) => activeSets[k].size === 0 || [...activeSets[k]].every(t => splitTags(it[KEY[k]]).includes(t));
@@ -388,12 +401,39 @@
     document.getElementById("viewDashBtn").onclick = () => { viewMode="dash"; updateToggleState('view', 'viewDashBtn'); render(true); };
     document.getElementById("sortDateBtn").onclick = () => { sortMode="date"; updateToggleState('sort', 'sortDateBtn'); render(true); };
     document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; updateToggleState('sort', 'sortUpdateBtn'); render(true); };
-    document.getElementById("sortLikesBtn").onclick = () => { sortMode="likes"; updateToggleState('sort', 'sortLikesBtn'); render(true); };
     
-    // 댓글 필터 버튼 이벤트 추가
-    document.getElementById("filterMemosBtn").onclick = (e) => { 
+    // [수정] 인기순 정렬 클릭 시 전체 데이터를 확실하게 동기화 후 정렬
+    document.getElementById("sortLikesBtn").onclick = async (e) => { 
+        const btn = e.target;
+        const prevText = btn.textContent;
+        btn.textContent = "⏳ 동기화 중...";
+        btn.disabled = true;
+        
+        await ensureAllInteractionsLoaded();
+        
+        sortMode="likes"; 
+        updateToggleState('sort', 'sortLikesBtn'); 
+        btn.textContent = "🔥 인기순";
+        btn.disabled = false;
+        render(true); 
+    };
+    
+    // [수정] 댓글 리뷰 필터 클릭 시 전체 데이터를 확실하게 동기화 후 필터링
+    document.getElementById("filterMemosBtn").onclick = async (e) => { 
         filterOnlyMemos = !filterOnlyMemos; 
-        e.target.classList.toggle("active", filterOnlyMemos); 
+        const btn = e.target;
+        btn.classList.toggle("active", filterOnlyMemos); 
+        
+        if (filterOnlyMemos) {
+            const prevText = btn.textContent;
+            btn.textContent = "⏳ 동기화 중...";
+            btn.disabled = true;
+            
+            await ensureAllInteractionsLoaded();
+            
+            btn.textContent = "💬 댓글 리뷰";
+            btn.disabled = false;
+        }
         render(true); 
     };
 
