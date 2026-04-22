@@ -88,6 +88,7 @@
             <button id="sortDateBtn" class="btn active">📅 발행일순</button>
             <button id="sortUpdateBtn" class="btn">🆕 업데이트순</button>
             <button id="sortLikesBtn" class="btn">🔥 인기순</button>
+            <button id="filterMemosBtn" class="btn">💬 댓글 리뷰</button>
             <button id="resetBtn" class="btn">초기화</button>
             <div style="margin-left:auto; font-size:12px; color:var(--muted)" id="stats">데이터 로드 중...</div>
         </div>
@@ -155,7 +156,8 @@
     
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
 
-    let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40;
+    // filterOnlyMemos 변수 추가
+    let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40, filterOnlyMemos = false;
     const activeSets = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), cast: new Set(), tone: new Set() };
     const interactionsCache = new Map();
 
@@ -174,7 +176,6 @@
         return { name: tag, category: tag };
     }
 
-    // [추가] 좋아요/메모 데이터 실시간 로드 및 업데이트 함수
     async function fetchInteractions(itemId) {
         if (interactionsCache.has(itemId)) return interactionsCache.get(itemId);
         try {
@@ -214,7 +215,12 @@
         
         const q = document.getElementById("search").value.toLowerCase();
         const filtered = allData.filter(it => {
+            const itemId = fnv1a(it[KEY.url]);
             const okSearch = q ? (it[KEY.title]||"").toLowerCase().includes(q) : true;
+            
+            // 댓글 달린 게시물 필터링
+            const okMemos = filterOnlyMemos ? (interactionsCache.get(itemId)?.memos?.length > 0) : true;
+            
             const checkTags = (k) => activeSets[k].size === 0 || [...activeSets[k]].every(t => splitTags(it[KEY[k]]).includes(t));
             
             let okCast = true;
@@ -222,7 +228,7 @@
             if (activeCastRole !== "전체") okCast = itemCasts.some(t => getCastInfo(t).category === activeCastRole);
             if (activeSets.cast.size > 0) okCast = okCast && [...activeSets.cast].every(name => itemCasts.some(t => getCastInfo(t).name === name));
 
-            return okSearch && checkTags("genre") && checkTags("media") && checkTags("format") && checkTags("content") && checkTags("stage") && checkTags("method") && checkTags("tone") && okCast;
+            return okSearch && okMemos && checkTags("genre") && checkTags("media") && checkTags("format") && checkTags("content") && checkTags("stage") && checkTags("method") && checkTags("tone") && okCast;
         });
 
         document.getElementById("stats").textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
@@ -233,10 +239,9 @@
         const scrollTrigger = document.getElementById("scrollTrigger");
 
         if (viewMode === "all") {
-            // [전체 보기 모드]
             gridEl.style.display = "grid";
             dashEl.classList.remove("active");
-            if(scrollTrigger) scrollTrigger.style.display = "block"; // 감지기 켜기 (공백 허용)
+            if(scrollTrigger) scrollTrigger.style.display = "block";
 
             let list = [...filtered];
             if (sortMode === "date") list.sort((a,b) => new Date((b[KEY.date]||"").replace(/\./g,'-')) - new Date((a[KEY.date]||"").replace(/\./g,'-')));
@@ -268,10 +273,9 @@
             hydrateCounters(sliced.map(it => fnv1a(it[KEY.url])));
 
         } else {
-            // [채널별 보기 모드]
             gridEl.style.display = "none";
             dashEl.classList.add("active");
-            if(scrollTrigger) scrollTrigger.style.display = "none"; // 감지기 끄기 (공백 제거 핵심!)
+            if(scrollTrigger) scrollTrigger.style.display = "none";
             
             renderDash(filtered);
         }
@@ -386,6 +390,13 @@
     document.getElementById("sortUpdateBtn").onclick = () => { sortMode="update"; updateToggleState('sort', 'sortUpdateBtn'); render(true); };
     document.getElementById("sortLikesBtn").onclick = () => { sortMode="likes"; updateToggleState('sort', 'sortLikesBtn'); render(true); };
     
+    // 댓글 필터 버튼 이벤트 추가
+    document.getElementById("filterMemosBtn").onclick = (e) => { 
+        filterOnlyMemos = !filterOnlyMemos; 
+        e.target.classList.toggle("active", filterOnlyMemos); 
+        render(true); 
+    };
+
     document.getElementById("search").oninput = () => render(true);
     document.getElementById("resetBtn").onclick = () => location.reload();
 
