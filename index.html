@@ -97,8 +97,21 @@
         .resultTitle{ font-size:13px; color:#fff; font-weight:800; }
         .resultMeta{ color:var(--muted); }
 
-        .contentArea{ display:grid; grid-template-columns:minmax(0, 1fr) 148px; gap:14px; align-items:start; }
+        .contentArea{ display:grid; grid-template-columns:minmax(0, 1fr) 196px; gap:14px; align-items:start; }
         .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:18px; }
+        .cardInner{ position:relative; }
+        .metaTopline{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; font-size:11px; color:var(--muted); }
+        .metaSubline{ font-size:12px; color:rgba(234,234,234,.72); margin-top:10px; }
+        .cardFooter{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:12px; }
+        .cardActionGroup{ display:flex; gap:8px; align-items:center; }
+        .quickAction{ border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--muted); width:32px; height:32px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:0.2s; }
+        .quickAction:hover{ color:#fff; border-color:var(--line2); background:rgba(255,255,255,0.08); }
+        .quickAction.active{ color:var(--accent); border-color:rgba(255,71,87,.35); background:rgba(255,71,87,0.12); }
+        .quickStat{ border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--muted); padding:6px 10px; border-radius:999px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+        .cardMoreMenu{ position:absolute; right:14px; bottom:52px; background:#141416; border:1px solid var(--line2); border-radius:12px; padding:6px; display:none; flex-direction:column; gap:4px; min-width:140px; box-shadow:var(--shadow); z-index:5; }
+        .cardMoreMenu.open{ display:flex; }
+        .cardMoreMenu button{ border:none; background:transparent; color:#fff; padding:9px 10px; border-radius:8px; text-align:left; cursor:pointer; font-size:12px; }
+        .cardMoreMenu button:hover{ background:rgba(255,255,255,0.06); }
         .card{ background:var(--panel-bg); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; transition:0.25s; cursor:pointer; }
         .card:hover{ border-color:var(--accent); transform:translateY(-4px); box-shadow:var(--shadow); }
         .thumbWrap{ width:100%; aspect-ratio:16/9; background:#000; overflow:hidden; }
@@ -109,16 +122,22 @@
         .actionsBar{ margin-top:12px; display:flex; gap:8px; align-items:center; }
         .actionBtn{ border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--muted); padding:6px 12px; border-radius:999px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
 
-        .insightRail{ display:flex; flex-direction:column; gap:10px; position:sticky; top:168px; width:148px; }
+        .insightRail{ display:flex; flex-direction:column; gap:10px; position:sticky; top:168px; width:196px; }
         .compactPanel{ border:1px solid var(--line); background:var(--panel-bg); border-radius:16px; padding:12px; }
         .compactPanel h3{ margin:0; font-size:13px; color:#fff; display:flex; align-items:center; gap:6px; line-height:1.35; }
+        .compactSectionTitle{ margin:12px 0 8px; font-size:11px; color:var(--muted); font-weight:700; letter-spacing:.02em; }
+        .insightMiniList{ display:grid; gap:7px; margin-top:8px; }
+        .insightMiniItem{ border:1px solid var(--line); background:rgba(255,255,255,0.02); border-radius:10px; padding:8px; }
+        .insightMiniItem strong{ display:block; font-size:11.5px; color:#fff; line-height:1.35; }
+        .insightMiniItem span{ display:block; margin-top:4px; font-size:10.5px; color:var(--muted); }
         .compactPanel p{ margin:8px 0 0; font-size:11.5px; line-height:1.45; color:var(--muted); }
         .insightHead{ display:flex; align-items:center; gap:6px; }
         .insightNew{ font-size:10px; padding:3px 7px; border-radius:999px; color:#fff; background:rgba(255,71,87,0.9); margin-left:auto; }
         .insightButton{ margin-top:12px; width:100%; justify-content:center; padding:10px 12px; font-size:12px; }
-        .metricList{ display:grid; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+        .metricList{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
         .metricItem{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; font-size:11px; color:var(--muted); }
         .metricItem strong{ font-size:18px; line-height:1; color:#fff; }
+        .metricItem.full{ grid-column:1 / -1; }
         .hintMini{ margin-top:8px; font-size:11px; color:var(--muted); line-height:1.45; }
 
         @media (max-width: 1280px){
@@ -176,7 +195,7 @@
 
         <div class="topbar">
             <div class="topbar-left">
-                <input id="search" type="text" placeholder="제목, 채널 검색..." />
+                <input id="search" type="text" placeholder="제목, 태그, 채널 검색..." />
                 <div class="btn-group">
                     <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
                     <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
@@ -190,6 +209,7 @@
                 </div>
             </div>
             <div class="topbar-right">
+                <button id="sharePresetBtn" class="sort-btn">🔗 현재 필터 공유</button>
                 <button id="resetBtn" class="sort-btn">초기화</button>
                 <a id="sheetLinkBtn" href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="sort-btn">📝 업데이트 시트 가기</a>
             </div>
@@ -247,12 +267,16 @@
                     <h3>👀 인사이트 모드</h3>
                     <span class="insightNew">New</span>
                 </div>
-                <p>현재 필터 결과 기준으로 좋아요와 메모 수를 보여줘요.</p>
+                <p>현재 필터 결과 기준으로 인사이트를 요약해요.</p>
                 <div class="metricList">
                     <div class="metricItem"><span>좋아요된 레퍼런스</span><strong id="metricLikes">0</strong></div>
                     <div class="metricItem"><span>메모가 있는 레퍼런스</span><strong id="metricMemoItems">0</strong></div>
-                    <div class="metricItem"><span>전체 메모 수</span><strong id="metricMemos">0</strong></div>
+                    <div class="metricItem full"><span>전체 메모 수</span><strong id="metricMemos">0</strong></div>
                 </div>
+                <div class="compactSectionTitle">좋아요 많은 레퍼런스</div>
+                <div class="insightMiniList" id="insightTopLiked"></div>
+                <div class="compactSectionTitle">메모 많은 레퍼런스</div>
+                <div class="insightMiniList" id="insightTopMemos"></div>
                 <button id="insightModeBtn" class="sort-btn insightButton">코멘트 모아보기</button>
             </div>
         </aside>
@@ -294,7 +318,8 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
 
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
-    let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40, filterOnlyMemos = false, lastFilteredCount = 0;
+    let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40, filterOnlyMemos = false, lastFilteredCount = 0, activeTab = "genre", lastPageScroll = 0, currentModalId = null;
+    const modalScrollCache = new Map();
     const activeSets = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), cast: new Set(), tone: new Set() };
     const interactionsCache = new Map();
 
@@ -311,6 +336,63 @@
             return { name: match[1], category: role };
         }
         return { name: tag, category: tag };
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[ch]));
+    }
+
+    function getItemInteraction(it) {
+        return interactionsCache.get(fnv1a(it[KEY.url])) || { likes: 0, memos: [] };
+    }
+
+    function buildFilterParams() {
+        const params = new URLSearchParams();
+        const query = document.getElementById("search")?.value?.trim();
+        if (query) params.set("q", query);
+        if (viewMode !== "all") params.set("view", viewMode);
+        if (sortMode !== "date") params.set("sort", sortMode);
+        if (activeTab !== "genre") params.set("tab", activeTab);
+        if (filterOnlyMemos) params.set("memoOnly", "1");
+
+        ["genre","media","format","content","stage","method","tone","cast"].forEach(key => {
+            [...activeSets[key]].forEach(v => params.append(key, v));
+        });
+        if (activeCastRole !== "전체") params.set("castRole", activeCastRole);
+        return params;
+    }
+
+    function updateURLFromState() {
+        const params = buildFilterParams();
+        const next = `${location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
+        history.replaceState(null, "", next);
+    }
+
+    function applyStateFromURL() {
+        const params = new URLSearchParams(location.search);
+        const q = params.get("q");
+        if (q) document.getElementById("search").value = q;
+
+        const nextView = params.get("view");
+        if (nextView === "dash") viewMode = "dash";
+
+        const nextSort = params.get("sort");
+        if (["date","update","likes"].includes(nextSort)) sortMode = nextSort;
+
+        const nextTab = params.get("tab");
+        if (nextTab) activeTab = nextTab;
+
+        filterOnlyMemos = params.get("memoOnly") === "1";
+        ["genre","media","format","content","stage","method","tone","cast"].forEach(key => {
+            params.getAll(key).forEach(v => activeSets[key].add(v));
+        });
+        const role = params.get("castRole");
+        if (role) activeCastRole = role;
+    }
+
+    function copyCurrentPresetLink() {
+        const url = `${location.origin}${location.pathname}${location.search}`;
+        navigator.clipboard.writeText(url).then(() => showToast("현재 필터 링크를 복사했어요."));
     }
 
     function getActiveFilterEntries() {
@@ -365,15 +447,39 @@
 
     function updateMetrics(filteredItems = allData) {
         let likedItems = 0, memoItems = 0, memoCount = 0;
+        const likedSorted = [];
+        const memoSorted = [];
+
         filteredItems.forEach((it) => {
-            const data = interactionsCache.get(fnv1a(it[KEY.url])) || { likes: 0, memos: [] };
+            const data = getItemInteraction(it);
             if ((data.likes || 0) > 0) likedItems += 1;
             if ((data.memos || []).length > 0) memoItems += 1;
             memoCount += (data.memos || []).length;
+            likedSorted.push({ title: it[KEY.title], channel: it[KEY.channel], value: data.likes || 0 });
+            memoSorted.push({ title: it[KEY.title], channel: it[KEY.channel], value: (data.memos || []).length });
         });
+
         document.getElementById("metricLikes").textContent = likedItems.toLocaleString();
         document.getElementById("metricMemoItems").textContent = memoItems.toLocaleString();
         document.getElementById("metricMemos").textContent = memoCount.toLocaleString();
+
+        const fillMiniList = (id, rows, unit) => {
+            const container = document.getElementById(id);
+            const top = rows.filter(row => row.value > 0).sort((a, b) => b.value - a.value).slice(0, 2);
+            if (!top.length) {
+                container.innerHTML = `<div class="insightMiniItem"><strong>아직 데이터가 없어요</strong><span>필터를 조정하거나 액션을 더 쌓아보세요.</span></div>`;
+                return;
+            }
+            container.innerHTML = top.map(row => `
+                <div class="insightMiniItem">
+                    <strong>${escapeHtml(row.title)}</strong>
+                    <span>${escapeHtml(row.channel || "")} · ${row.value}${unit}</span>
+                </div>
+            `).join("");
+        };
+
+        fillMiniList("insightTopLiked", likedSorted, " 좋아요");
+        fillMiniList("insightTopMemos", memoSorted, " 메모");
     }
 
     function updateCardCounters(itemId, data) {
@@ -423,6 +529,7 @@
         updateChips(filtered);
         updateFilterSummary();
         updateMetrics(filtered);
+        updateURLFromState();
 
         const gridEl = document.getElementById("grid");
         const dashEl = document.getElementById("dash");
@@ -483,7 +590,8 @@
 
     function updateChips(data) {
         const fields = ["genre", "media", "format", "content", "stage", "method", "tone"];
-        const castMap = new Map();
+        const castRoleSet = new Set();
+        const castNameSet = new Set();
 
         fields.forEach(f => {
             const set = new Set();
@@ -491,18 +599,36 @@
             const el = document.getElementById(f + "Chips");
             if (!el) return;
             const isAll = activeSets[f].size === 0;
-            el.innerHTML = `<div class="chipsRow"><div class="chip ${isAll?'active':''}" onclick="activeSets['${f}'].clear(); render(true)">All</div>${[...set].sort().map(v => `<div class="chip ${activeSets[f].has(v)?'active':''}" onclick="toggleFilter('${f}', '${String(v).replace(/'/g, "\\'")}')">${v}</div>`).join("")}</div>`;
+            el.innerHTML = `<div class="chipsRow"><div class="chip ${isAll?'active':''}" onclick="activeSets['${f}'].clear(); render(true)">전체</div>${[...set].sort().map(v => `<div class="chip ${activeSets[f].has(v)?'active':''}" onclick="toggleFilter('${f}', '${String(v).replace(/'/g, "\'")}')">${escapeHtml(v)}</div>`).join("")}</div>`;
         });
 
-        data.forEach(it => splitTags(it[KEY.cast]).forEach(t => {
+        allData.forEach(it => splitTags(it[KEY.cast]).forEach(t => castRoleSet.add(getCastInfo(t).category)));
+
+        const baseCastData = allData.filter(it => {
+            const q = document.getElementById("search").value.toLowerCase();
+            const title = (it[KEY.title] || "").toLowerCase();
+            const channel = (it[KEY.channel] || "").toLowerCase();
+            const okSearch = q ? (title.includes(q) || channel.includes(q)) : true;
+            const itData = getItemInteraction(it);
+            const okMemos = filterOnlyMemos ? (itData.memos.length > 0) : true;
+            const checkTags = (k) => activeSets[k].size === 0 || [...activeSets[k]].every(t => splitTags(it[KEY[k]]).includes(t));
+            return okSearch && okMemos && checkTags("genre") && checkTags("media") && checkTags("format") && checkTags("content") && checkTags("stage") && checkTags("method") && checkTags("tone");
+        });
+
+        baseCastData.forEach(it => splitTags(it[KEY.cast]).forEach(t => {
             const info = getCastInfo(t);
-            if (!castMap.has(info.category)) castMap.set(info.category, new Set());
-            castMap.get(info.category).add(info.name);
+            if (activeCastRole === "전체" || info.category === activeCastRole) castNameSet.add(info.name);
         }));
 
         const castEl = document.getElementById("castChips");
-        castEl.innerHTML = `<div class="chipsRow" style="border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:5px;">${["전체", ...[...castMap.keys()].sort()].map(c => `<div class="chip ${activeCastRole===c?'active':''}" onclick="activeCastRole='${String(c).replace(/'/g, "\\'")}'; activeSets.cast.clear(); render(false)">${c}</div>`).join("")}</div>`;
-        if (activeCastRole !== "전체" && castMap.has(activeCastRole)) castEl.innerHTML += `<div class="chipsRow">${[...castMap.get(activeCastRole)].sort().map(n => `<div class="chip ${activeSets.cast.has(n)?'active':''}" onclick="toggleFilter('cast', '${String(n).replace(/'/g, "\\'")}')">${n}</div>`).join("")}</div>`;
+        const roleChips = ["전체", ...[...castRoleSet].sort()].map(c => `<div class="chip ${activeCastRole===c?'active':''}" onclick="setCastRole('${String(c).replace(/'/g, "\'")}')">${escapeHtml(c)}</div>`).join("");
+        const names = [...castNameSet].sort();
+        const showNameRow = activeCastRole !== "전체" && !(names.length === 1 && names[0] === activeCastRole);
+
+        castEl.innerHTML = `<div class="chipsRow" style="border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:5px;">${roleChips}</div>`;
+        if (showNameRow) {
+            castEl.innerHTML += `<div class="chipsRow"><div class="chip ${activeSets.cast.size === 0 ? 'active' : ''}" onclick="activeSets.cast.clear(); render(true)">전체</div>${names.map(n => `<div class="chip ${activeSets.cast.has(n)?'active':''}" onclick="toggleFilter('cast', '${String(n).replace(/'/g, "\'")}')">${escapeHtml(n)}</div>`).join("")}</div>`;
+        }
     }
 
     function toggleFilter(k, v) {
@@ -510,16 +636,25 @@
         render(true);
     }
 
-    function openModal(id) {
+    function setCastRole(role) {
+        activeCastRole = role;
+        activeSets.cast.clear();
+        render(true);
+    }
+
+    function openModal(id, options = {}) {
         const it = allData.find(x => fnv1a(x[KEY.url]) === id);
         if (!it) return;
+        currentModalId = id;
+        lastPageScroll = window.scrollY;
         document.getElementById("modalOverlay").classList.add("open");
         document.getElementById("modalOverlay").dataset.id = id;
 
         document.getElementById("modalLeft").innerHTML = `
             <img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
-            <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px;">${it[KEY.title]}</div>
-            <div style="color:var(--muted); font-size:13px; margin-bottom:15px;">${it[KEY.channel]} · ${it[KEY.date]}</div>
+            <div style="font-weight:800; font-size:20px; color:#fff; margin-bottom:10px; line-height:1.4;">${escapeHtml(it[KEY.title])}</div>
+            <div style="color:var(--muted); font-size:13px; margin-bottom:6px;">${escapeHtml(it[KEY.channel] || "")}</div>
+            <div style="color:rgba(234,234,234,.72); font-size:12px; margin-bottom:15px;">${escapeHtml([it[KEY.genre], it[KEY.media], it[KEY.date]].filter(Boolean).join(" · "))}</div>
             <div style="display:flex; flex-direction:column; gap:8px;">
                 <button class="sort-btn active" id="mLikeBtn" style="width:100%; justify-content:center;">👍 좋아요 누르기</button>
                 <a href="${it[KEY.url]}" target="_blank" class="sort-btn" style="width:100%; background:rgba(255,255,255,0.05); color:#fff;">🔗 원본 열기</a>
@@ -528,9 +663,12 @@
             </div>`;
         document.getElementById("mPlayer").innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${getYTId(it[KEY.url])}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
 
-        loadInteractions(id);
+        loadInteractions(id, options);
+
         document.getElementById("mLikeBtn").onclick = () => toggleLike(id);
-        document.getElementById("mCopyBtn").onclick = () => navigator.clipboard.writeText(it[KEY.url]).then(() => showToast("클립보드에 링크가 복사되었습니다!"));
+        document.getElementById("mCopyBtn").onclick = () => {
+            navigator.clipboard.writeText(it[KEY.url]).then(() => showToast("클립보드에 링크가 복사되었습니다!"));
+        };
         document.getElementById("mPipBtn").onclick = () => {
             const player = document.getElementById("mPlayer");
             player.classList.toggle("pip-mode");
@@ -538,11 +676,18 @@
         };
     }
 
-    function loadInteractions(id) {
+    window.openModal = openModal;
+
+    function loadInteractions(id, options = {}) {
         const data = interactionsCache.get(id) || { likes: 0, memos: [] };
         document.getElementById("mCounts").textContent = `👍 ${data.likes || 0} · 💬 ${data.memos?.length || 0}`;
-        document.getElementById("mMemoList").innerHTML = (data.memos || []).map(m => `<div style="margin-bottom:8px; font-size:13px; border-bottom:1px solid var(--line); padding-bottom:5px;"><strong style="color:#fff;">${m.nickname}</strong>: ${m.memo}</div>`).join("");
+        document.getElementById("mMemoList").innerHTML = (data.memos || []).map(m => `<div style="margin-bottom:8px; font-size:13px; border-bottom:1px solid var(--line); padding-bottom:8px;"><strong style="color:#fff;">${escapeHtml(m.nickname)}</strong><div style="margin-top:4px;">${escapeHtml(m.memo)}</div></div>`).join("");
         updateCardCounters(id, data);
+        requestAnimationFrame(() => {
+            const memoList = document.getElementById("mMemoList");
+            if (modalScrollCache.has(id)) memoList.scrollTop = modalScrollCache.get(id);
+            if (options.focusMemoInput) document.getElementById("mMemo").focus();
+        });
     }
 
     function toggleLike(id) {
@@ -554,7 +699,44 @@
         fetch(API_URL, { method:"POST", body: JSON.stringify({ itemId:id, action:"like", nickname:nick }) });
     }
 
-    document.getElementById("mSend").onclick = () => {
+        function quickLike(id) {
+        toggleLike(id);
+    }
+
+    function openMemoModal(id) {
+        openModal(id, { focusMemoInput: true });
+    }
+
+    function openOriginalLink(id) {
+        const it = allData.find(x => fnv1a(x[KEY.url]) === id);
+        if (it?.[KEY.url]) window.open(it[KEY.url], "_blank");
+        closeAllCardMenus();
+    }
+
+    function copyCardLink(id) {
+        const it = allData.find(x => fnv1a(x[KEY.url]) === id);
+        if (!it?.[KEY.url]) return;
+        navigator.clipboard.writeText(it[KEY.url]).then(() => showToast("링크를 복사했어요."));
+        closeAllCardMenus();
+    }
+
+    function closeAllCardMenus() {
+        document.querySelectorAll(".cardMoreMenu.open").forEach(menu => menu.classList.remove("open"));
+    }
+
+    function toggleCardMenu(id) {
+        const menu = document.getElementById(`menu-${id}`);
+        const willOpen = !menu.classList.contains("open");
+        closeAllCardMenus();
+        if (willOpen) menu.classList.add("open");
+    }
+    window.quickLike = quickLike;
+    window.openMemoModal = openMemoModal;
+    window.toggleCardMenu = toggleCardMenu;
+    window.copyCardLink = copyCardLink;
+    window.openOriginalLink = openOriginalLink;
+
+document.getElementById("mSend").onclick = () => {
         const id = document.getElementById("modalOverlay").dataset.id;
         const nick = document.getElementById("mNick").value.trim() || "익명";
         const memo = document.getElementById("mMemo").value.trim();
@@ -568,13 +750,18 @@
     };
 
     function closeModal() {
+        const id = document.getElementById("modalOverlay").dataset.id;
+        if (id) modalScrollCache.set(id, document.getElementById("mMemoList").scrollTop);
         document.getElementById("modalOverlay").classList.remove("open");
         const player = document.getElementById("mPlayer");
         player.innerHTML = "";
         player.classList.remove("pip-mode");
+        if (typeof lastPageScroll === "number") window.scrollTo({ top: lastPageScroll });
     }
     document.getElementById("mClose").onclick = closeModal;
     document.getElementById("clearFiltersBtn").onclick = clearAllFilters;
+    document.getElementById("sharePresetBtn").onclick = copyCurrentPresetLink;
+
     document.getElementById("insightModeBtn").onclick = () => {
         filterOnlyMemos = !filterOnlyMemos;
         document.getElementById("insightModeBtn").classList.toggle("active", filterOnlyMemos);
@@ -618,6 +805,17 @@
                 const found = Object.keys(first).find(rk => rk.trim().toLowerCase() === KEY[k].toLowerCase());
                 if (found) KEY[k] = found;
             });
+
+            applyStateFromURL();
+
+            updateToggleState("view", viewMode === "all" ? "viewAllBtn" : "viewDashBtn");
+            updateToggleState("sort", sortMode === "date" ? "sortDateBtn" : sortMode === "likes" ? "sortLikesBtn" : "sortUpdateBtn");
+            document.getElementById("insightModeBtn").classList.toggle("active", filterOnlyMemos);
+            setFilterPanel(true);
+            document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
+            document.getElementById(activeTab + "Chips")?.classList.add('active');
+
             render();
         } catch (e) {
             document.getElementById("stats").textContent = "로드 실패";
