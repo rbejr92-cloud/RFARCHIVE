@@ -79,24 +79,13 @@
         .ghostBtn.accent{ color:var(--accent); }
 
         .filterPanel{ border:1px solid var(--line); background:rgba(0,0,0,0.14); border-radius:16px; overflow:hidden; }
-        .filterPanelHeader{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); }
-        .filterPanelHeaderLeft{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-        .miniSelectRow{ display:flex; gap:10px; flex-wrap:wrap; }
-        .miniFilter{
-            min-width:160px; padding:10px 12px; border-radius:12px; border:1px solid var(--line);
-            background:rgba(255,255,255,0.02); cursor:pointer; transition:0.2s;
-        }
-        .miniFilter:hover{ border-color:var(--line2); background:rgba(255,255,255,0.05); }
-        .miniLabel{ font-size:11px; color:var(--muted); margin-bottom:5px; font-weight:700; }
-        .miniValue{ display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:14px; color:#fff; }
-        .miniValue strong{ color:var(--accent); font-weight:700; }
-        .caret{ color:var(--muted); font-size:12px; }
-        .filterTabs{ display:flex; flex-wrap:wrap; gap:6px; padding:12px 14px 0; }
+        .filterTabs{ display:flex; flex-wrap:wrap; gap:6px; padding:12px 14px 12px; border-bottom:1px solid var(--line); }
         .tab{ padding:7px 13px; border-radius:10px; border:1px solid transparent; background:transparent; color:var(--muted); font-size:13px; font-weight:700; cursor:pointer; transition:0.2s; }
         .tab:hover:not(.active){ color:rgba(255,255,255,0.85); }
         .tab.active{ background:rgba(255,255,255,0.08); color:#fff; }
         .filterBody{ padding:12px 14px 14px; display:none; }
         .filterBody.open{ display:block; }
+        .filterPanel{ overflow:hidden; }
         .chipsPanel{ display:none; flex-wrap:wrap; gap:8px; }
         .chipsPanel.active{ display:flex; flex-direction:column; gap:10px; }
         .chipsRow{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -108,7 +97,7 @@
         .resultTitle{ font-size:13px; color:#fff; font-weight:800; }
         .resultMeta{ color:var(--muted); }
 
-        .contentArea{ display:grid; grid-template-columns:minmax(0, 1fr) 240px; gap:14px; align-items:start; }
+        .contentArea{ display:grid; grid-template-columns:minmax(0, 1fr) 148px; gap:14px; align-items:start; }
         .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:18px; }
         .card{ background:var(--panel-bg); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; transition:0.25s; cursor:pointer; }
         .card:hover{ border-color:var(--accent); transform:translateY(-4px); box-shadow:var(--shadow); }
@@ -120,16 +109,26 @@
         .actionsBar{ margin-top:12px; display:flex; gap:8px; align-items:center; }
         .actionBtn{ border:1px solid var(--line); background:rgba(255,255,255,0.03); color:var(--muted); padding:6px 12px; border-radius:999px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
 
-        .insightRail{ display:flex; flex-direction:column; gap:10px; position:sticky; top:168px; }
-        .compactPanel{ border:1px solid var(--line); background:var(--panel-bg); border-radius:16px; padding:14px; }
-        .compactPanel h3{ margin:0 0 6px; font-size:14px; color:#fff; display:flex; align-items:center; gap:8px; }
-        .compactPanel p{ margin:0; font-size:12.5px; line-height:1.55; color:var(--muted); }
-        .insightNew{ font-size:11px; padding:4px 8px; border-radius:999px; color:#fff; background:rgba(255,71,87,0.9); margin-left:auto; }
-        .insightButton{ margin-top:12px; width:100%; justify-content:space-between; }
-        .metricList{ display:grid; gap:10px; margin-top:10px; }
-        .metricItem{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13px; color:#fff; }
-        .metricItem span:last-child{ color:var(--muted); }
-        .hintMini{ margin-top:8px; font-size:12px; color:var(--muted); line-height:1.5; }
+        .insightRail{ display:flex; flex-direction:column; gap:10px; position:sticky; top:168px; width:148px; }
+        .compactPanel{ border:1px solid var(--line); background:var(--panel-bg); border-radius:16px; padding:12px; }
+        .compactPanel h3{ margin:0; font-size:13px; color:#fff; display:flex; align-items:center; gap:6px; line-height:1.35; }
+        .compactPanel p{ margin:8px 0 0; font-size:11.5px; line-height:1.45; color:var(--muted); }
+        .insightHead{ display:flex; align-items:center; gap:6px; }
+        .insightNew{ font-size:10px; padding:3px 7px; border-radius:999px; color:#fff; background:rgba(255,71,87,0.9); margin-left:auto; }
+        .insightButton{ margin-top:12px; width:100%; justify-content:center; padding:10px 12px; font-size:12px; }
+        .metricList{ display:grid; gap:8px; margin-top:12px; padding-top:10px; border-top:1px solid var(--line); }
+        .metricItem{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; font-size:11px; color:var(--muted); }
+        .metricItem strong{ font-size:18px; line-height:1; color:#fff; }
+        .hintMini{ margin-top:8px; font-size:11px; color:var(--muted); line-height:1.45; }
+
+        @media (max-width: 1280px){
+            .contentArea{ grid-template-columns:1fr; }
+            .insightRail{ position:static; width:auto; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); }
+            .compactPanel{ min-height:100%; }
+        }
+        @media (max-width: 860px){
+            .insightRail{ grid-template-columns:1fr; }
+        }
 
         @keyframes pulse { 0%, 100% { opacity:0.5; } 50% { opacity:1; } }
         .skeleton{ height:280px; border-radius:var(--radius); background:#1a1a1c; animation:pulse 1.5s infinite; }
@@ -154,16 +153,14 @@
             .topbarWrapper{ margin:-16px -16px 14px; padding:16px; top:-16px; }
             .topbar-left{ width:100%; }
             input[type="text"]{ width:100%; }
-            .miniFilter{ min-width:calc(50% - 5px); }
-            .insightRail{ grid-template-columns:1fr; }
+                        .insightRail{ grid-template-columns:1fr; }
             .modal{ grid-template-columns:1fr; }
         }
         @media (max-width: 640px){
             .topbar{ align-items:stretch; }
-            .topbar-left,.topbar-right,.summaryActions,.miniSelectRow{ width:100%; }
+            .topbar-left,.topbar-right,.summaryActions{ width:100%; }
             .btn-group,.sort-group{ width:100%; justify-content:flex-start; overflow:auto; }
-            .miniFilter{ min-width:100%; }
-            .grid{ grid-template-columns:1fr; }
+                        .grid{ grid-template-columns:1fr; }
             .dash{ grid-template-columns:1fr; height:auto; }
         }
     </style>
@@ -185,7 +182,6 @@
                     <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
                 </div>
                 <div id="allViewControls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                    <button id="filterMemosBtn" class="sort-btn">💬 코멘트 모아보기</button>
                     <div id="sortGroup" class="sort-group">
                         <button id="sortDateBtn" class="sort-btn active">📅 발행일순</button>
                         <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
@@ -210,29 +206,6 @@
             </div>
 
             <div class="filterPanel" id="filterPanel">
-                <div class="filterPanelHeader">
-                    <div class="filterPanelHeaderLeft">
-                        <div class="miniSelectRow">
-                            <button class="miniFilter" data-tab-target="genre">
-                                <div class="miniLabel">장르</div>
-                                <div class="miniValue"><strong id="miniValue-genre">전체</strong><span class="caret">▾</span></div>
-                            </button>
-                            <button class="miniFilter" data-tab-target="media">
-                                <div class="miniLabel">매체</div>
-                                <div class="miniValue"><strong id="miniValue-media">전체</strong><span class="caret">▾</span></div>
-                            </button>
-                            <button class="miniFilter" data-tab-target="tone">
-                                <div class="miniLabel">영상 톤</div>
-                                <div class="miniValue"><strong id="miniValue-tone">전체</strong><span class="caret">▾</span></div>
-                            </button>
-                            <button class="miniFilter" data-tab-target="cast">
-                                <div class="miniLabel">출연자</div>
-                                <div class="miniValue"><strong id="miniValue-cast">전체</strong><span class="caret">▾</span></div>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="filterTabs" id="filterTabs">
                     <button class="tab active" data-tab="genre">장르</button>
                     <button class="tab" data-tab="media">매체</button>
@@ -270,21 +243,17 @@
 
         <aside class="insightRail" id="insightRail">
             <div class="compactPanel">
-                <h3>👀 인사이트 모드 <span class="insightNew">New</span></h3>
-                <p>코멘트가 달린 레퍼런스만 빠르게 모아볼 수 있어요.</p>
-                <button id="insightModeBtn" class="sort-btn insightButton">코멘트 모아보기 <span>→</span></button>
-            </div>
-            <div class="compactPanel">
-                <h3>📌 빠른 액션</h3>
-                <div class="metricList">
-                    <div class="metricItem"><span>좋아요된 레퍼런스</span><span id="metricLikes">0</span></div>
-                    <div class="metricItem"><span>메모가 있는 레퍼런스</span><span id="metricMemoItems">0</span></div>
-                    <div class="metricItem"><span>전체 메모 수</span><span id="metricMemos">0</span></div>
+                <div class="insightHead">
+                    <h3>👀 인사이트 모드</h3>
+                    <span class="insightNew">New</span>
                 </div>
-            </div>
-            <div class="compactPanel">
-                <h3>💡 팁</h3>
-                <p class="hintMini">상단 요약 필터에서 바로 해제하고, 필요할 때만 필터 더보기로 세부 태그를 펼치도록 바꿨어요.</p>
+                <p>현재 필터 결과 기준으로 좋아요와 메모 수를 보여줘요.</p>
+                <div class="metricList">
+                    <div class="metricItem"><span>좋아요된 레퍼런스</span><strong id="metricLikes">0</strong></div>
+                    <div class="metricItem"><span>메모가 있는 레퍼런스</span><strong id="metricMemoItems">0</strong></div>
+                    <div class="metricItem"><span>전체 메모 수</span><strong id="metricMemos">0</strong></div>
+                </div>
+                <button id="insightModeBtn" class="sort-btn insightButton">코멘트 모아보기</button>
             </div>
         </aside>
     </div>
@@ -373,25 +342,14 @@
                 </span>
             `).join("");
         }
-        updateMiniValues();
     }
 
-    function updateMiniValues() {
-        const summarize = (key) => activeSets[key].size ? `${[...activeSets[key]][0]}${activeSets[key].size > 1 ? ` 외 ${activeSets[key].size - 1}개` : ""}` : "전체";
-        document.getElementById("miniValue-genre").textContent = summarize("genre");
-        document.getElementById("miniValue-media").textContent = summarize("media");
-        document.getElementById("miniValue-tone").textContent = summarize("tone");
-        let castText = "전체";
-        if (activeSets.cast.size) castText = `${[...activeSets.cast][0]}${activeSets.cast.size > 1 ? ` 외 ${activeSets.cast.size - 1}명` : ""}`;
-        else if (activeCastRole !== "전체") castText = activeCastRole;
-        document.getElementById("miniValue-cast").textContent = castText;
-    }
 
     function removeFilter(key, value) {
         if (key === "castRole") activeCastRole = "전체";
         else if (key === "memoOnly") {
             filterOnlyMemos = false;
-            document.getElementById("filterMemosBtn").classList.remove("active");
+            document.getElementById("insightModeBtn")?.classList.remove("active");
         } else activeSets[key]?.delete(value);
         render(true);
     }
@@ -401,20 +359,21 @@
         Object.values(activeSets).forEach(set => set.clear());
         activeCastRole = "전체";
         filterOnlyMemos = false;
-        document.getElementById("filterMemosBtn").classList.remove("active");
+        document.getElementById("insightModeBtn")?.classList.remove("active");
         render(true);
     }
 
-    function updateMetrics() {
+    function updateMetrics(filteredItems = allData) {
         let likedItems = 0, memoItems = 0, memoCount = 0;
-        interactionsCache.forEach((data) => {
+        filteredItems.forEach((it) => {
+            const data = interactionsCache.get(fnv1a(it[KEY.url])) || { likes: 0, memos: [] };
             if ((data.likes || 0) > 0) likedItems += 1;
             if ((data.memos || []).length > 0) memoItems += 1;
             memoCount += (data.memos || []).length;
         });
-        document.getElementById("metricLikes").textContent = likedItems;
-        document.getElementById("metricMemoItems").textContent = memoItems;
-        document.getElementById("metricMemos").textContent = memoCount;
+        document.getElementById("metricLikes").textContent = likedItems.toLocaleString();
+        document.getElementById("metricMemoItems").textContent = memoItems.toLocaleString();
+        document.getElementById("metricMemos").textContent = memoCount.toLocaleString();
     }
 
     function updateCardCounters(itemId, data) {
@@ -463,6 +422,7 @@
         document.getElementById("resultCounter").textContent = `${filtered.length.toLocaleString()}건`;
         updateChips(filtered);
         updateFilterSummary();
+        updateMetrics(filtered);
 
         const gridEl = document.getElementById("grid");
         const dashEl = document.getElementById("dash");
@@ -617,7 +577,7 @@
     document.getElementById("clearFiltersBtn").onclick = clearAllFilters;
     document.getElementById("insightModeBtn").onclick = () => {
         filterOnlyMemos = !filterOnlyMemos;
-        document.getElementById("filterMemosBtn").classList.toggle("active", filterOnlyMemos);
+        document.getElementById("insightModeBtn").classList.toggle("active", filterOnlyMemos);
         render(true);
         showToast(filterOnlyMemos ? "코멘트가 있는 레퍼런스만 표시합니다." : "전체 레퍼런스로 돌아왔습니다.");
     };
@@ -629,13 +589,6 @@
         toggleFilterPanelBtn.textContent = open ? "필터 접기 ▴" : "필터 더보기 ▾";
     }
     toggleFilterPanelBtn.onclick = () => setFilterPanel(!filterBody.classList.contains("open"));
-    document.querySelectorAll(".miniFilter").forEach(btn => btn.onclick = () => {
-        const tab = btn.dataset.tabTarget;
-        document.querySelectorAll(".tab, .chipsPanel").forEach(el => el.classList.remove("active"));
-        document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
-        document.getElementById(tab + "Chips").classList.add("active");
-        setFilterPanel(true);
-    });
 
     async function init() {
         renderSkeleton();
@@ -665,7 +618,6 @@
                 const found = Object.keys(first).find(rk => rk.trim().toLowerCase() === KEY[k].toLowerCase());
                 if (found) KEY[k] = found;
             });
-            updateMetrics();
             render();
         } catch (e) {
             document.getElementById("stats").textContent = "로드 실패";
@@ -684,11 +636,6 @@
         viewMode = "dash";
         updateToggleState("view", "viewDashBtn");
         allViewControls.style.display = "none";
-        render(true);
-    };
-    document.getElementById("filterMemosBtn").onclick = (e) => {
-        filterOnlyMemos = !filterOnlyMemos;
-        e.target.classList.toggle("active", filterOnlyMemos);
         render(true);
     };
 
@@ -714,7 +661,7 @@
     }, { rootMargin: "200px" });
     observer.observe(document.getElementById("scrollTrigger"));
 
-    setFilterPanel(false);
+    setFilterPanel(true);
     init();
     </script>
 </body>
