@@ -29,7 +29,10 @@
 
         .topbarWrapper { position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; background: rgba(11, 11, 12, 0.75); backdrop-filter: var(--glass); z-index: 100; border-bottom: 1px solid var(--line); }
         
-        .topbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
+        /* 상단바 레이아웃 (양극화 배치) */
+        .topbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+        .topbar-left { display:flex; align-items:center; flex-wrap:wrap; gap:12px; flex:1; }
+        .topbar-right { display:flex; align-items:center; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
         
         input[type="text"]{ 
             padding:10px 18px; width:250px; border-radius:999px; 
@@ -111,7 +114,6 @@
         .modalOverlay.open{ display:flex; }
         .modal { width: min(1300px, 95vw); max-height: 90vh; background: #161618; border-radius: 20px; display: grid; grid-template-columns: 350px 1fr; overflow: hidden; border: 1px solid var(--line2); box-shadow: var(--shadow); }
         
-        /* PIP 팝업 모드 CSS 추가 */
         #mPlayer { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         #mPlayer.pip-mode {
             position: fixed;
@@ -136,28 +138,33 @@
         </h1>
         
         <div class="topbar">
-            <input id="search" type="text" placeholder="제목 검색..." />
-            
-            <div class="btn-group">
-                <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
-                <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
+            <div class="topbar-left">
+                <input id="search" type="text" placeholder="제목 검색..." />
+                
+                <div class="btn-group">
+                    <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
+                    <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
+                </div>
+
+                <div id="allViewControls" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <div style="width:1px; height:24px; background:var(--line2); margin:0 4px;"></div>
+                    
+                    <button id="filterMemosBtn" class="sort-btn">💬 코멘트 모아보기</button>
+                    
+                    <div id="sortGroup" class="sort-group">
+                        <button id="sortDateBtn" class="sort-btn active">📅 발행일순</button>
+                        <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
+                        <button id="sortLikesBtn" class="sort-btn">🔥 인기순</button>
+                    </div>
+                </div>
             </div>
 
-            <div style="width:1px; height:24px; background:var(--line2); margin:0 4px;"></div>
-            
-            <button id="filterMemosBtn" class="sort-btn">💬 코멘트 모아보기</button>
-            
-            <div id="sortGroup" class="sort-group">
-                <button id="sortDateBtn" class="sort-btn active">📅 발행일순</button>
-                <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
-                <button id="sortLikesBtn" class="sort-btn">🔥 인기순</button>
+            <div class="topbar-right">
+                <button id="resetBtn" class="sort-btn">초기화</button>
+                <a id="sheetLinkBtn" href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="sort-btn">
+                    📝 업데이트 시트 가기
+                </a>
             </div>
-            
-            <button id="resetBtn" class="sort-btn">초기화</button>
-
-            <a id="sheetLinkBtn" href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="sort-btn">
-                📝 업데이트 시트 가기
-            </a>
         </div>
 
         <div class="filterTabs" id="filterTabs">
@@ -200,7 +207,6 @@
     <div class="modalOverlay" id="modalOverlay">
         <div class="modal">
             <div id="modalLeft" style="padding:24px; border-right:1px solid var(--line); overflow-y:auto; background:rgba(0,0,0,0.2);"></div>
-            
             <div style="padding:24px; display:flex; flex-direction:column; gap:15px; position:relative;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div id="mCounts" style="font-size:13px; color:var(--muted); font-weight:bold;"></div>
@@ -376,7 +382,6 @@
         document.getElementById("modalOverlay").classList.add("open");
         document.getElementById("modalOverlay").dataset.id = id;
         
-        // 버튼 4개(좋아요, 원본열기, 링크복사, PIP보기) 모두 복구
         document.getElementById("modalLeft").innerHTML = `
             <img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
             <div style="font-weight:bold; font-size:18px; color:#fff; margin-bottom:10px;">${it[KEY.title]}</div>
@@ -393,7 +398,6 @@
         
         loadInteractions(id);
         
-        // 이벤트 리스너 연결
         document.getElementById("mLikeBtn").onclick = () => toggleLike(id);
         
         document.getElementById("mCopyBtn").onclick = () => {
@@ -448,7 +452,7 @@
         document.getElementById("modalOverlay").classList.remove("open"); 
         const player = document.getElementById("mPlayer");
         player.innerHTML=""; 
-        player.classList.remove("pip-mode"); // 모달 닫을 때 PIP 모드 강제 해제
+        player.classList.remove("pip-mode");
     }
     document.getElementById("mClose").onclick = closeModal;
 
@@ -486,13 +490,13 @@
         } catch (e) { document.getElementById("stats").textContent = "로드 실패"; console.error(e); }
     }
 
-    const sortGroup = document.getElementById("sortGroup");
+    const allViewControls = document.getElementById("allViewControls");
 
     // [전체 보기 탭]
     document.getElementById("viewAllBtn").onclick = () => { 
         viewMode = "all"; 
         updateToggleState('view', 'viewAllBtn'); 
-        sortGroup.style.display = "flex"; 
+        allViewControls.style.display = "flex"; // 전체보기에서만 코멘트 모아보기 + 정렬버튼 노출
         render(true); 
     };
 
@@ -500,7 +504,7 @@
     document.getElementById("viewDashBtn").onclick = () => { 
         viewMode = "dash"; 
         updateToggleState('view', 'viewDashBtn'); 
-        sortGroup.style.display = "none"; 
+        allViewControls.style.display = "none"; // 채널별 보기에서 코멘트 모아보기 + 정렬버튼 숨김
         render(true); 
     };
 
