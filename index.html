@@ -29,12 +29,11 @@
 
         .topbarWrapper { position: sticky; top: -22px; margin: -22px -22px 12px -22px; padding: 22px 22px 12px 22px; background: rgba(11, 11, 12, 0.75); backdrop-filter: var(--glass); z-index: 100; border-bottom: 1px solid var(--line); }
         
-        /* 상단바 레이아웃 */
-        .topbar { display:flex; justify-content: space-between; align-items:center; flex-wrap:wrap; gap:16px; }
-        .topbar-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+        /* 상단바 레이아웃 (왼쪽 정렬) */
+        .topbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
         
         input[type="text"]{ 
-            padding:10px 18px; width:280px; border-radius:999px; 
+            padding:10px 18px; width:250px; border-radius:999px; 
             border:1px solid var(--line2); background: rgba(0,0,0,0.4); 
             color:var(--text); font-size:13.5px; transition: 0.2s; 
         }
@@ -60,12 +59,18 @@
             padding:8px 16px; border-radius:999px; border:1px solid var(--line); 
             background: rgba(255,255,255,0.02); color:var(--muted); 
             cursor:pointer; font-size:13px; font-weight:600; transition: 0.2s; 
+            display:inline-flex; align-items:center; justify-content:center;
+            text-decoration: none;
         }
         .sort-btn:hover:not(.active) { border-color: var(--line2); color: #fff; background: rgba(255,255,255,0.06); }
         .sort-btn.active { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.1); color: #fff; }
         .sort-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* 초기화 버튼 특화 (점선으로 시각적 분리) */
+        /* 시트 바로가기 특화 스타일 */
+        #sheetLinkBtn { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #fff; }
+        #sheetLinkBtn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+
+        /* 초기화 버튼 특화 */
         #resetBtn { background: transparent; border: 1px dashed var(--line2); color: var(--muted); }
         #resetBtn:hover { border-color: #fff; color: #fff; background: rgba(255,255,255,0.05); }
 
@@ -124,26 +129,26 @@
         <div class="topbar">
             <input id="search" type="text" placeholder="제목 검색..." />
             
-            <div class="topbar-right">
-                
-                <div class="btn-group">
-                    <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
-                    <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
-                </div>
-
-                <div style="width:1px; height:24px; background:var(--line2); margin:0 4px;"></div>
-                
-                <button id="filterMemosBtn" class="sort-btn">💬 코멘트 모아보기</button>
-                
-                <div id="sortGroup" class="sort-group">
-                    <button id="sortDateBtn" class="sort-btn active">📅 발행일순</button>
-                    <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
-                    <button id="sortLikesBtn" class="sort-btn">🔥 인기순</button>
-                </div>
-                
-                <button id="resetBtn" class="sort-btn">초기화</button>
-                
+            <div class="btn-group">
+                <button id="viewAllBtn" class="btn active">🟦 전체 보기</button>
+                <button id="viewDashBtn" class="btn">📺 채널별 보기</button>
             </div>
+
+            <div style="width:1px; height:24px; background:var(--line2); margin:0 4px;"></div>
+            
+            <button id="filterMemosBtn" class="sort-btn">💬 코멘트 모아보기</button>
+            
+            <div id="sortGroup" class="sort-group">
+                <button id="sortDateBtn" class="sort-btn active">📅 발행일순</button>
+                <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
+                <button id="sortLikesBtn" class="sort-btn">🔥 인기순</button>
+            </div>
+            
+            <button id="resetBtn" class="sort-btn">초기화</button>
+
+            <a id="sheetLinkBtn" href="https://docs.google.com/spreadsheets/d/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/edit" target="_blank" class="sort-btn">
+                📝 업데이트 시트 가기
+            </a>
         </div>
 
         <div class="filterTabs" id="filterTabs">
@@ -238,7 +243,6 @@
     function renderSkeleton() { document.getElementById("grid").innerHTML = Array(12).fill('<div class="skeleton"></div>').join(""); }
 
     function updateToggleState(type, activeId) {
-        // 더 이상 filterMemosBtn는 view 탭과 묶이지 않습니다.
         let targets = (type === 'view') ? ["viewAllBtn", "viewDashBtn"] : ["sortDateBtn", "sortUpdateBtn", "sortLikesBtn"];
         targets.forEach(id => document.getElementById(id)?.classList.toggle("active", id === activeId));
     }
