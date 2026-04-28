@@ -328,14 +328,22 @@
     function getYTId(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
     function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 3500); }
 
-    // 숫자만 추출해서 안전하게 날짜(시간값)를 반환하는 강력한 정렬 함수!
+    // 수정됨: 모든 브라우저에서 안전하게 날짜를 파싱하는 로직 (특히 YYYY-MM-DD 형식을 YYYY/MM/DD로 변환)
     function getSafeTime(dateStr) {
         if (!dateStr) return 0;
+        
+        // '-' 기호를 '/'로 변경 (Safari 등 일부 환경에서 YYYY-MM-DD 파싱 오류를 원천 차단)
+        const cleanStr = String(dateStr).replace(/-/g, "/").trim();
+        const parsed = new Date(cleanStr).getTime();
+        
+        if (!isNaN(parsed)) return parsed;
+
+        // 다른 불규칙한 포맷이 들어올 경우를 대비한 2차 안전장치 (숫자만 추출)
         const nums = String(dateStr).match(/\d+/g);
         if (!nums || nums.length < 1) return 0;
         
         let y = parseInt(nums[0], 10);
-        if (y < 100) y += 2000; // 24 -> 2024 변환
+        if (y < 100) y += 2000; 
         
         let m = nums.length > 1 ? parseInt(nums[1], 10) - 1 : 0;
         let d = nums.length > 2 ? parseInt(nums[2], 10) : 1;
@@ -558,14 +566,13 @@
 
             let list = [...filtered];
 
-            // --- 정렬 로직 수정된 부분 ---
+            // 1. 발행일순 정렬 로직 (안전한 파싱)
             if (sortMode === "date") {
-                // 1. 발행일순: 방금 만든 getSafeTime 함수로 숫자만 강력하게 파싱하여 비교
                 list.sort((a, b) => getSafeTime(b[KEY.date]) - getSafeTime(a[KEY.date]));
             } else if (sortMode === "update") {
-                // 2. 업데이트순: 배열의 원래 순서를 유지 (최신 데이터 추가 순서)
+                // 업데이트순: 초기 배열 순서 유지
             } else if (sortMode === "likes") {
-                // 3. 좋아요순: 인터랙션 기준 내림차순 정렬
+                // 좋아요순
                 list.sort((a, b) => ((interactionsCache.get(fnv1a(b[KEY.url])) || {}).likes || 0) - ((interactionsCache.get(fnv1a(a[KEY.url])) || {}).likes || 0));
             }
 
@@ -578,7 +585,12 @@
                         <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/mqdefault.jpg"></div>
                         <div class="metaBox">
                             <div class="titleLine" title="${it[KEY.title]}">${it[KEY.title]}</div>
-                            <div style="font-size:11px; color:var(--muted); margin-top:8px;">${it[KEY.channel]}</div>
+                            <div style="font-size:11px; color:var(--muted); margin-top:8px; display:flex; align-items:center;">
+                                <span style="color:#fff; background:rgba(255,255,255,0.12); padding:3px 6px; border-radius:4px; margin-right:6px; font-weight:600;">
+                                    ${escapeHtml(it[KEY.date] || "날짜없음")}
+                                </span>
+                                ${escapeHtml(it[KEY.channel])}
+                            </div>
                             <div class="actionsBar">
                                 <span class="actionBtn">👍 <span id="like-${itemId}">${itemData.likes}</span></span>
                                 <span class="actionBtn">💬 <span id="memo-${itemId}">${itemData.memos.length}</span></span>
