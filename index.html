@@ -542,8 +542,20 @@
             if (scrollTrigger) scrollTrigger.style.display = "block";
 
             let list = [...filtered];
-            if (sortMode === "date" || sortMode === "update") list.sort((a, b) => new Date((b[KEY.date] || "").replace(/\./g, "-")) - new Date((a[KEY.date] || "").replace(/\./g, "-")));
-            else if (sortMode === "likes") {
+
+            if (sortMode === "date") {
+                // 1. 발행일순: 영상의 실제 발행 날짜 기준 (띄어쓰기 등 불순물 제거하여 인식률 향상)
+                list.sort((a, b) => {
+                    const timeA = new Date((a[KEY.date] || "").replace(/\./g, "-").replace(/\s/g, "")).getTime() || 0;
+                    const timeB = new Date((b[KEY.date] || "").replace(/\./g, "-").replace(/\s/g, "")).getTime() || 0;
+                    return timeB - timeA;
+                });
+            } else if (sortMode === "update") {
+                // 2. 업데이트순: 시트에 최근에 추가된 순서
+                // init() 함수에서 이미 원본 데이터를 불러올 때 reverse()를 해두었기 때문에, 
+                // 여기서 별도의 정렬을 하지 않으면 자연스럽게 최신 업데이트순이 됩니다.
+            } else if (sortMode === "likes") {
+                // 3. 좋아요순: 인터랙션 데이터 기준
                 list.sort((a, b) => ((interactionsCache.get(fnv1a(b[KEY.url])) || {}).likes || 0) - ((interactionsCache.get(fnv1a(a[KEY.url])) || {}).likes || 0));
             }
 
