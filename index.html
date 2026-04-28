@@ -568,8 +568,17 @@
 
             // 1. 발행일순 정렬 로직 (안전한 파싱)
             if (sortMode === "date") {
-                list.sort((a, b) => getSafeTime(b[KEY.date]) - getSafeTime(a[KEY.date]));
-            } else if (sortMode === "update") {
+    list.sort((a, b) => {
+        const timeA = getSafeTime(a[KEY.date]);
+        const timeB = getSafeTime(b[KEY.date]);
+
+        if (!timeA && !timeB) return 0;
+        if (!timeA) return 1;
+        if (!timeB) return -1;
+
+        return timeB - timeA;
+    });
+} else if (sortMode === "update") {
                 // 업데이트순: 초기 배열 순서 유지
             } else if (sortMode === "likes") {
                 // 좋아요순
