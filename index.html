@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Video Reference Archive - Compact Filters</title>
+    <title>Video Reference Archive - 최종 수정본</title>
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
     <style>
         :root{
@@ -202,8 +202,8 @@
                 </div>
                 <div id="allViewControls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <div id="sortGroup" class="sort-group">
-                        <button id="sortDateBtn" class="sort-btn active">📅 최신 발행순</button>
-                        <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
+                        <button id="sortDateBtn" class="sort-btn active">📅 최신 발행일순</button>
+                        <button id="sortUpdateBtn" class="sort-btn">🆕 최신 업데이트순</button>
                         <button id="sortLikesBtn" class="sort-btn">🔥 인기순</button>
                     </div>
                 </div>
@@ -317,6 +317,7 @@
     const INTERACTIONS_URL = "https://opensheet.elk.sh/1GgTfXN-iChTCdW3vHYFwQu2WSlwmgOm2-pHs2WIBBAY/INTERACTIONS";
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
 
+    // 🚀 데이터 키 자동 매칭 시스템 고도화
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
     let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", dateSortDesc = true, renderLimit = 40, filterOnlyMemos = false, lastFilteredCount = 0, activeTab = "genre", lastPageScroll = 0, currentModalId = null;
     const modalScrollCache = new Map();
@@ -328,22 +329,21 @@
     function getYTId(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
     function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 3500); }
 
-    // 🚀 가장 강력한 날짜 추출기: 시트 내부 일련번호(숫자)와 모든 텍스트 형식을 완벽하게 커버합니다.
+    // 📅 강력한 날짜 분석기 (일련번호 대응 및 텍스트 강제 파싱)
     function getSafeTime(dateStr) {
         if (!dateStr) return 0;
         
-        // 1. 구글 시트 내부 일련번호 방식 대응 (예: 45400)
-        if (typeof dateStr === 'number' || (!isNaN(dateStr) && Number(dateStr) > 10000 && Number(dateStr) < 99999)) {
+        // 시트 일련번호 숫자 대응 (예: 46128)
+        if (!isNaN(dateStr) && Number(dateStr) > 40000) {
             return new Date((Number(dateStr) - 25569) * 86400 * 1000).getTime();
         }
 
-        // 2. 문자열에서 오직 숫자만 멱살 잡고 추출
         const str = String(dateStr);
         const nums = str.match(/\d+/g);
         if (!nums || nums.length === 0) return 0;
         
         let y = parseInt(nums[0], 10);
-        if (y < 100) y += 2000; // 24 -> 2024
+        if (y < 100) y += 2000; 
         
         let m = nums.length > 1 ? parseInt(nums[1], 10) - 1 : 0;
         let d = nums.length > 2 ? parseInt(nums[2], 10) : 1;
@@ -369,155 +369,7 @@
         return interactionsCache.get(fnv1a(it[KEY.url])) || { likes: 0, memos: [] };
     }
 
-    function buildFilterParams() {
-        const params = new URLSearchParams();
-        const query = document.getElementById("search")?.value?.trim();
-        if (query) params.set("q", query);
-        if (viewMode !== "all") params.set("view", viewMode);
-        if (sortMode !== "date") params.set("sort", sortMode);
-        if (activeTab !== "genre") params.set("tab", activeTab);
-        if (filterOnlyMemos) params.set("memoOnly", "1");
-
-        ["genre","media","format","content","stage","method","tone","cast"].forEach(key => {
-            [...activeSets[key]].forEach(v => params.append(key, v));
-        });
-        if (activeCastRole !== "전체") params.set("castRole", activeCastRole);
-        return params;
-    }
-
-    function updateURLFromState() {
-        const params = buildFilterParams();
-        const next = `${location.pathname}${params.toString() ? "?" + params.toString() : ""}`;
-        history.replaceState(null, "", next);
-    }
-
-    function applyStateFromURL() {
-        const params = new URLSearchParams(location.search);
-        const q = params.get("q");
-        if (q) document.getElementById("search").value = q;
-
-        const nextView = params.get("view");
-        if (nextView === "dash") viewMode = "dash";
-
-        const nextSort = params.get("sort");
-        if (["date","update","likes"].includes(nextSort)) sortMode = nextSort;
-
-        const nextTab = params.get("tab");
-        if (nextTab) activeTab = nextTab;
-
-        filterOnlyMemos = params.get("memoOnly") === "1";
-        ["genre","media","format","content","stage","method","tone","cast"].forEach(key => {
-            params.getAll(key).forEach(v => activeSets[key].add(v));
-        });
-        const role = params.get("castRole");
-        if (role) activeCastRole = role;
-    }
-
-    function copyCurrentPresetLink() {
-        const url = `${location.origin}${location.pathname}${location.search}`;
-        navigator.clipboard.writeText(url).then(() => showToast("현재 필터 링크를 복사했어요."));
-    }
-
-    function getActiveFilterEntries() {
-        const entries = [];
-        ["genre", "media", "format", "content", "stage", "method", "tone"].forEach(key => {
-            activeSets[key].forEach(value => entries.push({ key, value, label: `${getFilterLabel(key)}: ${value}` }));
-        });
-        if (activeCastRole !== "전체") entries.push({ key: "castRole", value: activeCastRole, label: `출연 역할: ${activeCastRole}` });
-        activeSets.cast.forEach(value => entries.push({ key: "cast", value, label: `출연자: ${value}` }));
-        if (filterOnlyMemos) entries.push({ key: "memoOnly", value: "1", label: "코멘트 있음" });
-        return entries;
-    }
-
-    function getFilterLabel(key) {
-        return ({ genre:"장르", media:"매체", format:"포맷", content:"컨텐츠", stage:"무대 연출", method:"제작 방식", tone:"영상 톤", cast:"출연자" })[key] || key;
-    }
-
-    function updateFilterSummary() {
-        const bar = document.getElementById("activeFilterBar");
-        const entries = getActiveFilterEntries();
-        document.getElementById("activeFilterCount").textContent = entries.length;
-        if (!entries.length) {
-            bar.innerHTML = `<span style="font-size:12.5px; color:var(--muted);">적용된 필터가 없습니다.</span>`;
-        } else {
-            bar.innerHTML = entries.map(entry => `
-                <span class="filterTag">
-                    ${entry.label}
-                    <button onclick="removeFilter('${entry.key}','${String(entry.value).replace(/'/g, "\\'")}')">✕</button>
-                </span>
-            `).join("");
-        }
-    }
-
-    function removeFilter(key, value) {
-        if (key === "castRole") activeCastRole = "전체";
-        else if (key === "memoOnly") {
-            filterOnlyMemos = false;
-            document.getElementById("insightModeBtn")?.classList.remove("active");
-        } else activeSets[key]?.delete(value);
-        render(true);
-    }
-    window.removeFilter = removeFilter;
-
-    function clearAllFilters() {
-        Object.values(activeSets).forEach(set => set.clear());
-        activeCastRole = "전체";
-        filterOnlyMemos = false;
-        document.getElementById("insightModeBtn")?.classList.remove("active");
-        render(true);
-    }
-
-    function updateMetrics(filteredItems = allData) {
-        let likedItems = 0, memoItems = 0, memoCount = 0;
-        const likedSorted = [];
-        const memoSorted = [];
-
-        filteredItems.forEach((it) => {
-            const data = getItemInteraction(it);
-            if ((data.likes || 0) > 0) likedItems += 1;
-            if ((data.memos || []).length > 0) memoItems += 1;
-            memoCount += (data.memos || []).length;
-            likedSorted.push({ title: it[KEY.title], channel: it[KEY.channel], value: data.likes || 0 });
-            memoSorted.push({ title: it[KEY.title], channel: it[KEY.channel], value: (data.memos || []).length });
-        });
-
-        document.getElementById("metricLikes").textContent = likedItems.toLocaleString();
-        document.getElementById("metricMemoItems").textContent = memoItems.toLocaleString();
-        document.getElementById("metricMemos").textContent = memoCount.toLocaleString();
-
-        const fillMiniList = (id, rows, unit) => {
-            const container = document.getElementById(id);
-            const top = rows.filter(row => row.value > 0).sort((a, b) => b.value - a.value).slice(0, 2);
-            if (!top.length) {
-                container.innerHTML = `<div class="insightMiniItem"><strong>아직 데이터가 없어요</strong><span>필터를 조정하거나 액션을 더 쌓아보세요.</span></div>`;
-                return;
-            }
-            container.innerHTML = top.map(row => `
-                <div class="insightMiniItem">
-                    <strong>${escapeHtml(row.title)}</strong>
-                    <span>${escapeHtml(row.channel || "")} · ${row.value}${unit}</span>
-                </div>
-            `).join("");
-        };
-
-        fillMiniList("insightTopLiked", likedSorted, " 좋아요");
-        fillMiniList("insightTopMemos", memoSorted, " 메모");
-    }
-
-    function updateCardCounters(itemId, data) {
-        const lEl = document.getElementById(`like-${itemId}`);
-        const mEl = document.getElementById(`memo-${itemId}`);
-        if (lEl) lEl.textContent = data.likes || 0;
-        if (mEl) mEl.textContent = data.memos?.length || 0;
-        updateMetrics();
-    }
-
     function renderSkeleton() { document.getElementById("grid").innerHTML = Array(8).fill('<div class="skeleton"></div>').join(""); }
-
-    function updateToggleState(type, activeId) {
-        const targets = (type === "view") ? ["viewAllBtn", "viewDashBtn"] : ["sortDateBtn", "sortUpdateBtn", "sortLikesBtn"];
-        targets.forEach(id => document.getElementById(id)?.classList.toggle("active", id === activeId));
-    }
 
     function render(reset = false) {
         if (reset) {
@@ -526,6 +378,8 @@
         }
 
         const q = document.getElementById("search").value.toLowerCase();
+        
+        // 필터링 처리
         const filtered = allData.filter(it => {
             const itemId = fnv1a(it[KEY.url]);
             const title = (it[KEY.title] || "").toLowerCase();
@@ -548,36 +402,33 @@
         lastFilteredCount = filtered.length;
         document.getElementById("stats").textContent = `표시: ${filtered.length} / 전체: ${allData.length}`;
         document.getElementById("resultCounter").textContent = `${filtered.length.toLocaleString()}건`;
-        updateChips(filtered);
-        updateFilterSummary();
-        updateMetrics(filtered);
-        updateURLFromState();
+        
+        // UI 업데이트
+        if (reset) {
+            updateChips(filtered);
+            updateFilterSummary();
+            updateMetrics(filtered);
+        }
 
         const gridEl = document.getElementById("grid");
         const dashEl = document.getElementById("dash");
         const contentArea = document.getElementById("contentArea");
-        const scrollTrigger = document.getElementById("scrollTrigger");
 
         if (viewMode === "all") {
             contentArea.style.display = "grid";
             dashEl.classList.remove("active");
-            if (scrollTrigger) scrollTrigger.style.display = "block";
 
             let list = [...filtered];
 
+            // 🚀 정렬 로직 (발행일순 최우선 처리)
             if (sortMode === "date") {
                 list.sort((a, b) => {
                     const timeA = getSafeTime(a[KEY.date]);
                     const timeB = getSafeTime(b[KEY.date]);
-
-                    if (!timeA && !timeB) return 0;
-                    if (!timeA) return 1;
-                    if (!timeB) return -1;
-
                     return dateSortDesc ? timeB - timeA : timeA - timeB;
                 });
             } else if (sortMode === "update") {
-                // 업데이트순
+                // 이미 reverse() 되어 들어왔으므로 기본 순서가 최신 업데이트순임
             } else if (sortMode === "likes") {
                 list.sort((a, b) => ((interactionsCache.get(fnv1a(b[KEY.url])) || {}).likes || 0) - ((interactionsCache.get(fnv1a(a[KEY.url])) || {}).likes || 0));
             }
@@ -586,16 +437,15 @@
             gridEl.innerHTML = sliced.map(it => {
                 const itemId = fnv1a(it[KEY.url]);
                 const itemData = interactionsCache.get(itemId) || { likes: 0, memos: [] };
+                const dateVal = it[KEY.date] || "날짜미정";
                 return `
                     <div class="card" onclick="openModal('${itemId}')">
                         <div class="thumbWrap"><img class="thumb" loading="lazy" src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/mqdefault.jpg"></div>
                         <div class="metaBox">
                             <div class="titleLine" title="${it[KEY.title]}">${it[KEY.title]}</div>
-                            <div style="font-size:11px; color:var(--muted); margin-top:8px; display:flex; align-items:center;">
-                                <span style="color:#fff; background:rgba(255,255,255,0.12); padding:3px 6px; border-radius:4px; margin-right:6px; font-weight:600;">
-                                    ${it[KEY.date] ? escapeHtml(it[KEY.date]) : "날짜없음(오류)"}
-                                </span>
-                                ${escapeHtml(it[KEY.channel])}
+                            <div style="font-size:11px; color:var(--muted); margin-top:8px; display:flex; align-items:center; gap:6px;">
+                                <span style="background:rgba(255,255,255,0.1); padding:2px 5px; border-radius:4px; color:#fff; font-weight:700;">${dateVal}</span>
+                                <span>${it[KEY.channel]}</span>
                             </div>
                             <div class="actionsBar">
                                 <span class="actionBtn">👍 <span id="like-${itemId}">${itemData.likes}</span></span>
@@ -607,11 +457,11 @@
         } else {
             contentArea.style.display = "none";
             dashEl.classList.add("active");
-            if (scrollTrigger) scrollTrigger.style.display = "none";
             renderDash(filtered);
         }
     }
 
+    // 대시보드 렌더링
     function renderDash(data) {
         const channels = [...new Set(data.map(it => it[KEY.channel]))].filter(Boolean).sort();
         const nav = document.getElementById("leftNav");
@@ -628,11 +478,9 @@
         }
     }
 
+    // 칩 업데이트
     function updateChips(data) {
         const fields = ["genre", "media", "format", "content", "stage", "method", "tone"];
-        const castRoleSet = new Set();
-        const castNameSet = new Set();
-
         fields.forEach(f => {
             const set = new Set();
             data.forEach(it => splitTags(it[KEY[f]]).forEach(t => set.add(t)));
@@ -641,181 +489,12 @@
             const isAll = activeSets[f].size === 0;
             el.innerHTML = `<div class="chipsRow"><div class="chip ${isAll?'active':''}" onclick="activeSets['${f}'].clear(); render(true)">전체</div>${[...set].sort().map(v => `<div class="chip ${activeSets[f].has(v)?'active':''}" onclick="toggleFilter('${f}', '${String(v).replace(/'/g, "\'")}')">${escapeHtml(v)}</div>`).join("")}</div>`;
         });
-
-        allData.forEach(it => splitTags(it[KEY.cast]).forEach(t => castRoleSet.add(getCastInfo(t).category)));
-
-        const baseCastData = allData.filter(it => {
-            const q = document.getElementById("search").value.toLowerCase();
-            const title = (it[KEY.title] || "").toLowerCase();
-            const channel = (it[KEY.channel] || "").toLowerCase();
-            const okSearch = q ? (title.includes(q) || channel.includes(q)) : true;
-            const itData = getItemInteraction(it);
-            const okMemos = filterOnlyMemos ? (itData.memos.length > 0) : true;
-            const checkTags = (k) => activeSets[k].size === 0 || [...activeSets[k]].every(t => splitTags(it[KEY[k]]).includes(t));
-            return okSearch && okMemos && checkTags("genre") && checkTags("media") && checkTags("format") && checkTags("content") && checkTags("stage") && checkTags("method") && checkTags("tone");
-        });
-
-        baseCastData.forEach(it => splitTags(it[KEY.cast]).forEach(t => {
-            const info = getCastInfo(t);
-            if (activeCastRole === "전체" || info.category === activeCastRole) castNameSet.add(info.name);
-        }));
-
-        const castEl = document.getElementById("castChips");
-        const roleChips = ["전체", ...[...castRoleSet].sort()].map(c => `<div class="chip ${activeCastRole===c?'active':''}" onclick="setCastRole('${String(c).replace(/'/g, "\'")}')">${escapeHtml(c)}</div>`).join("");
-        const names = [...castNameSet].sort();
-        const showNameRow = activeCastRole !== "전체" && !(names.length === 1 && names[0] === activeCastRole);
-
-        castEl.innerHTML = `<div class="chipsRow" style="border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:5px;">${roleChips}</div>`;
-        if (showNameRow) {
-            castEl.innerHTML += `<div class="chipsRow"><div class="chip ${activeSets.cast.size === 0 ? 'active' : ''}" onclick="activeSets.cast.clear(); render(true)">전체</div>${names.map(n => `<div class="chip ${activeSets.cast.has(n)?'active':''}" onclick="toggleFilter('cast', '${String(n).replace(/'/g, "\'")}')">${escapeHtml(n)}</div>`).join("")}</div>`;
-        }
     }
 
     function toggleFilter(k, v) {
         activeSets[k].has(v) ? activeSets[k].delete(v) : activeSets[k].add(v);
         render(true);
     }
-
-    function setCastRole(role) {
-        activeCastRole = role;
-        activeSets.cast.clear();
-        render(true);
-    }
-
-    function openModal(id, options = {}) {
-        const it = allData.find(x => fnv1a(x[KEY.url]) === id);
-        if (!it) return;
-        currentModalId = id;
-        lastPageScroll = window.scrollY;
-        document.getElementById("modalOverlay").classList.add("open");
-        document.getElementById("modalOverlay").dataset.id = id;
-
-        document.getElementById("modalLeft").innerHTML = `
-            <img src="https://img.youtube.com/vi/${getYTId(it[KEY.url])}/hqdefault.jpg" style="width:100%; border-radius:12px; margin-bottom:15px; border:1px solid var(--line2);">
-            <div style="font-weight:800; font-size:20px; color:#fff; margin-bottom:10px; line-height:1.4;">${escapeHtml(it[KEY.title])}</div>
-            <div style="color:var(--muted); font-size:13px; margin-bottom:6px;">${escapeHtml(it[KEY.channel] || "")}</div>
-            <div style="color:rgba(234,234,234,.72); font-size:12px; margin-bottom:15px;">${escapeHtml([it[KEY.genre], it[KEY.media], it[KEY.date]].filter(Boolean).join(" · "))}</div>
-            <div style="display:flex; flex-direction:column; gap:8px;">
-                <button class="sort-btn active" id="mLikeBtn" style="width:100%; justify-content:center;">👍 좋아요 누르기</button>
-                <a href="${it[KEY.url]}" target="_blank" class="sort-btn" style="width:100%; background:rgba(255,255,255,0.05); color:#fff;">🔗 원본 열기</a>
-                <button class="sort-btn" id="mCopyBtn" style="width:100%; background:rgba(255,255,255,0.05); color:#fff;">📋 공유용 링크 복사하기</button>
-                <button class="sort-btn" id="mPipBtn" style="width:100%; background:rgba(255,255,255,0.05); color:#fff;">📺 PIP 보기 (팝업)</button>
-            </div>`;
-        document.getElementById("mPlayer").innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${getYTId(it[KEY.url])}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
-
-        loadInteractions(id, options);
-
-        document.getElementById("mLikeBtn").onclick = () => toggleLike(id);
-        document.getElementById("mCopyBtn").onclick = () => {
-            navigator.clipboard.writeText(it[KEY.url]).then(() => showToast("클립보드에 링크가 복사되었습니다!"));
-        };
-        document.getElementById("mPipBtn").onclick = () => {
-            const player = document.getElementById("mPlayer");
-            player.classList.toggle("pip-mode");
-            showToast(player.classList.contains("pip-mode") ? "PIP 모드가 켜졌습니다. 영상이 우측 하단에 고정됩니다." : "PIP 모드가 해제되었습니다.");
-        };
-    }
-
-    window.openModal = openModal;
-
-    function loadInteractions(id, options = {}) {
-        const data = interactionsCache.get(id) || { likes: 0, memos: [] };
-        document.getElementById("mCounts").textContent = `👍 ${data.likes || 0} · 💬 ${data.memos?.length || 0}`;
-        document.getElementById("mMemoList").innerHTML = (data.memos || []).map(m => `<div style="margin-bottom:8px; font-size:13px; border-bottom:1px solid var(--line); padding-bottom:8px;"><strong style="color:#fff;">${escapeHtml(m.nickname)}</strong><div style="margin-top:4px;">${escapeHtml(m.memo)}</div></div>`).join("");
-        updateCardCounters(id, data);
-        requestAnimationFrame(() => {
-            const memoList = document.getElementById("mMemoList");
-            if (modalScrollCache.has(id)) memoList.scrollTop = modalScrollCache.get(id);
-            if (options.focusMemoInput) document.getElementById("mMemo").focus();
-        });
-    }
-
-    function toggleLike(id) {
-        const nick = document.getElementById("mNick").value || "익명";
-        if (!interactionsCache.has(id)) interactionsCache.set(id, { likes:0, memos:[] });
-        interactionsCache.get(id).likes++;
-        loadInteractions(id);
-        showToast("좋아요를 눌렀습니다!");
-        fetch(API_URL, { method:"POST", body: JSON.stringify({ itemId:id, action:"like", nickname:nick }) });
-    }
-
-        function quickLike(id) {
-        toggleLike(id);
-    }
-
-    function openMemoModal(id) {
-        openModal(id, { focusMemoInput: true });
-    }
-
-    function openOriginalLink(id) {
-        const it = allData.find(x => fnv1a(x[KEY.url]) === id);
-        if (it?.[KEY.url]) window.open(it[KEY.url], "_blank");
-        closeAllCardMenus();
-    }
-
-    function copyCardLink(id) {
-        const it = allData.find(x => fnv1a(x[KEY.url]) === id);
-        if (!it?.[KEY.url]) return;
-        navigator.clipboard.writeText(it[KEY.url]).then(() => showToast("링크를 복사했어요."));
-        closeAllCardMenus();
-    }
-
-    function closeAllCardMenus() {
-        document.querySelectorAll(".cardMoreMenu.open").forEach(menu => menu.classList.remove("open"));
-    }
-
-    function toggleCardMenu(id) {
-        const menu = document.getElementById(`menu-${id}`);
-        const willOpen = !menu.classList.contains("open");
-        closeAllCardMenus();
-        if (willOpen) menu.classList.add("open");
-    }
-    window.quickLike = quickLike;
-    window.openMemoModal = openMemoModal;
-    window.toggleCardMenu = toggleCardMenu;
-    window.copyCardLink = copyCardLink;
-    window.openOriginalLink = openOriginalLink;
-
-    document.getElementById("mSend").onclick = () => {
-        const id = document.getElementById("modalOverlay").dataset.id;
-        const nick = document.getElementById("mNick").value.trim() || "익명";
-        const memo = document.getElementById("mMemo").value.trim();
-        if (!memo) return alert("메모를 입력하세요.");
-        if (!interactionsCache.has(id)) interactionsCache.set(id, { likes:0, memos:[] });
-        interactionsCache.get(id).memos.push({ nickname:nick, memo:memo });
-        document.getElementById("mMemo").value = "";
-        loadInteractions(id);
-        showToast("메모가 등록되었습니다.");
-        fetch(API_URL, { method:"POST", body: JSON.stringify({ itemId:id, action:"memo", nickname:nick, memo:memo }) });
-    };
-
-    function closeModal() {
-        const id = document.getElementById("modalOverlay").dataset.id;
-        if (id) modalScrollCache.set(id, document.getElementById("mMemoList").scrollTop);
-        document.getElementById("modalOverlay").classList.remove("open");
-        const player = document.getElementById("mPlayer");
-        player.innerHTML = "";
-        player.classList.remove("pip-mode");
-        if (typeof lastPageScroll === "number") window.scrollTo({ top: lastPageScroll });
-    }
-    document.getElementById("mClose").onclick = closeModal;
-    document.getElementById("clearFiltersBtn").onclick = clearAllFilters;
-    document.getElementById("sharePresetBtn").onclick = copyCurrentPresetLink;
-
-    document.getElementById("insightModeBtn").onclick = () => {
-        filterOnlyMemos = !filterOnlyMemos;
-        document.getElementById("insightModeBtn").classList.toggle("active", filterOnlyMemos);
-        render(true);
-        showToast(filterOnlyMemos ? "코멘트가 있는 레퍼런스만 표시합니다." : "전체 레퍼런스로 돌아왔습니다.");
-    };
-
-    const filterBody = document.getElementById("filterBody");
-    const toggleFilterPanelBtn = document.getElementById("toggleFilterPanelBtn");
-    function setFilterPanel(open) {
-        filterBody.classList.toggle("open", open);
-        toggleFilterPanelBtn.textContent = open ? "필터 접기 ▴" : "필터 더보기 ▾";
-    }
-    toggleFilterPanelBtn.onclick = () => setFilterPanel(!filterBody.classList.contains("open"));
 
     async function init() {
         renderSkeleton();
@@ -826,6 +505,8 @@
             ]);
             const rawData = await archiveRes.json();
             const interactData = await interactRes.json();
+
+            if (!Array.isArray(rawData)) throw new Error("Invalid Data Format");
 
             interactionsCache.clear();
             if (Array.isArray(interactData)) {
@@ -839,88 +520,55 @@
                 });
             }
 
-            allData = rawData.filter(x => x[Object.keys(x)[0]]).reverse();
+            allData = rawData.filter(x => x && Object.keys(x).length > 2).reverse();
             
-            // 🚀 가장 강력한 키 연결 방어: 띄어쓰기 등 모든 공백을 지우고 억지로 매칭시킵니다.
-            const allKeys = [];
-            allData.forEach(row => {
-                Object.keys(row).forEach(k => {
-                    if (!allKeys.includes(k)) allKeys.push(k);
-                });
-            });
-
+            // 🚀 모든 행을 전수조사하여 정확한 열 이름 찾기
+            const firstRow = allData[0] || {};
+            const allKeys = Object.keys(firstRow);
             Object.keys(KEY).forEach(k => {
-                // 양쪽 텍스트의 모든 띄어쓰기를 없애고 소문자로 변환해 완벽 매칭!
-                const cleanTarget = KEY[k].replace(/\s+/g, '').toLowerCase();
-                const found = allKeys.find(rk => rk.replace(/\s+/g, '').toLowerCase() === cleanTarget);
+                const target = KEY[k].replace(/\s+/g, '').toLowerCase();
+                const found = allKeys.find(rk => rk.replace(/\s+/g, '').toLowerCase() === target);
                 if (found) KEY[k] = found;
             });
 
-            applyStateFromURL();
-
-            updateToggleState("view", viewMode === "all" ? "viewAllBtn" : "viewDashBtn");
-            updateToggleState("sort", sortMode === "date" ? "sortDateBtn" : sortMode === "likes" ? "sortLikesBtn" : "sortUpdateBtn");
-            document.getElementById("insightModeBtn").classList.toggle("active", filterOnlyMemos);
-            setFilterPanel(true);
-            document.querySelectorAll('.tab, .chipsPanel').forEach(el => el.classList.remove('active'));
-            document.querySelector(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
-            document.getElementById(activeTab + "Chips")?.classList.add('active');
-
-            render();
+            render(true);
         } catch (e) {
-            document.getElementById("stats").textContent = "로드 실패";
+            document.getElementById("stats").textContent = "로드 실패 (시트 확인 필요)";
             console.error(e);
         }
     }
 
-    const allViewControls = document.getElementById("allViewControls");
-    document.getElementById("viewAllBtn").onclick = () => {
-        viewMode = "all";
-        updateToggleState("view", "viewAllBtn");
-        allViewControls.style.display = "flex";
-        render(true);
-    };
-    document.getElementById("viewDashBtn").onclick = () => {
-        viewMode = "dash";
-        updateToggleState("view", "viewDashBtn");
-        allViewControls.style.display = "none";
-        render(true);
-    };
-
+    // 이벤트 리스너
     document.getElementById("sortDateBtn").onclick = () => {
-        if (sortMode === "date") {
-            dateSortDesc = !dateSortDesc; 
-        } else {
-            sortMode = "date";
-            dateSortDesc = true; 
-        }
-        document.getElementById("sortDateBtn").textContent = dateSortDesc ? "📅 최신 발행순" : "📅 과거 발행순";
+        if (sortMode === "date") dateSortDesc = !dateSortDesc;
+        else sortMode = "date";
+        document.getElementById("sortDateBtn").textContent = dateSortDesc ? "📅 최신 발행일순" : "📅 오래된 발행일순";
         updateToggleState("sort", "sortDateBtn");
         render(true);
     };
 
-    document.getElementById("sortUpdateBtn").onclick = () => { sortMode = "update"; updateToggleState("sort", "sortUpdateBtn"); render(true); };
-    document.getElementById("sortLikesBtn").onclick = () => { sortMode = "likes"; updateToggleState("sort", "sortLikesBtn"); render(true); };
+    document.getElementById("sortUpdateBtn").onclick = () => { 
+        sortMode = "update"; 
+        updateToggleState("sort", "sortUpdateBtn"); 
+        render(true); 
+    };
 
+    document.getElementById("sortLikesBtn").onclick = () => { 
+        sortMode = "likes"; 
+        updateToggleState("sort", "sortLikesBtn"); 
+        render(true); 
+    };
+
+    function updateToggleState(type, activeId) {
+        const targets = ["sortDateBtn", "sortUpdateBtn", "sortLikesBtn"];
+        targets.forEach(id => document.getElementById(id)?.classList.toggle("active", id === activeId));
+    }
+
+    document.getElementById("viewAllBtn").onclick = () => { viewMode = "all"; render(true); };
+    document.getElementById("viewDashBtn").onclick = () => { viewMode = "dash"; render(true); };
     document.getElementById("search").oninput = () => render(true);
     document.getElementById("resetBtn").onclick = () => location.reload();
 
-    document.querySelectorAll(".tab").forEach(t => t.onclick = (e) => {
-        document.querySelectorAll(".tab, .chipsPanel").forEach(el => el.classList.remove("active"));
-        e.target.classList.add("active");
-        document.getElementById(e.target.dataset.tab + "Chips").classList.add("active");
-        setFilterPanel(true);
-    });
-
-    const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && allData.length > 0 && viewMode === "all" && renderLimit < lastFilteredCount) {
-            renderLimit += 30;
-            render(false);
-        }
-    }, { rootMargin: "200px" });
-    observer.observe(document.getElementById("scrollTrigger"));
-
-    setFilterPanel(true);
     init();
     </script>
 </body>
