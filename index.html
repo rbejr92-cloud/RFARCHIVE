@@ -202,7 +202,7 @@
                 </div>
                 <div id="allViewControls" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <div id="sortGroup" class="sort-group">
-                        <button id="sortDateBtn" class="sort-btn active">📅 발행일순</button>
+                        <button id="sortDateBtn" class="sort-btn active">📅 최신 발행순</button>
                         <button id="sortUpdateBtn" class="sort-btn">🆕 업데이트순</button>
                         <button id="sortLikesBtn" class="sort-btn">🔥 인기순</button>
                     </div>
@@ -318,7 +318,8 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbzHucb9jQ128D4vvCnX1nzTzZaWDqK6gopqS45KoJRknGG_Zr5gSIB-lDxpe8MohZVRKg/exec";
 
     let KEY = { genre: "장르", channel: "채널명", title: "TITLE", media: "매체", url: "URL", format: "포맷", content: "컨텐츠", stage: "무대 연출", method: "제작 방식", cast: "출연자", tone: "영상 톤", date: "발행일" };
-    let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", renderLimit = 40, filterOnlyMemos = false, lastFilteredCount = 0, activeTab = "genre", lastPageScroll = 0, currentModalId = null;
+    // dateSortDesc 변수 추가: true면 최신순(내림차순), false면 과거순(오름차순)
+    let allData = [], activeCastRole = "전체", viewMode = "all", selectedChannel = null, sortMode = "date", dateSortDesc = true, renderLimit = 40, filterOnlyMemos = false, lastFilteredCount = 0, activeTab = "genre", lastPageScroll = 0, currentModalId = null;
     const modalScrollCache = new Map();
     const activeSets = { genre: new Set(), media: new Set(), format: new Set(), content: new Set(), stage: new Set(), method: new Set(), cast: new Set(), tone: new Set() };
     const interactionsCache = new Map();
@@ -328,17 +329,12 @@
     function getYTId(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
     function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 3500); }
 
-    // 수정됨: 모든 브라우저에서 안전하게 날짜를 파싱하는 로직 (특히 YYYY-MM-DD 형식을 YYYY/MM/DD로 변환)
     function getSafeTime(dateStr) {
         if (!dateStr) return 0;
-        
-        // '-' 기호를 '/'로 변경 (Safari 등 일부 환경에서 YYYY-MM-DD 파싱 오류를 원천 차단)
         const cleanStr = String(dateStr).replace(/-/g, "/").trim();
         const parsed = new Date(cleanStr).getTime();
-        
         if (!isNaN(parsed)) return parsed;
 
-        // 다른 불규칙한 포맷이 들어올 경우를 대비한 2차 안전장치 (숫자만 추출)
         const nums = String(dateStr).match(/\d+/g);
         if (!nums || nums.length < 1) return 0;
         
@@ -448,7 +444,6 @@
             `).join("");
         }
     }
-
 
     function removeFilter(key, value) {
         if (key === "castRole") activeCastRole = "전체";
@@ -566,19 +561,21 @@
 
             let list = [...filtered];
 
-            // 1. 발행일순 정렬 로직 (안전한 파싱)
+            // --- 정렬 로직 토글(최신/과거) 완벽 지원 ---
             if (sortMode === "date") {
-    list.sort((a, b) => {
-        const timeA = getSafeTime(a[KEY.date]);
-        const timeB = getSafeTime(b[KEY.date]);
+                list.sort((a, b) => {
+                    const timeA = getSafeTime(a[KEY.date]);
+                    const timeB = getSafeTime(b[KEY.date]);
 
-        if (!timeA && !timeB) return 0;
-        if (!timeA) return 1;
-        if (!timeB) return -1;
+                    // 날짜가 없는 데이터는 항상 맨 뒤로 밀어냄
+                    if (!timeA && !timeB) return 0;
+                    if (!timeA) return 1;
+                    if (!timeB) return -1;
 
-        return timeB - timeA;
-    });
-} else if (sortMode === "update") {
+                    // dateSortDesc가 참이면 최신순(내림차순), 거짓이면 과거순(오름차순)
+                    return dateSortDesc ? timeB - timeA : timeA - timeB;
+                });
+            } else if (sortMode === "update") {
                 // 업데이트순: 초기 배열 순서 유지
             } else if (sortMode === "likes") {
                 // 좋아요순
@@ -843,9 +840,17 @@ document.getElementById("mSend").onclick = () => {
             }
 
             allData = rawData.filter(x => x[Object.keys(x)[0]]).reverse();
-            const first = allData[0];
+            
+            // --- 수정됨: 첫 번째 줄에 우연히 빈 셀이 있을 경우를 대비하여 전체 데이터를 스캔해서 안전하게 키를 찾도록 강화 ---
+            const allKeys = [];
+            allData.forEach(row => {
+                Object.keys(row).forEach(k => {
+                    if (!allKeys.includes(k)) allKeys.push(k);
+                });
+            });
+
             Object.keys(KEY).forEach(k => {
-                const found = Object.keys(first).find(rk => rk.trim().toLowerCase() === KEY[k].toLowerCase());
+                const found = allKeys.find(rk => rk.trim().toLowerCase() === KEY[k].toLowerCase());
                 if (found) KEY[k] = found;
             });
 
@@ -880,7 +885,19 @@ document.getElementById("mSend").onclick = () => {
         render(true);
     };
 
-    document.getElementById("sortDateBtn").onclick = () => { sortMode = "date"; updateToggleState("sort", "sortDateBtn"); render(true); };
+    // --- 수정됨: 버튼 클릭 시 최신순/과거순이 핑퐁처럼 토글 되도록 변경 ---
+    document.getElementById("sortDateBtn").onclick = () => {
+        if (sortMode === "date") {
+            dateSortDesc = !dateSortDesc; // 이미 날짜순이면 방향 뒤집기
+        } else {
+            sortMode = "date";
+            dateSortDesc = true; // 다른 모드에서 넘어올 때는 무조건 최신순부터
+        }
+        document.getElementById("sortDateBtn").textContent = dateSortDesc ? "📅 최신 발행순" : "📅 과거 발행순";
+        updateToggleState("sort", "sortDateBtn");
+        render(true);
+    };
+
     document.getElementById("sortUpdateBtn").onclick = () => { sortMode = "update"; updateToggleState("sort", "sortUpdateBtn"); render(true); };
     document.getElementById("sortLikesBtn").onclick = () => { sortMode = "likes"; updateToggleState("sort", "sortLikesBtn"); render(true); };
 
