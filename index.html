@@ -172,14 +172,14 @@
             .topbarWrapper{ margin:-16px -16px 14px; padding:16px; top:-16px; }
             .topbar-left{ width:100%; }
             input[type="text"]{ width:100%; }
-                        .insightRail{ grid-template-columns:1fr; }
+            .insightRail{ grid-template-columns:1fr; }
             .modal{ grid-template-columns:1fr; }
         }
         @media (max-width: 640px){
             .topbar{ align-items:stretch; }
             .topbar-left,.topbar-right,.summaryActions{ width:100%; }
             .btn-group,.sort-group{ width:100%; justify-content:flex-start; overflow:auto; }
-                        .grid{ grid-template-columns:1fr; }
+            .grid{ grid-template-columns:1fr; }
             .dash{ grid-template-columns:1fr; height:auto; }
         }
     </style>
@@ -327,6 +327,21 @@
     function fnv1a(s) { if(!s) return "0"; let h = 0x811c9dc5; for(let i=0; i<s.length; i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193); } return (h >>> 0).toString(16); }
     function getYTId(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
     function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 3500); }
+
+    // 숫자만 추출해서 안전하게 날짜(시간값)를 반환하는 강력한 정렬 함수!
+    function getSafeTime(dateStr) {
+        if (!dateStr) return 0;
+        const nums = String(dateStr).match(/\d+/g);
+        if (!nums || nums.length < 1) return 0;
+        
+        let y = parseInt(nums[0], 10);
+        if (y < 100) y += 2000; // 24 -> 2024 변환
+        
+        let m = nums.length > 1 ? parseInt(nums[1], 10) - 1 : 0;
+        let d = nums.length > 2 ? parseInt(nums[2], 10) : 1;
+        
+        return new Date(y, m, d).getTime();
+    }
 
     function getCastInfo(tag) {
         const match = tag.match(/^(.*?)\(([^)]+)\)$/);
@@ -543,19 +558,14 @@
 
             let list = [...filtered];
 
+            // --- 정렬 로직 수정된 부분 ---
             if (sortMode === "date") {
-                // 1. 발행일순: 영상의 실제 발행 날짜 기준 (띄어쓰기 등 불순물 제거하여 인식률 향상)
-                list.sort((a, b) => {
-                    const timeA = new Date((a[KEY.date] || "").replace(/\./g, "-").replace(/\s/g, "")).getTime() || 0;
-                    const timeB = new Date((b[KEY.date] || "").replace(/\./g, "-").replace(/\s/g, "")).getTime() || 0;
-                    return timeB - timeA;
-                });
+                // 1. 발행일순: 방금 만든 getSafeTime 함수로 숫자만 강력하게 파싱하여 비교
+                list.sort((a, b) => getSafeTime(b[KEY.date]) - getSafeTime(a[KEY.date]));
             } else if (sortMode === "update") {
-                // 2. 업데이트순: 시트에 최근에 추가된 순서
-                // init() 함수에서 이미 원본 데이터를 불러올 때 reverse()를 해두었기 때문에, 
-                // 여기서 별도의 정렬을 하지 않으면 자연스럽게 최신 업데이트순이 됩니다.
+                // 2. 업데이트순: 배열의 원래 순서를 유지 (최신 데이터 추가 순서)
             } else if (sortMode === "likes") {
-                // 3. 좋아요순: 인터랙션 데이터 기준
+                // 3. 좋아요순: 인터랙션 기준 내림차순 정렬
                 list.sort((a, b) => ((interactionsCache.get(fnv1a(b[KEY.url])) || {}).likes || 0) - ((interactionsCache.get(fnv1a(a[KEY.url])) || {}).likes || 0));
             }
 
