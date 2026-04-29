@@ -328,27 +328,44 @@
     function getYTId(url) { try { const u = new URL(url); if (u.pathname.includes("/shorts/")) return u.pathname.split("/shorts/")[1].split(/[?#]/)[0]; return u.searchParams.get("v") || u.pathname.split("/").pop(); } catch { return ""; } }
     function showToast(m) { const t = document.getElementById("toast"); t.textContent = m; t.style.bottom = "40px"; setTimeout(()=>t.style.bottom="-100px", 3500); }
 
-    // 🚀 가장 강력한 날짜 추출기: 시트 내부 일련번호(숫자)와 모든 텍스트 형식을 완벽하게 커버합니다.
-    function getSafeTime(dateStr) {
-        if (!dateStr) return 0;
-        
+    // 🚀 최신 발행순 정렬용 날짜 추출기
+    // - Google Sheets 날짜 일련번호, ISO 날짜, yyyy.mm.dd, yyyy년 m월 d일 등 대응
+    // - 파싱 실패 시 -Infinity를 반환해서 날짜 없는 항목은 항상 뒤로 보냅니다.
+    function getSafeTime(dateValue) {
+        if (dateValue === null || dateValue === undefined) return -Infinity;
+
+        const raw = String(dateValue).trim();
+        if (!raw) return -Infinity;
+
         // 1. 구글 시트 내부 일련번호 방식 대응 (예: 45400)
-        if (typeof dateStr === 'number' || (!isNaN(dateStr) && Number(dateStr) > 10000 && Number(dateStr) < 99999)) {
-            return new Date((Number(dateStr) - 25569) * 86400 * 1000).getTime();
+        const numericValue = Number(raw);
+        if (!Number.isNaN(numericValue) && numericValue > 10000 && numericValue < 99999) {
+            return new Date((numericValue - 25569) * 86400 * 1000).getTime();
         }
 
-        // 2. 문자열에서 오직 숫자만 멱살 잡고 추출
-        const str = String(dateStr);
-        const nums = str.match(/\d+/g);
-        if (!nums || nums.length === 0) return 0;
-        
+        // 2. 브라우저 기본 Date 파서가 처리 가능한 형식 먼저 처리
+        const normalized = raw
+            .replace(/[.]/g, "-")
+            .replace(/년|월/g, "-")
+            .replace(/일/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        const directTime = new Date(normalized).getTime();
+        if (!Number.isNaN(directTime)) return directTime;
+
+        // 3. 그래도 안 되면 숫자만 추출해서 yyyy-mm-dd로 재구성
+        const nums = raw.match(/\d+/g);
+        if (!nums || nums.length === 0) return -Infinity;
+
         let y = parseInt(nums[0], 10);
-        if (y < 100) y += 2000; // 24 -> 2024
-        
-        let m = nums.length > 1 ? parseInt(nums[1], 10) - 1 : 0;
-        let d = nums.length > 2 ? parseInt(nums[2], 10) : 1;
-        
-        return new Date(y, m, d).getTime();
+        if (y < 100) y += 2000;
+
+        const m = nums.length > 1 ? parseInt(nums[1], 10) - 1 : 0;
+        const d = nums.length > 2 ? parseInt(nums[2], 10) : 1;
+
+        const rebuiltTime = new Date(y, m, d).getTime();
+        return Number.isNaN(rebuiltTime) ? -Infinity : rebuiltTime;
     }
 
     function getCastInfo(tag) {
@@ -570,9 +587,10 @@
                     const timeA = getSafeTime(a[KEY.date]);
                     const timeB = getSafeTime(b[KEY.date]);
 
-                    if (!timeA && !timeB) return 0;
-                    if (!timeA) return 1;
-                    if (!timeB) return -1;
+                    // 날짜 파싱 실패 항목은 항상 뒤로 보냅니다.
+                    if (timeA === timeB) return 0;
+                    if (timeA === -Infinity) return 1;
+                    if (timeB === -Infinity) return -1;
 
                     return dateSortDesc ? timeB - timeA : timeA - timeB;
                 });
@@ -839,7 +857,9 @@
                 });
             }
 
-            allData = rawData.filter(x => x[Object.keys(x)[0]]).reverse();
+            // 최신 발행순 정렬은 render()의 sortMode === "date"에서 처리합니다.
+            // reverse()를 먼저 걸면 날짜 파싱 실패 시 원본 순서가 뒤집혀 보여 정렬 오류처럼 보일 수 있어 제거합니다.
+            allData = rawData.filter(x => x[Object.keys(x)[0]]);
             
             // 🚀 가장 강력한 키 연결 방어: 띄어쓰기 등 모든 공백을 지우고 억지로 매칭시킵니다.
             const allKeys = [];
